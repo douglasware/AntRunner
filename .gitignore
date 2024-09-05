@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/AntRunnerPowershell/SetEnvAndLoadModule.ps1
+/AntRunnerPowershell/LocalTests.ps1
+/AntRunnerPowershell/Downloads/atlanta_weekend_events.html
