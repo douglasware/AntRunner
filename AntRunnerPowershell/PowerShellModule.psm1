@@ -96,6 +96,46 @@ if ((Is-AssemblyLoaded -AssemblyName "AntRunnerLib") -and (Is-AssemblyLoaded -As
 
 <#
 .SYNOPSIS
+    Adds and loads a specified assembly from the provided path.
+
+.DESCRIPTION
+    The Add-AntAssembly function loads a .NET assembly from the specified path.
+
+.PARAMETER AssemblyPath
+    The path to the assembly that needs to be loaded.
+
+.EXAMPLE
+    Add-AntAssembly -AssemblyPath "path\to\NewAssembly.dll"
+
+    This example loads the NewAssembly.dll assembly.
+#>
+function Add-AntAssembly {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$AssemblyPath
+    )
+
+    if (Test-Path -Path $AssemblyPath) {
+        try {
+            Add-Type -Path $AssemblyPath
+            Write-Verbose "Successfully loaded assembly: $AssemblyPath"
+        } catch {
+            Write-Warning "Failed to load assembly: $AssemblyPath"
+            if ($_.Exception.InnerException -and $_.Exception.InnerException.LoaderExceptions) {
+                $_.Exception.InnerException.LoaderExceptions | ForEach-Object {
+                    Write-Error $_.Message
+                }
+            } else {
+                Write-Error $_.Exception.Message
+            }
+        }
+    } else {
+        Write-Warning "Assembly not found: $AssemblyPath"
+    }
+}
+
+<#
+.SYNOPSIS
     Sets the configuration for the AntRunner session.
 
 .DESCRIPTION
@@ -143,7 +183,7 @@ function Set-AntRunnerSessionConfig {
         [string]$AzureOpenAIApiKey,
 
         [Parameter(Mandatory=$false)]
-        [string]$AzureOpenAIDeployment
+        [string]$AzureOpenAIDeployment,
 
         [Parameter(Mandatory=$false)]
         [string]$AzureOpenAIApiVersion = "2024-05-01-preview"
@@ -587,4 +627,4 @@ function Get-AssistantFile {
 }
 
 # Export the cmdlets
-Export-ModuleMember -Function Set-AntRunnerSessionConfig, Get-AssistantsList, Remove-Assistant, Add-Assistant, Invoke-Assistant, Get-AssistantFile
+Export-ModuleMember -Function Set-AntRunnerSessionConfig, Get-AssistantsList, Remove-Assistant, Add-Assistant, Invoke-Assistant, Get-AssistantFile, Add-AntAssembly

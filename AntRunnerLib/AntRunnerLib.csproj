@@ -5,6 +5,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>AntRunnner Library</Title>
+    <Version>0.1</Version>
+    <Authors>Doug Ware</Authors>
+    <Company>Elumenotion</Company>
+    <Description>Makes using the Assistants API on Open AI or Azure API easy</Description>
+    <PackageProjectUrl>https://github.com/douglasware/AntRunner</PackageProjectUrl>
+    <PackageIcon>favicon-32x32.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/douglasware/AntRunner</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +30,17 @@
     <EmbeddedResource Include="AssistantDefinitions\ConversationUserProxy\manifest.json">
       <LogicalName>ConversationUserProxy.json</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\Elumenotion\repos\LibreChat\client\public\assets\favicon-32x32.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

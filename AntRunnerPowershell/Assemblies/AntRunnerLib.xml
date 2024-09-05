@@ -550,14 +550,34 @@
             <param name="assistantId">The assistant ID.</param>
             <returns>A task representing the asynchronous operation.</returns>
         </member>
+        <member name="T:FunctionCalling.ActionType">
+            <summary>
+            WebA[i indicates an external API call, while LocalFunction indicates a local function call based on a valid static method in a loaded assembly.
+            </summary>
+        </member>
+        <member name="F:FunctionCalling.ActionType.WebApi">
+            <summary>
+            Represents a web API action.
+            </summary>
+        </member>
+        <member name="F:FunctionCalling.ActionType.LocalFunction">
+            <summary>
+            Represents a local function action.
+            </summary>
+        </member>
         <member name="T:FunctionCalling.ActionRequestBuilder">
             <summary>
             Represents an action request to make HTTP calls.
             </summary>
         </member>
-        <member name="P:FunctionCalling.ActionRequestBuilder.Domain">
+        <member name="P:FunctionCalling.ActionRequestBuilder.ActionType">
             <summary>
-            Gets or sets the domain of the request.
+            Gets the type of action to perform.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.BaseUrl">
+            <summary>
+            Gets or sets the baseUrl of the request.
             </summary>
         </member>
         <member name="P:FunctionCalling.ActionRequestBuilder.Path">
@@ -604,7 +624,7 @@
             <summary>
             Initializes a new instance of the <see cref="T:FunctionCalling.ActionRequestBuilder"/> class with specified parameters.
             </summary>
-            <param name="domain">The domain of the request.</param>
+            <param name="baseUrl">The baseUrl of the request.</param>
             <param name="path">The path of the request.</param>
             <param name="method">The HTTP method used in the request.</param>
             <param name="operation">The operation name of the request.</param>
@@ -613,17 +633,23 @@
             <param name="authHeaders">The authentication headers for the request.</param>
             <param name="oAuth">Indicates whether the request uses OAuth for authentication.</param>
         </member>
-        <member name="M:FunctionCalling.ActionRequestBuilder.ExecuteAsync(System.String)">
+        <member name="M:FunctionCalling.ActionRequestBuilder.ExecuteWebApiAsync(System.String)">
             <summary>
             Executes the action request asynchronously.
             </summary>
             <param name="oAuthUserAccessToken">Optional OAuth user access token for authentication.</param>
         </member>
+        <member name="M:FunctionCalling.ActionRequestBuilder.ExecuteLocalFunctionAsync">
+            <summary>
+            Executes the local function asynchronously.
+            </summary>
+            <returns>The result of the local function execution.</returns>
+        </member>
         <member name="M:FunctionCalling.ActionRequestBuilder.CreateURL(System.String,System.String)">
             <summary>
-            Creates the complete URL by combining the domain and path.
+            Creates the complete URL by combining the baseUrl and path.
             </summary>
-            <param name="domain">The domain of the request.</param>
+            <param name="domain">The baseUrl of the request.</param>
             <param name="path">The path of the request.</param>
             <returns>The complete URL as a string.</returns>
         </member>

@@ -1,12 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using OpenAI.ObjectModels.RequestModels;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace FunctionCalling
 {
+    /// <summary>
+    /// WebA[i indicates an external API call, while LocalFunction indicates a local function call based on a valid static method in a loaded assembly.
+    /// </summary>
+    public enum ActionType
+    {
+        /// <summary>
+        /// Represents a web API action.
+        /// </summary>
+        WebApi,
+
+        /// <summary>
+        /// Represents a local function action.
+        /// </summary>
+        LocalFunction
+    }
+
     /// <summary>
     /// Represents an action request to make HTTP calls.
     /// </summary>
@@ -15,9 +28,20 @@ namespace FunctionCalling
         private static IHttpClientFactory? _httpClientFactory;
 
         /// <summary>
-        /// Gets or sets the domain of the request.
+        /// Gets the type of action to perform.
         /// </summary>
-        public string Domain { get; set; }
+        public ActionType ActionType
+        {
+            get
+            {
+                return (new Uri(BaseUrl)).Scheme.Contains("tool", StringComparison.InvariantCultureIgnoreCase) ? ActionType.LocalFunction : ActionType.WebApi;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the baseUrl of the request.
+        /// </summary>
+        public string BaseUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the path of the request.
@@ -62,7 +86,7 @@ namespace FunctionCalling
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionRequestBuilder"/> class with specified parameters.
         /// </summary>
-        /// <param name="domain">The domain of the request.</param>
+        /// <param name="baseUrl">The baseUrl of the request.</param>
         /// <param name="path">The path of the request.</param>
         /// <param name="method">The HTTP method used in the request.</param>
         /// <param name="operation">The operation name of the request.</param>
@@ -71,7 +95,7 @@ namespace FunctionCalling
         /// <param name="authHeaders">The authentication headers for the request.</param>
         /// <param name="oAuth">Indicates whether the request uses OAuth for authentication.</param>
         public ActionRequestBuilder(
-            string domain,
+            string baseUrl,
             string path,
             string method,
             string operation,
@@ -81,7 +105,7 @@ namespace FunctionCalling
             bool oAuth = false)
         {
             // Initialize properties
-            Domain = domain ?? throw new ArgumentNullException(nameof(domain));
+            BaseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
             Path = path ?? throw new ArgumentNullException(nameof(path));
             Method = method ?? throw new ArgumentNullException(nameof(method));
             Operation = operation ?? throw new ArgumentNullException(nameof(operation));
@@ -102,7 +126,7 @@ namespace FunctionCalling
         /// Executes the action request asynchronously.
         /// </summary>
         /// <param name="oAuthUserAccessToken">Optional OAuth user access token for authentication.</param>
-        public async Task<HttpResponseMessage> ExecuteAsync(string? oAuthUserAccessToken = null)
+        public async Task<HttpResponseMessage> ExecuteWebApiAsync(string? oAuthUserAccessToken = null)
         {
             // Replace path parameters with actual values from Params
             foreach (var param in Params ?? new Dictionary<string, object>())
@@ -114,7 +138,7 @@ namespace FunctionCalling
             }
 
             // Construct the complete URL
-            string url = CreateURL(Domain, Path);
+            string url = CreateURL(BaseUrl, Path);
 
             // Append query parameters to the URL if it's a GET request
             if (Method.Equals(HttpMethod.Get.Method, StringComparison.OrdinalIgnoreCase) && Params != null)
@@ -171,9 +195,83 @@ namespace FunctionCalling
         }
 
         /// <summary>
-        /// Creates the complete URL by combining the domain and path.
+        /// Executes the local function asynchronously.
         /// </summary>
-        /// <param name="domain">The domain of the request.</param>
+        /// <returns>The result of the local function execution.</returns>
+        public async Task<object> ExecuteLocalFunctionAsync()
+        {
+            // Get the assembly name and method name from the Path
+            var methodName = Path.Split('.').Last();
+
+            // Get the containing type name from the Path
+            var typeName = Path.Substring(0, Path.LastIndexOf('.'));
+
+            // Get the containing type from the loaded assemblies
+            var type = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.FullName == typeName);
+
+            if (type == null) throw new InvalidOperationException($"Type {typeName} not found in any loaded assembly");
+
+            // Get the method from the containing type
+            var method = type.GetMethod(methodName);
+
+            if (method == null) throw new InvalidOperationException($"Method {methodName} not found in type {typeName}");
+
+            // Get the parameters for the method
+            var parameters = method.GetParameters();
+            var paramValues = new object?[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var param = parameters[i];
+                if (Params != null && Params.TryGetValue(param.Name!, out var paramValue))
+                {
+                    if (paramValue is JsonElement jsonElement)
+                    {
+                        // Convert JsonElement to the appropriate type
+                        paramValues[i] = ConvertJsonElement(jsonElement, param.ParameterType);
+                    }
+                    else
+                    {
+                        // Convert the parameter value to the appropriate type
+                        paramValues[i] = Convert.ChangeType(paramValue, param.ParameterType);
+                    }
+                }
+                else
+                {
+                    paramValues[i] = param.HasDefaultValue ? param.DefaultValue : GetDefault(param.ParameterType);
+                }
+            }
+
+            // Invoke the method with the parameters
+            return await Task.Run(() => method.Invoke(null, paramValues)) ?? "Failed to execute function";
+        }
+
+        private object? ConvertJsonElement(JsonElement jsonElement, Type targetType)
+        {
+            return targetType switch
+            {
+                Type t when t == typeof(int) => jsonElement.GetInt32(),
+                Type t when t == typeof(double) => jsonElement.GetDouble(),
+                Type t when t == typeof(bool) => jsonElement.GetBoolean(),
+                Type t when t == typeof(string) => jsonElement.GetString(),
+                _ => throw new InvalidOperationException($"Unsupported target type: {targetType}")
+            };
+        }
+
+        private static object? GetDefault(Type type)
+        {
+            if (type.IsValueType)
+            {
+                return Activator.CreateInstance(type);
+            }
+            return null; // Reference types default to null
+        }
+
+        /// <summary>
+        /// Creates the complete URL by combining the baseUrl and path.
+        /// </summary>
+        /// <param name="domain">The baseUrl of the request.</param>
         /// <param name="path">The path of the request.</param>
         /// <returns>The complete URL as a string.</returns>
         private string CreateURL(string domain, string path)

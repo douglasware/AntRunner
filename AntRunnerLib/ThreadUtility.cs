@@ -6,6 +6,7 @@ using OpenAI.ObjectModels.SharedModels;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using static AntRunnerLib.ClientUtility;
 
 namespace AntRunnerLib
@@ -218,7 +219,6 @@ namespace AntRunnerLib
 
             if (!_requestBuilderCache.TryGetValue(assistantId, out var builders)) throw new Exception($"No request builders found for {assistantName}: {assistantId}");
 
-            var requiredBuilders = new Dictionary<string, ActionRequestBuilder>();
             var requiredToolcalls = new Dictionary<string, ToolCall>();
             var submitToolOutputsToRunRequest = new SubmitToolOutputsToRunRequest();
 
@@ -231,17 +231,24 @@ namespace AntRunnerLib
 
                 if (builders.ContainsKey(requiredOutput.FunctionCall.Name!))
                 {
-                    var builder = requiredBuilders[requiredOutput.FunctionCall.Name!] = builders[requiredOutput.FunctionCall.Name!];
+                    var builder = builders[requiredOutput.FunctionCall.Name!];
                     builder.Params = requiredOutput.FunctionCall.ParseArguments();
 
-                    // Execute the request and collect the response.
-                    var response = await builder.ExecuteAsync(oAuthUserAccessToken);
-                    var output = response.Content.ReadAsStringAsync();
-
+                    var output = string.Empty;
+                    if (builder.ActionType == ActionType.WebApi)
+                    {
+                        // Execute the request and collect the response.
+                        var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken);
+                        output = await response.Content.ReadAsStringAsync();
+                    }
+                    else
+                    {
+                        output = JsonSerializer.Serialize(await builder.ExecuteLocalFunctionAsync());   
+                    }
                     // Add the tool output to the submission request.
                     submitToolOutputsToRunRequest.ToolOutputs.Add(new ToolOutput()
                     {
-                        Output = output.Result,
+                        Output = output,
                         ToolCallId = requiredOutput.Id
                     });
                 }

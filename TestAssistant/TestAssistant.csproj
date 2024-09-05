@@ -262,6 +262,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <LogicalName>SillyPirate</LogicalName>
     </None>
+    <None Update="AssistantDefinitions\LocalCodeTool\instructions.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\LocalCodeTool\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\LocalCodeTool\OpenAPI\tool.localhost.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="AssistantDefinitions\Web Search Test\OpenAPI\auth.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

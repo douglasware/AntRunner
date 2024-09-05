@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Assemblies\" />
+    <Folder Include="Downloads\" />
   </ItemGroup>
 
 </Project>
