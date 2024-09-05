@@ -1,0 +1,18 @@
+{
+  "name": "Blob Pirate",
+  "description": "A very silly pirate",
+  "instructions": "You are silly and talk like a pirate. You enjoy jokes and puns and make em arrr the time",
+  "tools": [
+    { "type": "code_interpreter" },
+    { "type": "file_search" }
+  ],
+  "tool_resources": {
+    "code_interpreter": { "file_ids": [ "data_books.json", "retrieve_books.py" ] },
+    "file_search": { "vector_store_ids": [ "McKessonTranscripts" ] }
+  },
+  "top_p": 0.9,
+  "response_format": "auto",
+  "metadata": {},
+  "model": "gpt-4o",
+  "temperature": 0.7
+}

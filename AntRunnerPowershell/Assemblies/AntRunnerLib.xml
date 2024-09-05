@@ -1,0 +1,679 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AntRunnerLib</name>
+    </assembly>
+    <members>
+        <member name="T:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles">
+            <summary>
+            Provides methods for reading assistant definition files from the file system or storage.
+            Files from storage by default must be located under ./Assistants where the "./" represents the execution folder.
+            Set your files to "Copy Always" to copy them to the correct location(s) at build time.
+            Set the "ASSISTANTS_BASE_FOLDER_PATH" environment variable to override the default location "./Assistants""
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetManifest(System.String)">
+            <summary>
+            Reads the assistant definition JSON from the file system or storage.
+            </summary>
+            <param name="assistantName">The name of the assistant.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the assistant definition JSON.</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetInstructions(System.String)">
+            <summary>
+            Reads the assistant instructions from the file system or storage.
+            </summary>
+            <param name="assistantName">The name of the assistant.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the assistant instructions.</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetActionAuth(System.String)">
+            <summary>
+            Reads the assistant action authorization from the file system or storage.
+            </summary>
+            <param name="assistantName">The name of the assistant.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the assistant action authorization.</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetFilesInOpenAPIFolder(System.String)">
+            <summary>
+            Retrieves the list of files in the OpenAPI folder for the specified assistant from the file system or storage.
+            </summary>
+            <param name="assistantName">The name of the assistant.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the list of files in the OpenAPI folder.</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetFile(System.String)">
+            <summary>
+            Retrieves a file from the file system or storage.
+            </summary>
+            <param name="filePath">The path of the file.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the byte array of the file content.</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetFilesInVectorStoreFolder(System.String,System.String)">
+            <summary>
+            Retrieves the list of files in the vector store folder for the specified assistant and vector store name from the file system or storage.
+            </summary>
+            <param name="assistantName">The name of the assistant.</param>
+            <param name="vectorStoreName">The name of the vector store.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the list of files in the vector store folder.</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetFilesInCodeInterpreterFolder(System.String)">
+            <summary>
+            Retrieves the list of files in the code interpreter folder for the specified assistant from the file system or storage.
+            </summary>
+            <param name="assistantName">The name of the assistant.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the list of files in the code interpreter folder.</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantDefinitions.EmbeddedResourceStorage.GetEmbeddedResource(System.String)">
+            <summary>
+            Looks for the resource and returns a string or null
+            </summary>
+            <param name="resourceName"></param>
+            <returns>The resource as a string or null</returns>
+        </member>
+        <member name="T:AntRunnerLib.AssistantRunner">
+            <summary>
+            Responsible for running assistant threads through interaction with various utilities.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.AssistantRunner.RunThread(AntRunnerLib.AssistantRunOptions,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Runs the assistant thread with the specified run options and configuration.
+            It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
+            </summary>
+            <param name="logger">The logger used to log information.</param>
+            <param name="assistantRunOptions">The options for running the assistant.</param>
+            <param name="config">The configuration for Azure OpenAI.</param>
+            <returns>The output of the thread run including possible additional run output from addtional messages when using the default evaluator</returns>
+        </member>
+        <member name="T:AntRunnerLib.AssistantRunnerState">
+            <summary>
+            State for use by the AssistantRunner orchestration
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.AssistantRunOptions">
+            <summary>
+            Initial data input from the API
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.AssistantId">
+            <summary>
+            Assistant to run Id
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.AzureOpenAIConfig">
+            <summary>
+            Endpoint and API key
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.Started">
+            <summary>
+            Time the orchestration started
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.ThreadId">
+            <summary>
+            ID of the thread created for the run
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.ThreadRunId">
+            <summary>
+            ID of the the run
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.AssistantDefinition">
+            <summary>
+            AssistantDefintion from storage for use in the API to create an assistant
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.RootRun">
+            <summary>
+            The first run in the chain before evaluation by ConversationUserProxy
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.ConversationUserProxyMessage">
+            <summary>
+            The message from the evaluator for coninuations 
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunnerState.CurrentRun">
+            <summary>
+            The current run when extended by the conversation proxy
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.AssistantRunOptions">
+            <summary>
+            Represents the options for running an assistant.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunOptions.AssistantName">
+            <summary>
+            Gets or sets the name of the assistant.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunOptions.Instructions">
+            <summary>
+            Gets or sets the instructions for the assistant.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunOptions.ThreadId">
+            <summary>
+            Gets or sets the thread identifier of a previous assistant run.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunOptions.Files">
+            <summary>
+            Future...
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunOptions.OauthUserAccessToken">
+            <summary>
+            Passed in from the starter. The web api gets the Authorization header value if it exists, otherwise null
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AssistantRunOptions.UseConversationEvaluator">
+            <summary>
+            If this is false, the orchestration will not use ConversationUserProxy
+            The suborchestration for ConversationUserProxy uses 'false'
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.AssistantUtility">
+            <summary>
+            Fetch and create assistants
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.AssistantUtility.GetAssistantId(System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Looks for an assistant and returns an Id if found, otherwise null
+            </summary>
+            <param name="assistantResourceName">The name of the embedded resource </param>
+            <param name="azureOpenAIConfig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantUtility.Create(System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Creates an assistant from a stored definition
+            </summary>
+            <param name="assistantName"></param>
+            <param name="azureOpenAIConfig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantUtility.Create(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Creates an assistant
+            </summary>
+            <param name="assistantCreateRequest"></param>
+            <param name="azureOpenAIConfig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantUtility.GetAssistantCreateRequest(System.String)">
+            <summary>
+            Reads the assistant definition from an embedded resource or storage
+            </summary>
+            <param name="assistantName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantUtility.ListAssistants(AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Lists the assistants in the OpenAI deployment
+            </summary>
+            <param name="azureOpenAIConfig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantUtility.DeleteAssistant(System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Delete an assistant by name
+            </summary>
+            <param name="assistantName"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AntRunnerLib.AzureOpenAIConfigFactory">
+            <summary>
+            Gets the configuration settings for connecting to the Azure OpenAI service.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.AzureOpenAIConfigFactory.#cctor">
+            <summary>
+            Private constructor that initializes the configuration by reading environment variables.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.AzureOpenAIConfigFactory.Get">
+            <summary>
+            Gets an instance of the <see cref="T:AntRunnerLib.AzureOpenAIConfig"/> class.
+            </summary>
+            <returns>A new instance of <see cref="T:AntRunnerLib.AzureOpenAIConfig"/>.</returns>
+        </member>
+        <member name="T:AntRunnerLib.AzureOpenAIConfig">
+            <summary>
+            Represents the configuration settings for connecting to the Azure OpenAI service.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AzureOpenAIConfig.ResourceName">
+            <summary>
+            The name of an Azure OpenAI Service
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AzureOpenAIConfig.ApiKey">
+            <summary>
+            The API key for the Azure OpenAI service.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AzureOpenAIConfig.ApiVersion">
+            <summary>
+            A valid API Version
+            See https://learn.microsoft.com/en-us/azure/ai-services/openai/reference
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.AzureOpenAIConfig.DeploymentId">
+            <summary>
+            The model e.g. "GPT-4o"
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.CodeInterpreterFiles">
+            <summary>
+            Provides methods to create code interpreter files for an assistant.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.CodeInterpreterFiles.CreateCodeInterpreterFiles(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Creates code interpreter files for a given assistant by uploading them to an OpenAI storage.
+            </summary>
+            <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
+            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains a list of uploaded file IDs.</returns>
+        </member>
+        <member name="T:AntRunnerLib.VectorStore">
+            <summary>
+            Provides methods to ensure and manage vector stores for an assistant.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.VectorStore.EnsureVectorStore(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Ensures that a vector store exists for the given assistant, creating it if necessary.
+            </summary>
+            <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
+            <param name="vectorStoreName">The name of the vector store.</param>
+            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the vector store ID.</returns>
+        </member>
+        <member name="M:AntRunnerLib.VectorStore.CreateVectorFiles(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Creates vector files for the given assistant and vector store.
+            Ensures that the files are uploaded and associated with the vector store.
+            </summary>
+            <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
+            <param name="vectorStoreName">The name of the vector store.</param>
+            <param name="vectorStoreId">The ID of the vector store.</param>
+            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+        </member>
+        <member name="M:AntRunnerLib.VectorStore.CheckForVectorStoreCompletion(System.Collections.Generic.Dictionary{System.String,System.String},AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Checks if the vector stores have completed their processing.
+            </summary>
+            <param name="vectorStores">A dictionary of vector store names and their IDs.</param>
+            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <returns>A task that represents the asynchronous operation. The task result indicates whether all vector stores have completed processing.</returns>
+        </member>
+        <member name="M:AntRunnerLib.VectorStore.GetFilePrefixFromName(System.String)">
+            <summary>
+            Generates a file prefix from the assistant name, replacing invalid filename characters.
+            </summary>
+            <param name="name">The name to be used as a prefix.</param>
+            <returns>A safe filename prefix derived from the assistant name.</returns>
+        </member>
+        <member name="T:AntRunnerLib.Functions.AuthType">
+            <summary>
+            Enumeration representing different types of authentication methods.
+            The enum is serialized as a JSON string.
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.Functions.DomainAuth">
+            <summary>
+            Represents domain-specific authorization configurations.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.Functions.DomainAuth.HostAuthorizationConfigurations">
+            <summary>
+            Gets or sets the dictionary mapping host names to their corresponding authorization configurations.
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.Functions.ActionAuthConfig">
+            <summary>
+            Represents the authorization configuration for a specific action.
+            This record holds various settings for different authentication types.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.Functions.ActionAuthConfig.AuthType">
+            <summary>
+            Gets or sets the type of authentication.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.Functions.ActionAuthConfig.HeaderKey">
+            <summary>
+            Gets or sets the header key name for the HTTP request.
+            Ignored when null during JSON serialization.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.Functions.ActionAuthConfig.HeaderValueEnvironmentVariable">
+            <summary>
+            Gets or sets the environment variable name for the header value.
+            Ignored when null during JSON serialization.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.Functions.ActionAuthConfig.OAuthClientId">
+            <summary>
+            Gets or sets the OAuth client ID.
+            Ignored when null during JSON serialization.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.Functions.ActionAuthConfig.OAuthClientSecretEnvironmentVariable">
+            <summary>
+            Gets or sets the environment variable name for the OAuth client secret.
+            Ignored when null during JSON serialization.
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.Identity.OAuthHelper">
+            <summary>
+            Gets an OAuth token for a given client ID and tenant ID.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.Identity.OAuthHelper.GetToken(System.String,System.String,System.String[],System.String)">
+            <summary>
+            Gets an OAuth token for a given client ID and tenant ID.
+            </summary>
+            <param name="clientId">The client ID, a unique identifier assigned to the client application.</param>
+            <param name="tenantId">The tenant ID, which identifies the organization or tenant.</param>
+            <param name="scopes">The permissions or scopes that the client application is requesting.</param>
+            <param name="redirectUri">The redirect URI where the authorization server will redirect the user after authentication. Default value is "http://localhost".</param>
+            <returns>The OAuth token as a string.</returns>
+        </member>
+        <member name="T:AntRunnerLib.ResourceType">
+            <summary>
+            Specifies the file's purpose
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.ResourceFile">
+            <summary>
+            Base64 file content for use by the assistant or thread
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ResourceFile.Name">
+            <summary>
+            File name
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ResourceFile.Base64Content">
+            <summary>
+            The file content as Base64 string
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ResourceFile.ResourceType">
+            <summary>
+            Specifies the file's purpose
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.ThreadRun">
+            <summary>
+            Represents a run of a thread within the assistant orchestrator.
+            This class holds identifiers for both the thread and the specific run instance.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRun.ThreadId">
+            <summary>
+            Gets or sets the identifier for the thread.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRun.ThreadRunId">
+            <summary>
+            Gets or sets the identifier for the specific run instance of the thread.
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.ThreadRunOutput">
+            <summary>
+            Represents the output of a thread run within the assistant orchestrator.
+            This class contains the status, output, and conversation messages of the thread run.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRunOutput.LastMessage">
+            <summary>
+            Gets or sets the output of the thread run.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRunOutput.Status">
+            <summary>
+            Gets or sets the status of the thread run.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRunOutput.ConversationMessages">
+            <summary>
+            Gets or sets the list of conversation messages that occurred during the thread run.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRunOutput.Dialog">
+            <summary>
+            Generates a dialog string from the conversation messages.
+            </summary>
+            <returns>A formatted dialog string representing the conversation.</returns>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRunOutput.ThreadId">
+            <summary>
+            Gets or sets the ID of the thread associated with the assistant.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadRunOutput.Annotations">
+            <summary>
+            File search and code interpreter annotations
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.ThreadConversationMessageType">
+            <summary>
+            Enum representing the type of a conversation message.
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.ThreadConversationMessage">
+            <summary>
+            Represents a message in the thread conversation.
+            This record holds the message type and content.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadConversationMessage.MessageType">
+            <summary>
+            Gets or sets the type of the message.
+            </summary>
+        </member>
+        <member name="P:AntRunnerLib.ThreadConversationMessage.Message">
+            <summary>
+            Gets or sets the content of the message.
+            </summary>
+        </member>
+        <member name="T:AntRunnerLib.ThreadUtility">
+            <summary>
+            Utility class for managing threads and runs within the assistant orchestrator.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.ThreadUtility.CreateThreadAndRun(System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Creates a thread and runs with the specified assistant ID and message.
+            </summary>
+            <param name="assistantId">The assistant ID.</param>
+            <param name="message">The message content.</param>
+            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <returns>A task representing the asynchronous operation, with a result of the created thread run.</returns>
+        </member>
+        <member name="M:AntRunnerLib.ThreadUtility.UpdateThreadAndRun(System.String,System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Updates a thread and runs it with the specified assistant ID and message.
+            </summary>
+            <param name="threadId">The thread ID.</param>
+            <param name="assistantId">The assistant ID.</param>
+            <param name="message">The message content.</param>
+            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <returns>A task representing the asynchronous operation, with a result of the updated thread run.</returns>
+        </member>
+        <member name="M:AntRunnerLib.ThreadUtility.GetRun(System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Retrieves the specified run of a thread.
+            </summary>
+            <param name="threadId">The thread ID.</param>
+            <param name="threadRunId">The thread run ID.</param>
+            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <returns>A task representing the asynchronous operation, with a result of the run response.</returns>
+        </member>
+        <member name="M:AntRunnerLib.ThreadUtility.GetThreadOutput(System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Retrieves the final output of the thread by aggregating runs and messages.
+            </summary>
+            <param name="threadId">The thread ID.</param>
+            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <returns>A task representing the asynchronous operation, with a result of the thread run output.</returns>
+        </member>
+        <member name="M:AntRunnerLib.ThreadUtility.DeleteThread(System.String,AntRunnerLib.AzureOpenAIConfig)">
+            <summary>
+            Deletes the specified thread.
+            </summary>
+            <param name="threadId">The thread ID.</param>
+            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:AntRunnerLib.ThreadUtility.PerformRunRequiredActions(System.String,OpenAI.ObjectModels.SharedModels.RunResponse,AntRunnerLib.AzureOpenAIConfig,System.String)">
+            <summary>
+            Performs the required actions for the given run.
+            </summary>
+            <param name="assistantName">The assistant name.</param>
+            <param name="currentRun">The current run response.</param>
+            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="oAuthUserAccessToken">Optional: The OAuth user access token.</param>
+        </member>
+        <member name="M:AntRunnerLib.ThreadUtility.EnsureRequestBuilderCache(System.String,System.String)">
+            <summary>
+            Ensures that the request builder cache is populated for the given assistant.
+            </summary>
+            <param name="assistantName">The assistant name.</param>
+            <param name="assistantId">The assistant ID.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="T:FunctionCalling.ActionRequestBuilder">
+            <summary>
+            Represents an action request to make HTTP calls.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.Domain">
+            <summary>
+            Gets or sets the domain of the request.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.Path">
+            <summary>
+            Gets or sets the path of the request.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.Method">
+            <summary>
+            Gets or sets the HTTP method used in the request.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.Operation">
+            <summary>
+            Gets or sets the operation name of the request.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.IsConsequential">
+            <summary>
+            Gets or sets a value indicating whether the request is consequential.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.ContentType">
+            <summary>
+            Gets or sets the content type of the request.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.AuthHeaders">
+            <summary>
+            Gets the authentication headers for the request.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.Params">
+            <summary>
+            Gets or sets the additional parameters for the request.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.oAuth">
+            <summary>
+            Gets or sets a value indicating whether the request uses OAuth for authentication.
+            </summary>
+        </member>
+        <member name="M:FunctionCalling.ActionRequestBuilder.#ctor(System.String,System.String,System.String,System.String,System.Boolean,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FunctionCalling.ActionRequestBuilder"/> class with specified parameters.
+            </summary>
+            <param name="domain">The domain of the request.</param>
+            <param name="path">The path of the request.</param>
+            <param name="method">The HTTP method used in the request.</param>
+            <param name="operation">The operation name of the request.</param>
+            <param name="isConsequential">Indicates whether the request is consequential.</param>
+            <param name="contentType">The content type of the request.</param>
+            <param name="authHeaders">The authentication headers for the request.</param>
+            <param name="oAuth">Indicates whether the request uses OAuth for authentication.</param>
+        </member>
+        <member name="M:FunctionCalling.ActionRequestBuilder.ExecuteAsync(System.String)">
+            <summary>
+            Executes the action request asynchronously.
+            </summary>
+            <param name="oAuthUserAccessToken">Optional OAuth user access token for authentication.</param>
+        </member>
+        <member name="M:FunctionCalling.ActionRequestBuilder.CreateURL(System.String,System.String)">
+            <summary>
+            Creates the complete URL by combining the domain and path.
+            </summary>
+            <param name="domain">The domain of the request.</param>
+            <param name="path">The path of the request.</param>
+            <returns>The complete URL as a string.</returns>
+        </member>
+        <member name="T:FunctionCalling.OpenApiHelper">
+            <summary>
+            Provides helper methods for validating and parsing OpenAPI specifications.
+            </summary>
+        </member>
+        <member name="M:FunctionCalling.OpenApiHelper.ValidateAndParseOpenAPISpec(System.String)">
+            <summary>
+            Validates and parses the OpenAPI specification string.
+            </summary>
+            <param name="specString">The OpenAPI specification string in JSON or YAML format.</param>
+            <returns>A <see cref="T:FunctionCalling.ValidationResult"/> indicating the validation result.</returns>
+        </member>
+        <member name="M:FunctionCalling.OpenApiHelper.GetToolDefinitions(System.Text.Json.JsonDocument)">
+            <summary>
+            Extracts tool definitions from the OpenAPI specification.
+            </summary>
+            <param name="openapiSpec">The OpenAPI specification as a <see cref="T:System.Text.Json.JsonDocument"/>.</param>
+            <returns>A list of <see cref="T:OpenAI.ObjectModels.RequestModels.ToolDefinition"/> objects extracted from the OpenAPI spec.</returns>
+        </member>
+        <member name="M:FunctionCalling.OpenApiHelper.GetRequestBuilders(System.Text.Json.JsonDocument,System.Collections.Generic.List{OpenAI.ObjectModels.RequestModels.ToolDefinition},System.String)">
+            <summary>
+            Generates request builders based on the OpenAPI specification.
+            </summary>
+            <param name="openapiSpec">The OpenAPI specification as a <see cref="T:System.Text.Json.JsonDocument"/>.</param>
+            <param name="toolDefinitions">The list of tool definitions extracted from the OpenAPI spec.</param>
+            <param name="assistantName">The assistant</param>
+            <returns>A dictionary of <see cref="T:FunctionCalling.ActionRequestBuilder"/> objects with operation IDs as keys.</returns>
+        </member>
+        <member name="T:FunctionCalling.ValidationResult">
+            <summary>
+            Represents the result of OpenAPI spec validation.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ValidationResult.Status">
+            <summary>
+            Gets or sets the status of the validation.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ValidationResult.Message">
+            <summary>
+            Gets or sets the validation error or success message.
+            </summary>
+        </member>
+        <member name="P:FunctionCalling.ValidationResult.Spec">
+            <summary>
+            Gets or sets the parsed OpenAPI specification.
+            </summary>
+        </member>
+    </members>
+</doc>

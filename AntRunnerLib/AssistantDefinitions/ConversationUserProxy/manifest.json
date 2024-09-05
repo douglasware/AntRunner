@@ -1,0 +1,14 @@
+{
+  "name": "ConversationUserProxy",
+  "description": "Evaluates conversations for completeness and acts as the user if necessary",
+  "instructions": "",
+  "tools": [
+  ],
+  "tool_resources": {},
+  "top_p": 0.95,
+  "response_format": "auto",
+  "metadata": {
+  },
+  "model": "gpt-4o-mini",
+  "temperature": 0.7
+}

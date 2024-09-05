@@ -1,0 +1,24 @@
+{
+  "model": "gpt-4",
+  "name": "name",
+  "description": "Description",
+  "instructions": "Instructions",
+  "tools": [
+    {
+      "function": {
+        "description": "Gets the current weather at the user\u0027s location",
+        "name": "get_current_weather"
+      },
+      "type": "function"
+    },
+    { "type": "code_interpreter" }
+  ],
+  "tool_resources": {
+    "code_interpreter": { "file_ids": [ "A", "B" ] },
+    "file_search": { "vector_store_ids": [ "1", "2" ] }
+  },
+  "metadata": { "A": "B" },
+  "temperature": 1,
+  "top_p": 1,
+  "response_format": "auto"
+}

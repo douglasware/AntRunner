@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AssistantDefinitions\ConversationUserProxy\instructions.md" />
+    <None Remove="AssistantDefinitions\ConversationUserProxy\manifest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AssistantDefinitions\ConversationUserProxy\instructions.md">
+      <LogicalName>ConversationUserProxy.md</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssistantDefinitions\ConversationUserProxy\manifest.json">
+      <LogicalName>ConversationUserProxy.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.64.0" />
+    <PackageReference Include="YamlDotNet" Version="16.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenAI.SDK\OpenAI.csproj" />
+  </ItemGroup>
+
+</Project>

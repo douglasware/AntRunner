@@ -1,0 +1,279 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.23.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <LogicalName>SillyPirate</LogicalName>
+    </None>
+    <None Update="AssistantDefinitions\NoteAntsTest\OpenAPI\auth.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\NoteAntsTest\instructions.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\NoteAntsTest\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\NoteAntsTest\OpenAPI\graph.microsoft.com.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\CodeInterpreter\data_books.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\CodeInterpreter\retrieve_books.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <LogicalName>SillyPirate</LogicalName>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\211101-MCK-Q2FY22-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\220202-MCK-Q3FY22-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\220505-MCK-Q4FY22-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\220803-MCK-Q1FY23-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\230508-MCK-Q4FY23-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\230802-MCK-Q1FY24-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\231101-MCK-Q2FY24-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-Q1FY21-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-Q1FY22-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-Q2-FY23-Earnings-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-Q2FY21-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-Q3-FY24-Earnings-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-Q4-FY24-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-Q4FY21-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\MCK-US-20230201-2761065-C.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q1-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q1-FY20-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q2-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q2-FY20-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q3-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q3FY20-MCK-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q3FY21-MCK-Earnings-Call-Transcript_FINAL.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q4-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\sillypirate\VectorStores\McKessonTranscripts\Q4FY20-MCK-Corrected-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\manifest.json">
+      <LogicalName>SillyPirate</LogicalName>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\211101-MCK-Q2FY22-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\220202-MCK-Q3FY22-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\220505-MCK-Q4FY22-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\220803-MCK-Q1FY23-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\230508-MCK-Q4FY23-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\230802-MCK-Q1FY24-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\231101-MCK-Q2FY24-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-Q1FY21-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-Q1FY22-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-Q2-FY23-Earnings-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-Q2FY21-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-Q3-FY24-Earnings-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-Q4-FY24-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-Q4FY21-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\MCK-US-20230201-2761065-C.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q1-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q1-FY20-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q2-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q2-FY20-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q3-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q3FY20-MCK-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q3FY21-MCK-Earnings-Call-Transcript_FINAL.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q4-FY19-Earnings-Call-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonMDTranscripts\VectorStores\McKessonMDTranscripts\Q4FY20-MCK-Corrected-Transcript.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\211101-MCK-Q2FY22-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\220202-MCK-Q3FY22-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\220505-MCK-Q4FY22-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\220803-MCK-Q1FY23-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\230508-MCK-Q4FY23-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\230802-MCK-Q1FY24-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\231101-MCK-Q2FY24-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-Q1FY21-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-Q1FY22-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-Q2-FY23-Earnings-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-Q2FY21-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-Q3-FY24-Earnings-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-Q4-FY24-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-Q4FY21-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\MCK-US-20230201-2761065-C.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q1-FY19-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q1-FY20-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q2-FY19-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q2-FY20-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q3-FY19-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q3FY20-MCK-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q3FY21-MCK-Earnings-Call-Transcript_FINAL.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q4-FY19-Earnings-Call-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q4FY20-MCK-Corrected-Transcript.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\TranscriptAnts\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <LogicalName>SillyPirate</LogicalName>
+    </None>
+    <None Update="AssistantDefinitions\Web Search Test\OpenAPI\auth.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\Web Search Test\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\Web Search Test\OpenAPI\api.bing.microsoft.com.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\Web Search Test\instructions.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

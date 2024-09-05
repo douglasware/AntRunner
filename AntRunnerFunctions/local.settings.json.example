@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ASSISTANTS_STORAGE_CONNECTION": "UseDevelopmentStorage=true",
+    "ASSISTANTS_STORAGE_CONTAINER": "assistants",
+    "AZURE_OPENAI_RESOURCE": "ai-friendo",
+    "AZURE_OPENAI_API_KEY": "yourkey",
+    "AZURE_OPENAI_DEPLOYMENT": "gpt-4o",
+    "AZURE_OPENAI_API_VERSION": "2024-05-01-preview",
+    "SOME_API_KEY": "26790sdfgjkl78902345sdfgjkl"
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SearchIndexClient",
+    "version": "2024-05-01-preview",
+    "description": "Client that can be used to query an index and upload, merge, or delete documents."
+  },
+  "servers": [
+    {
+      "url": "https://domainbrainsearch.search.windows.net"
+    }
+  ],
+  "paths": {
+    "/indexes/mck-transcripts-md/docs": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "operationId": "Search-Transcripts",
+        "externalDocs": {
+          "url": "https://docs.microsoft.com/rest/api/searchservice/Search-Documents"
+        },
+        "x-ms-examples": {
+          "SearchIndexSearchDocumentsGet": {
+            "$ref": "./examples/SearchIndexSearchDocumentsGet.json"
+          }
+        },
+        "description": "Searches for documents in the index.",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "A full-text search query expression; Use \\\"*\\\" or omit this parameter to match all documents.",
+            "x-ms-client-name": "SearchText"
+          },
+          {
+            "name": "$count",
+            "in": "query",
+            "type": "boolean",
+            "description": "A value that specifies whether to fetch the total count of results. Default is false. Setting this value to true may have a performance impact. Note that the count returned is an approximation.",
+            "x-nullable": false,
+            "x-ms-client-name": "IncludeTotalResultCount",
+            "x-ms-parameter-grouping": {
+              "name": "SearchOptions"
+            }
+          },
+          {
+            "name": "queryType",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "simple"
+            ],
+            "description": "Required. Must always be: simple",
+            "x-ms-parameter-grouping": {
+              "name": "SearchOptions"
+            }
+          },
+          {
+            "name": "$top",
+            "in": "query",
+            "type": "integer",
+            "format": "int32",
+            "description": "Required. Must always be 5",
+            "x-ms-parameter-grouping": {
+              "name": "SearchOptions"
+            }
+          },
+          {
+            "name": "api-version",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "2021-04-30-Preview"
+            ],
+            "description": "Required. Must always be: 2021-04-30-Preview",
+            "x-ms-parameter-grouping": {
+              "name": "SearchOptions"
+            }
+          },
+          {
+            "$ref": "#/parameters/ClientRequestIdParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response containing documents that match the search criteria.",
+            "schema": {
+              "$ref": "#/definitions/SearchDocumentsResult"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "../../../../../common-types/data-plane/v1/types.json#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SearchRequest": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "A full-text search query expression; Use '*' or omit this parameter to match all documents."
+          },
+          "searchFields": {
+            "type": "string",
+            "description": "The comma-separated list of field names to which to scope the full-text search."
+          }
+        }
+      },
+      "SearchDocumentsResult": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "@search.score": {
+            "type": "number",
+            "description": "The relevance score of the document compared to other documents returned by the query."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "code": {
+            "type": "string",
+            "description": "Error code"
+          }
+        }
+      }
+    }
+  }
+}
