@@ -171,7 +171,7 @@ namespace AntRunnerLib
 
                 if (options != null)
                 {
-
+                    options.Name = assistantName;
                     var instructions = await GetInstructions(assistantName);
                     if (instructions != null)
                     {

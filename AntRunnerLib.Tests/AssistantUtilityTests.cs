@@ -18,7 +18,7 @@ namespace AntRunnerLib
         public async Task GetAssistantCreateRequest_ReturnsOptions_WhenResourceIsEmbedded()
         {
             // Arrange
-            string assistantName = "SillyPirate"; // Ensure this matches the embedded resource name
+            string assistantName = "ConversationUserProxy"; 
 
             // Act
             var options = await AssistantUtility.GetAssistantCreateRequest(assistantName);

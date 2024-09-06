@@ -59,7 +59,7 @@ namespace AntRunnerLib
             return files;
         }
 
-        public async Task<FileContentResponse<byte[]?>> RetrieveFileContent(string fileId, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<FileContentResponse<byte[]?>> RetrieveFileContent(string fileId, AzureOpenAIConfig? azureOpenAIConfig)
         {
             var client = GetOpenAIClient(azureOpenAIConfig);
             return await client.RetrieveFileContent<byte[]>(fileId);

@@ -258,10 +258,6 @@
     <None Update="AssistantDefinitions\McKessonPDFTranscripts\VectorStores\McKessonPDFTranscripts\Q4FY20-MCK-Corrected-Transcript.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="AssistantDefinitions\TranscriptAnts\manifest.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <LogicalName>SillyPirate</LogicalName>
-    </None>
     <None Update="AssistantDefinitions\LocalCodeTool\instructions.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -269,6 +265,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="AssistantDefinitions\LocalCodeTool\OpenAPI\tool.localhost.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\Cat Facts\instructions.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\Cat Facts\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\Cat Facts\OpenAPI\cat-fact.herokuapp.com.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="AssistantDefinitions\Web Search Test\OpenAPI\auth.json">

@@ -1,0 +1,15 @@
+{
+  "name": "Cat Facts",
+  "description": "I look up facts about cats and can also write Python code!",
+  "instructions": "",
+  "tools": [
+    { "type": "code_interpreter" }
+  ],
+  "tool_resources": {},
+  "top_p": 0.95,
+  "response_format": "auto",
+  "metadata": {
+  },
+  "model": "gpt-4o",
+  "temperature": 0.7
+}
