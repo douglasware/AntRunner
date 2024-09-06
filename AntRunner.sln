@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntRunnerLib.Tests", "AntRu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestAssistant", "TestAssistant\TestAssistant.csproj", "{38830ADA-65E5-4213-B78B-5D7ACB2EE671}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenAI", "OpenAI.SDK\OpenAI.csproj", "{81BCF064-EE53-4F6B-8158-19128AEA5654}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntRunnerPowershell", "AntRunnerPowershell\AntRunnerPowershell.csproj", "{E15D263D-B7A8-439B-9C14-A09D628ADB73}"
 EndProject
 Global
@@ -37,10 +35,6 @@ Global
 		{38830ADA-65E5-4213-B78B-5D7ACB2EE671}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38830ADA-65E5-4213-B78B-5D7ACB2EE671}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38830ADA-65E5-4213-B78B-5D7ACB2EE671}.Release|Any CPU.Build.0 = Release|Any CPU
-		{81BCF064-EE53-4F6B-8158-19128AEA5654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81BCF064-EE53-4F6B-8158-19128AEA5654}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81BCF064-EE53-4F6B-8158-19128AEA5654}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81BCF064-EE53-4F6B-8158-19128AEA5654}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E15D263D-B7A8-439B-9C14-A09D628ADB73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E15D263D-B7A8-439B-9C14-A09D628ADB73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E15D263D-B7A8-439B-9C14-A09D628ADB73}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -13,7 +13,6 @@ namespace AntRunnerLib
         /// Runs the assistant thread with the specified run options and configuration.
         /// It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
         /// </summary>
-        /// <param name="logger">The logger used to log information.</param>
         /// <param name="assistantRunOptions">The options for running the assistant.</param>
         /// <param name="config">The configuration for Azure OpenAI.</param>
         /// <returns>The output of the thread run including possible additional run output from addtional messages when using the default evaluator</returns>
@@ -70,7 +69,7 @@ namespace AntRunnerLib
                             };
 
                             // Recursively run the conversation evaluator
-                            var evaluatorOutput = (await RunThread(evaluatorOptions, config)).LastMessage ?? "";
+                            var evaluatorOutput = (await RunThread(evaluatorOptions, config))?.LastMessage ?? "";
                             if (!evaluatorOutput.Contains("End Conversation", StringComparison.OrdinalIgnoreCase))
                             {
                                 // Update the thread and run it again with the evaluator output
@@ -111,7 +110,7 @@ namespace AntRunnerLib
             } while (!completed);
 
             // Delete the thread after completion
-            await ThreadUtility.DeleteThread(ids.ThreadId, config);
+            //await ThreadUtility.DeleteThread(ids.ThreadId, config);
 
             return runResults;
         }

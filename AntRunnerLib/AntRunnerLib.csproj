@@ -7,10 +7,10 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>AntRunnner Library</Title>
-    <Version>0.1</Version>
+    <Version>0.5</Version>
     <Authors>Doug Ware</Authors>
     <Company>Elumenotion</Company>
-    <Description>Makes using the Assistants API on Open AI or Azure API easy</Description>
+    <Description>Makes using the Assistants API on Open AI or Azure API easy. </Description>
     <PackageProjectUrl>https://github.com/douglasware/AntRunner</PackageProjectUrl>
     <PackageIcon>favicon-32x32.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -21,6 +21,8 @@
   <ItemGroup>
     <None Remove="AssistantDefinitions\ConversationUserProxy\instructions.md" />
     <None Remove="AssistantDefinitions\ConversationUserProxy\manifest.json" />
+    <None Remove="OpenAI\Tokenizer\GPT3\encoder.json" />
+    <None Remove="OpenAI\Tokenizer\GPT3\vocab.bpe" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +32,8 @@
     <EmbeddedResource Include="AssistantDefinitions\ConversationUserProxy\manifest.json">
       <LogicalName>ConversationUserProxy.json</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="OpenAI\Tokenizer\GPT3\encoder.json" />
+    <EmbeddedResource Include="OpenAI\Tokenizer\GPT3\vocab.bpe" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,10 +51,10 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.64.0" />
     <PackageReference Include="YamlDotNet" Version="16.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\OpenAI.SDK\OpenAI.csproj" />
-  </ItemGroup>
-
+  <PropertyGroup>
+    <NoWarn>1701;1702;1529;1591</NoWarn>
+  </PropertyGroup>
 </Project>
