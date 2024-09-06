@@ -3,9 +3,18 @@ using OpenAI;
 
 namespace AntRunnerLib
 {
-    internal class ClientUtility
+
+    /// <summary>
+    /// Utility class for managing the OpenAI client.
+    /// </summary>
+    public class ClientUtility
     {
-        internal static OpenAIService GetOpenAIClient(AzureOpenAIConfig? azureOpenAIConfig)
+        /// <summary>
+        /// Gets the OpenAI client with the specified configuration.
+        /// </summary>
+        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <returns>The OpenAI client.</returns>
+        public static OpenAIService GetOpenAIClient(AzureOpenAIConfig? azureOpenAIConfig)
         {
             return new OpenAIService(new OpenAiOptions()
             {

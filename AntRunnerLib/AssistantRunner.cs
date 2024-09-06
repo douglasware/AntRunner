@@ -110,7 +110,7 @@ namespace AntRunnerLib
             } while (!completed);
 
             // Delete the thread after completion
-            //await ThreadUtility.DeleteThread(ids.ThreadId, config);
+            await ThreadUtility.DeleteThread(ids.ThreadId, config);
 
             return runResults;
         }

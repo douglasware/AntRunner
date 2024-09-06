@@ -158,19 +158,21 @@ namespace AntRunnerLib
                     }
                     else // run_step.Type == "tool_calls"
                     {
-                        var toolCall = runStep.StepDetails!.ToolCalls[0];
-                        if (toolCall.Type == "code_interpreter")
+                        foreach (var toolCall in runStep.StepDetails!.ToolCalls)
                         {
-                            output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I ran this code:\n```\n{((RunStepDetailsToolCallsCodeObject)toolCall).CodeInterpreterDetails.Input}\n```" });
-                        }
-                        else if (toolCall.Type == "file_search")
-                        {
-                            output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = "I searched my knowledge base for the answer." });
-                        }
-                        else
-                        {
-                            var functionCall = (RunStepDetailsToolCallsFunctionObject)toolCall;
-                            output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I called the tool named {functionCall.Function.Name} with these arguments:\n```\n{functionCall.Function.Arguments}\n```\nand got this result:\n```\n{functionCall.Function.Output}\n```" });
+                            if (toolCall.Type == "code_interpreter")
+                            {
+                                output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I ran this code:\n```\n{((RunStepDetailsToolCallsCodeObject)toolCall).CodeInterpreterDetails.Input}\n```" });
+                            }
+                            else if (toolCall.Type == "file_search")
+                            {
+                                output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = "I searched my knowledge base for the answer." });
+                            }
+                            else
+                            {
+                                var functionCall = (RunStepDetailsToolCallsFunctionObject)toolCall;
+                                output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I called the tool named {functionCall.Function.Name} with these arguments:\n```\n{functionCall.Function.Arguments}\n```\nand got this result:\n```\n{functionCall.Function.Output}\n```" });
+                            }
                         }
                     }
                 }
