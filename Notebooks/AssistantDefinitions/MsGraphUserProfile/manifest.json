@@ -1,0 +1,13 @@
+{
+  "name": "MsGraphUserProfile",
+  "description": "Demonstrates oauth and msgraph",
+  "instructions": "",
+  "tools": [],
+  "tool_resources": {},
+  "top_p": 0.95,
+  "response_format": "auto",
+  "metadata": {
+  },
+  "model": "gpt-4o",
+  "temperature": 0.7
+}
