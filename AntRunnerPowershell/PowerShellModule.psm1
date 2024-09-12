@@ -9,7 +9,6 @@ $assembliesPath = Join-Path -Path $modulePath -ChildPath "assemblies"
 
 # Define the assembly paths
 $assemblyPaths = @(
-    (Join-Path -Path $assembliesPath -ChildPath "OpenAI.dll"),
     (Join-Path -Path $assembliesPath -ChildPath "AntRunnerLib.dll")
 )
 
@@ -25,7 +24,7 @@ $assemblyPaths = @(
     An array of paths to the assemblies that need to be loaded.
 
 .EXAMPLE
-    $assemblyPaths = @("path\to\OpenAI.dll", "path\to\AntRunnerLib.dll")
+    $assemblyPaths = @("path\to\AntRunnerLib.dll")
     Load-Assemblies -AssemblyPaths $assemblyPaths
 
     This example loads the OpenAI.dll and AntRunnerLib.dll assemblies.
@@ -88,10 +87,10 @@ function Is-AssemblyLoaded {
 # Load the required assemblies
 Load-Assemblies -AssemblyPaths $assemblyPaths
 
-if ((Is-AssemblyLoaded -AssemblyName "AntRunnerLib") -and (Is-AssemblyLoaded -AssemblyName "OpenAI")) {
-    Write-Verbose "Both AntRunnerLib and OpenAI assemblies are loaded."
+if (Is-AssemblyLoaded -AssemblyName "AntRunnerLib") {
+    Write-Verbose "AntRunnerLib is loaded."
 } else {
-    Write-Warning "One or both of the required assemblies are not loaded."
+    Write-Warning "AntRunnerLib is not loaded."
 }
 
 <#
