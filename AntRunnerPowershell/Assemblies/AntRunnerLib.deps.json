@@ -6,11 +6,12 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "AntRunnerLib/0.1": {
+      "AntRunnerLib/0.6.5": {
         "dependencies": {
           "Azure.Storage.Blobs": "12.21.2",
+          "Microsoft.Extensions.Http": "8.0.0",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
           "Microsoft.Identity.Client": "4.64.0",
-          "OpenAI": "1.0.0",
           "YamlDotNet": "16.1.0"
         },
         "runtime": {
@@ -285,20 +286,11 @@
             "fileVersion": "16.1.0.0"
           }
         }
-      },
-      "OpenAI/1.0.0": {
-        "dependencies": {
-          "Microsoft.Extensions.Http": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0"
-        },
-        "runtime": {
-          "OpenAI.dll": {}
-        }
       }
     }
   },
   "libraries": {
-    "AntRunnerLib/0.1": {
+    "AntRunnerLib/0.6.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -498,11 +490,6 @@
       "sha512": "sha512-ywYsFpZi0SKeQ+wrg1V7wZIz/ym0QJKN8IOPi06vYOgTMwHlQEr02BV5yC9IUXOBzD/pbYTuVflcObz2WdzSOw==",
       "path": "yamldotnet/16.1.0",
       "hashPath": "yamldotnet.16.1.0.nupkg.sha512"
-    },
-    "OpenAI/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
     }
   }
 }

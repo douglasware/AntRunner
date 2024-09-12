@@ -10,27 +10,38 @@ public static class Settings
 {
     private const string DefaultConfigFile = "config/settings.json";
     private const bool StoreConfigOnFile = true;
-    private const string DefaultModel = "gpt-3.5-turbo";
+    private const string DefaultModel = "gpt-4o";
 
     private static readonly Dictionary<string, string> SettingsKeys = new Dictionary<string, string>
     {
         { "TypeKey", "type" },
         { "ModelKey", "AZURE_OPENAI_DEPLOYMENT" },
-        { "EndpointKey", "AZURE_OPENAI_RESOURCE" },
-        { "SecretKey", "AZURE_OPENAI_API_KEY" },
+        { "AzureOpenAIResourceName", "AZURE_OPENAI_RESOURCE" },
+        { "ApiKey", "AZURE_OPENAI_API_KEY" },
         { "OrgKey", "org" },
         { "ApiVersionKey", "AZURE_OPENAI_API_VERSION" },
+        { "AssistantDefinitionsPath", "ASSISTANTS_BASE_FOLDER_PATH" },
         { "SearchApiKey", "SEARCH_API_KEY" }
+    };
+
+    private static readonly Dictionary<string, string> SettingsDefaults = new Dictionary<string, string>
+    {
+        { "TypeKey", "azure" },
+        { "ModelKey", DefaultModel },
+        { "ApiVersionKey", "2024-05-01-preview" },
+        { "OrgKey", "NONE" },
+        { "AssistantDefinitionsPath", $"{Directory.GetCurrentDirectory()}\\AssistantDefinitions" }
     };
 
     private static readonly Dictionary<string, string> SettingsPrompts = new Dictionary<string, string>
     {
-        { "TypeKey", "Please enter the type (azure/openai)" },
-        { "ModelKey", "Please enter your Azure OpenAI deployment name" },
-        { "EndpointKey", "Please enter your Azure OpenAI endpoint" },
-        { "SecretKey", "Please enter your Azure OpenAI API key" },
+        { "TypeKey", $"Please enter the type (azure/openai) (default:{SettingsDefaults["TypeKey"]})" },
+        { "ModelKey", $"Please enter your Azure OpenAI model deployment name, e.g. gpt-4o (default:{SettingsDefaults["ModelKey"]})" },
+        { "AzureOpenAIResourceName", "Please enter your Azure OpenAI service name, e.g. my-openai-service" },
+        { "ApiKey", "Please enter your Azure OpenAI API key" },
+        { "AssistantDefinitionsPath", $"Please enter the assistant definitions path (default:{SettingsDefaults["AssistantDefinitionsPath"]})" },
         { "OrgKey", "Please enter your OpenAI Organization Id (enter 'NONE' to skip)" },
-        { "ApiVersionKey", "Please enter your Azure OpenAI API version" },
+        { "ApiVersionKey", $"Please enter your Azure OpenAI API version (default:{SettingsDefaults["ApiVersionKey"]})" },
         { "SearchApiKey", "Please enter your search API key" }
     };
 
@@ -48,13 +59,27 @@ public static class Settings
         if (string.IsNullOrWhiteSpace(settings[settingKey]))
         {
             var prompt = SettingsPrompts.ContainsKey(settingKey) ? SettingsPrompts[settingKey] : $"Please enter your {SettingsKeys[settingKey]}";
-            if (settingKey == "SecretKey")
+            if (settingKey == "ApiKey" || settingKey == "SearchApiKey")
             {
                 settings[settingKey] = (await InteractiveKernel.GetPasswordAsync(prompt)).GetClearTextPassword();
             }
             else
             {
-                settings[settingKey] = await InteractiveKernel.GetInputAsync(prompt);
+                try
+                {
+                    settings[settingKey] = await InteractiveKernel.GetInputAsync(prompt);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("1");
+                    Console.WriteLine(SettingsDefaults[settingKey]);
+                    if(SettingsDefaults[settingKey] != null && string.IsNullOrWhiteSpace(settings[settingKey]))
+                    {
+                        Console.WriteLine("2");
+                        settings[settingKey] = SettingsDefaults[settingKey];
+                    }
+                    else throw;
+                }
             }
         }
 
