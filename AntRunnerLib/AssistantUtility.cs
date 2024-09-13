@@ -12,7 +12,7 @@ using static AntRunnerLib.ClientUtility;
 namespace AntRunnerLib
 {
     /// <summary>
-    /// Fetch and create assistants
+    /// Fetch and autoCreate assistants
     /// </summary>
     public static class AssistantUtility
     {
@@ -24,8 +24,9 @@ namespace AntRunnerLib
         /// </summary>
         /// <param name="assistantResourceName">The name of the embedded resource </param>
         /// <param name="azureOpenAIConfig"></param>
+        /// /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
         /// <returns></returns>
-        public static async Task<string?> GetAssistantId(string assistantResourceName, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<string?> GetAssistantId(string assistantResourceName, AzureOpenAIConfig? azureOpenAIConfig, bool autoCreate)
         {
             // I am on the fence about this design, but the intention is to allow invocation of an assitant if it exists in the endpoint
             // even if the definition is not stored anywhere used by the orchestrator
@@ -56,7 +57,10 @@ namespace AntRunnerLib
             }
 
             var assistant = allAssistants.FirstOrDefault(o => o.Name == assistantName);
-
+            if(assistantDefinition != null && assistant == null && autoCreate)
+            {
+                return await Create(assistantDefinition, azureOpenAIConfig);
+            }
             if (assistant == null && assistantDefinition == null)
             {
                 throw new InvalidOperationException($"Assistant {assistantName} does not exist and no definition was found");
@@ -73,7 +77,7 @@ namespace AntRunnerLib
         /// <returns></returns>
         public static async Task<string> Create(string assistantName, AzureOpenAIConfig? azureOpenAIConfig)
         {
-            var assistantId = await GetAssistantId(assistantName, azureOpenAIConfig);
+            var assistantId = await GetAssistantId(assistantName, azureOpenAIConfig, false);
 
             if (string.IsNullOrWhiteSpace(assistantId))
             {
@@ -210,6 +214,7 @@ namespace AntRunnerLib
         /// Delete an assistant by name
         /// </summary>
         /// <param name="assistantName"></param>
+        /// <param name="azureOpenAIConfig"></param>
         /// <returns></returns>
         public static async Task DeleteAssistant(string assistantName, AzureOpenAIConfig? azureOpenAIConfig)
         {

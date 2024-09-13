@@ -100,7 +100,7 @@ namespace AntRunnerFunctions
                 var validationContext = new ValidationContext(assistantRunOptions, serviceProvider: null, items: null);
                 Validator.ValidateObject(assistantRunOptions, validationContext, validateAllProperties: true);
 
-                var assistantId = await AssistantUtility.GetAssistantId(assistantRunOptions!.AssistantName, config);
+                var assistantId = await AssistantUtility.GetAssistantId(assistantRunOptions!.AssistantName, config, false);
                 if (assistantId == null)
                 {
                     var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
@@ -108,7 +108,7 @@ namespace AntRunnerFunctions
                     return notFoundResponse;
                 }
 
-                var output = await AntRunnerLib.AssistantRunner.RunThread(assistantRunOptions, config);
+                var output = await AntRunnerLib.AssistantRunner.RunThread(assistantRunOptions, config, false);
 
                 var successResponse = req.CreateResponse(HttpStatusCode.OK);
                 await successResponse.WriteAsJsonAsync(output);

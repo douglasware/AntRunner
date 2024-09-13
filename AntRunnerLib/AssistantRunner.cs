@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace AntRunnerLib
 {
-        /// <summary>
+    /// <summary>
     /// Responsible for running assistant threads through interaction with various utilities.
     /// </summary>
     public class AssistantRunner
@@ -15,11 +15,12 @@ namespace AntRunnerLib
         /// </summary>
         /// <param name="assistantRunOptions">The options for running the assistant.</param>
         /// <param name="config">The configuration for Azure OpenAI.</param>
+        /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
         /// <returns>The output of the thread run including possible additional run output from addtional messages when using the default evaluator</returns>
-        public static async Task<ThreadRunOutput?> RunThread(AssistantRunOptions assistantRunOptions, AzureOpenAIConfig config)
+        public static async Task<ThreadRunOutput?> RunThread(AssistantRunOptions assistantRunOptions, AzureOpenAIConfig config, bool autoCreate = true)
         {
             // Retrieve the assistant ID using the assistant name from the configuration
-            var assistantId = await AssistantUtility.GetAssistantId(assistantRunOptions!.AssistantName, config);
+            var assistantId = await AssistantUtility.GetAssistantId(assistantRunOptions!.AssistantName, config, autoCreate);
             if (assistantId == null)
             {
                 throw new ArgumentNullException(nameof(assistantId));
