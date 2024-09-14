@@ -24,7 +24,7 @@ namespace AntRunnerLib
         /// </summary>
         /// <param name="assistantResourceName">The name of the embedded resource </param>
         /// <param name="azureOpenAIConfig"></param>
-        /// /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
+        /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
         /// <returns></returns>
         public static async Task<string?> GetAssistantId(string assistantResourceName, AzureOpenAIConfig? azureOpenAIConfig, bool autoCreate)
         {
@@ -32,6 +32,7 @@ namespace AntRunnerLib
             // even if the definition is not stored anywhere used by the orchestrator
             var assistantDefinition = await GetAssistantCreateRequest(assistantResourceName);
             var assistantName = assistantDefinition?.Name ?? assistantResourceName;
+
             var client = GetOpenAIClient(azureOpenAIConfig);
 
             var allAssistants = new List<AssistantResponse>();
@@ -59,6 +60,7 @@ namespace AntRunnerLib
             var assistant = allAssistants.FirstOrDefault(o => o.Name == assistantName);
             if(assistantDefinition != null && assistant == null && autoCreate)
             {
+                assistantDefinition.Model = assistantDefinition.Model ?? azureOpenAIConfig?.DeploymentId ?? string.Empty;
                 return await Create(assistantDefinition, azureOpenAIConfig);
             }
             if (assistant == null && assistantDefinition == null)

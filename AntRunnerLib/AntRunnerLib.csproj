@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>AntRunnner Library</Title>
-    <Version>0.6.7</Version>
+    <Version>0.6.8</Version>
     <Authors>Doug Ware</Authors>
     <Company>Elumenotion</Company>
     <Description>Makes using the Assistants API on Open AI or Azure API easy. </Description>
@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\Elumenotion\repos\LibreChat\client\public\assets\favicon-32x32.png">
+    <None Include="favicon-32x32.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

@@ -39,6 +39,6 @@ namespace AntRunnerLib
         /// If this is false, the orchestration will not use ConversationUserProxy
         /// The suborchestration for ConversationUserProxy uses 'false'
         /// </summary>
-        public bool UseConversationEvaluator { get; set; } = true;
+        public bool UseConversationEvaluator { get; set; } = false;
     }
 }

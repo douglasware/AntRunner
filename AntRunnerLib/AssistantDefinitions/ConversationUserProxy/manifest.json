@@ -9,6 +9,5 @@
   "response_format": "auto",
   "metadata": {
   },
-  "model": "gpt-4o-mini",
   "temperature": 0.7
 }
