@@ -102,6 +102,10 @@ namespace AntRunnerLib
                     Trace.TraceInformation($"Dialog: {runResults.Dialog}");
                     completed = true;
                 }
+                else if (run.Status == "failed")
+                {
+                    throw new Exception($"Run failed: {run.LastError}");
+                }
                 else
                 {
                     // Wait for a short period before checking the run status again
