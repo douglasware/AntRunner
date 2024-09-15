@@ -182,8 +182,7 @@ namespace AntRunnerLib
                 output.Annotations = annotations;
             }
 
-            // Set the final output message.
-            output.LastMessage = output.ConversationMessages.Last().Message.Replace("\"", "");
+            output.LastMessage = output.ConversationMessages.Last().Message;
             return output;
         }
 
