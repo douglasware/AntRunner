@@ -9,6 +9,9 @@ namespace AntRunnerLib
     /// </summary>
     public class ClientUtility
     {
+        public static OpenAIService? _instance;
+        public static AzureOpenAIConfig _lastConfig = new();
+
         /// <summary>
         /// Gets the OpenAI client with the specified configuration.
         /// </summary>
@@ -16,14 +19,21 @@ namespace AntRunnerLib
         /// <returns>The OpenAI client.</returns>
         public static OpenAIService GetOpenAIClient(AzureOpenAIConfig? azureOpenAIConfig)
         {
-            return new OpenAIService(new OpenAiOptions()
+            if(_lastConfig != azureOpenAIConfig)
             {
-                ProviderType = ProviderType.Azure,
-                ApiVersion = azureOpenAIConfig?.ApiVersion ?? "2024-05-01-preview",
-                ResourceName = azureOpenAIConfig?.ResourceName,
-                ApiKey = azureOpenAIConfig?.ApiKey ?? "",
-                DeploymentId = azureOpenAIConfig?.DeploymentId ?? ""
-            });
+                _instance = null;
+                _lastConfig = azureOpenAIConfig ?? new();
+            }
+
+            _instance ??= new OpenAIService(new OpenAiOptions()
+                {
+                    ProviderType = ProviderType.Azure,
+                    ApiVersion = azureOpenAIConfig?.ApiVersion ?? "2024-05-01-preview",
+                    ResourceName = azureOpenAIConfig?.ResourceName,
+                    ApiKey = azureOpenAIConfig?.ApiKey ?? "",
+                    DeploymentId = azureOpenAIConfig?.DeploymentId ?? ""
+                });
+            return _instance;
         }
     }
 }

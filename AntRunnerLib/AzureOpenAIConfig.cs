@@ -36,7 +36,7 @@
     /// <summary>
     /// Represents the configuration settings for connecting to the Azure OpenAI service.
     /// </summary>
-    public class AzureOpenAIConfig
+    public record AzureOpenAIConfig
     {
         /// <summary>
         /// The name of an Azure OpenAI Service
