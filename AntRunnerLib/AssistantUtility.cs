@@ -58,15 +58,16 @@ namespace AntRunnerLib
             }
 
             var assistant = allAssistants.FirstOrDefault(o => o.Name == assistantName);
-            if(assistantDefinition != null && assistant == null && autoCreate)
+            if(assistantDefinition != null && assistant == null)
             {
                 assistantDefinition.Model = assistantDefinition.Model ?? azureOpenAIConfig?.DeploymentId ?? string.Empty;
-                return await Create(assistantDefinition, azureOpenAIConfig);
             }
             if (assistant == null && assistantDefinition == null)
             {
                 throw new InvalidOperationException($"Assistant {assistantName} does not exist and no definition was found");
             }
+            
+            if(assistant == null && autoCreate) return await Create(assistantDefinition!, azureOpenAIConfig);
 
             return assistant?.Id;
         }

@@ -28,4 +28,5 @@ Your response:
 
 ## Important
 Never offer explanation or add any extra text other than "End Conversation" or the text used to continue the conversation on the user's behalf.
+Do not put quotes around your response.
 Do not lie or pretend to do things you didn't do. For example, if there is an authentication issue, don't pretend you corrected it!
