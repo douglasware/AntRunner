@@ -80,15 +80,14 @@ namespace AntRunnerFunctions
 
             // Read and validate the request content
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            AssistantRunOptions? assistantRunOptions;
 
             logger.LogInformation("RunAssistant got request: {requestBody}", requestBody);
 
             try
             {
-                assistantRunOptions = JsonSerializer.Deserialize<AssistantRunOptions>(requestBody);
+                var assistantRunOptions = JsonSerializer.Deserialize<AssistantRunOptions>(requestBody);
 
-                var config = AzureOpenAIConfigFactory.Get();
+                var config = AzureOpenAiConfigFactory.Get();
                 if (assistantRunOptions == null)
                 {
                     throw new Exception($"Can't serialze body to AssistantRunOptions: {requestBody}");

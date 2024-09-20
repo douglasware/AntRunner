@@ -55,7 +55,7 @@ namespace AntRunnerFunctions
 
             foreach (var vectorStoreName in state.AssistantRunnerState!.AssistantDefinition!.ToolResources!.FileSearch!.VectorStoreIds!)
             {
-                var vectorStoreId = await VectorStore.EnsureVectorStore(state.AssistantRunnerState.AssistantDefinition!, vectorStoreName!, state.AssistantRunnerState!.AzureOpenAIConfig);
+                var vectorStoreId = await VectorStore.EnsureVectorStore(state.AssistantRunnerState.AssistantDefinition!, vectorStoreName!, state.AssistantRunnerState!.AzureOpenAiConfig);
                 state.VectorStores[vectorStoreName] = vectorStoreId;
             }
 
@@ -77,7 +77,7 @@ namespace AntRunnerFunctions
 
             foreach (var vectorStoreName in state.AssistantRunnerState!.AssistantDefinition!.ToolResources!.FileSearch!.VectorStoreIds!)
             {
-                await VectorStore.CreateVectorFiles(state.AssistantRunnerState.AssistantDefinition!, vectorStoreName!, state.VectorStores[vectorStoreName]!, state.AssistantRunnerState!.AzureOpenAIConfig);
+                await VectorStore.CreateVectorFiles(state.AssistantRunnerState.AssistantDefinition!, vectorStoreName!, state.VectorStores[vectorStoreName]!, state.AssistantRunnerState!.AzureOpenAiConfig);
             }
 
             return state;
@@ -96,7 +96,7 @@ namespace AntRunnerFunctions
             var logger = executionContext.GetLogger(nameof(AssistantCreator));
             logger.LogInformation("CreateVectorFiless for: {AssistantName}", state!.AssistantRunnerState!.AssistantRunOptions!.AssistantName);
 
-            return await VectorStore.CheckForVectorStoreCompletion(state.VectorStores, state.AssistantRunnerState!.AzureOpenAIConfig);
+            return await VectorStore.CheckForVectorStoreCompletion(state.VectorStores, state.AssistantRunnerState!.AzureOpenAiConfig);
         }
     }
 

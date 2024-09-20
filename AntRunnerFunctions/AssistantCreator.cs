@@ -55,7 +55,7 @@ namespace AntRunnerFunctions
                     }
                 }
 
-                if (assistantDefinition.ToolResources?.CodeInterpreter?.FileIds != null && assistantDefinition.ToolResources?.CodeInterpreter?.FileIds.Count > 0)
+                if (assistantDefinition.ToolResources?.CodeInterpreter?.FileIds is { Count: > 0 })
                 {
                     assistantDefinition.ToolResources.CodeInterpreter.FileIds = await context.CallActivityAsync<List<string>>(nameof(AddCodeInterpreterFiles), state, RetryPolicy.Get());
                 }
@@ -101,7 +101,7 @@ namespace AntRunnerFunctions
             var logger = executionContext.GetLogger(nameof(AssistantCreator));
             logger.LogInformation("Creating assistant from definition: {AssistantDefinition}", state.AssistantDefinition);
 
-            return await AssistantUtility.Create(state.AssistantDefinition!, state.AzureOpenAIConfig);
+            return await AssistantUtility.Create(state.AssistantDefinition!, state.AzureOpenAiConfig);
         }
 
         /// <summary>
@@ -111,14 +111,14 @@ namespace AntRunnerFunctions
         /// <param name="executionContext">The function execution context.</param>
         /// <returns>A list of strings indicating the result of adding the code interpreter files.</returns>
         [Function(nameof(AddCodeInterpreterFiles))]
-        public static async Task<List<string>> AddCodeInterpreterFiles(
+        public static async Task<List<string>?> AddCodeInterpreterFiles(
             [ActivityTrigger] AssistantRunnerState state,
             FunctionContext executionContext)
         {
             var logger = executionContext.GetLogger(nameof(AssistantCreator));
             logger.LogInformation("Adding code interpreter files for assistant: {AssistantDefinition}", state.AssistantDefinition);
 
-            return await CodeInterpreterFiles.CreateCodeInterpreterFiles(state.AssistantDefinition!, state.AzureOpenAIConfig);
+            return await CodeInterpreterFiles.CreateCodeInterpreterFiles(state.AssistantDefinition!, state.AzureOpenAiConfig);
         }
     }
 }

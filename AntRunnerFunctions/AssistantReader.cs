@@ -23,7 +23,7 @@ namespace AntRunnerFunctions
             var logger = executionContext.GetLogger("GetAssistant");
             logger.LogInformation("Getting assistant ID for: {AssistantName}", state.AssistantRunOptions!.AssistantName);
 
-            return await AssistantUtility.GetAssistantId(state.AssistantRunOptions!.AssistantName, state.AzureOpenAIConfig, false);
+            return await AssistantUtility.GetAssistantId(state.AssistantRunOptions!.AssistantName, state.AzureOpenAiConfig, false);
         }
     }
 }

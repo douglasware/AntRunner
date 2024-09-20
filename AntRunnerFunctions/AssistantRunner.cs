@@ -96,7 +96,7 @@ namespace AntRunnerFunctions
                             {
                                 break;
                             }
-                        };
+                        }
                     }
 
                     runOutput = runResults;
@@ -192,7 +192,7 @@ namespace AntRunnerFunctions
             {
                 Started = DateTime.UtcNow,
                 AssistantRunOptions = requestInput,
-                AzureOpenAIConfig = AzureOpenAIConfigFactory.Get()
+                AzureOpenAiConfig = AzureOpenAiConfigFactory.Get()
             };
         }
 
@@ -208,7 +208,7 @@ namespace AntRunnerFunctions
             var logger = executionContext.GetLogger("CreateThreadAndRun");
             logger.LogInformation("Running {state.AssistantRunOptions.AssistantName}: {state.AssistantRunOptions.Instructions}", state.AssistantRunOptions!.AssistantName, state.AssistantRunOptions.Instructions);
 
-            var ids = await ThreadUtility.CreateThreadAndRun(state.AssistantId, state.AssistantRunOptions.Instructions, state.AzureOpenAIConfig);
+            var ids = await ThreadUtility.CreateThreadAndRun(state.AssistantId, state.AssistantRunOptions.Instructions, state.AzureOpenAiConfig);
 
             return ids;
         }
@@ -225,7 +225,7 @@ namespace AntRunnerFunctions
             var logger = executionContext.GetLogger("UpdateThreadAndRun");
             logger.LogInformation("Running {state.AssistantRunOptions.AssistantName}: {state.AssistantRunOptions.Instructions}", state.AssistantRunOptions!.AssistantName, state.AssistantRunOptions.Instructions);
 
-            var ids = await ThreadUtility.UpdateThreadAndRun(state.ThreadId!, state.AssistantId, state.ConversationUserProxyMessage!, state.AzureOpenAIConfig);
+            var ids = await ThreadUtility.UpdateThreadAndRun(state.ThreadId!, state.AssistantId, state.ConversationUserProxyMessage!, state.AzureOpenAiConfig);
 
             return ids;
         }
@@ -244,7 +244,7 @@ namespace AntRunnerFunctions
 
             if (state.ThreadId == null || state.ThreadRunId == null) { throw new Exception($"Can't get run output for missing {state.ThreadId} or {state.ThreadRunId}"); }
 
-            return await ThreadUtility.GetRun(state.ThreadId, state.ThreadRunId, state.AzureOpenAIConfig);
+            return await ThreadUtility.GetRun(state.ThreadId, state.ThreadRunId, state.AzureOpenAiConfig);
         }
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace AntRunnerFunctions
 
             if (state.ThreadId == null || state.ThreadRunId == null) { throw new Exception($"Can't get run output for missing {state.ThreadId} or {state.ThreadRunId}"); }
 
-            return await ThreadUtility.GetThreadOutput(state.ThreadId, state.AzureOpenAIConfig);
+            return await ThreadUtility.GetThreadOutput(state.ThreadId, state.AzureOpenAiConfig);
         }
 
         /// <summary>
@@ -277,7 +277,7 @@ namespace AntRunnerFunctions
 
             if (state.ThreadId == null || state.ThreadRunId == null) { throw new Exception($"Can't get run output for missing {state.ThreadId} or {state.ThreadRunId}"); }
 
-            await ThreadUtility.PerformRunRequiredActions(state.AssistantRunOptions.AssistantName, state.CurrentRun!, state.AzureOpenAIConfig, state.AssistantRunOptions.OauthUserAccessToken);
+            await ThreadUtility.PerformRunRequiredActions(state.AssistantRunOptions.AssistantName, state.CurrentRun!, state.AzureOpenAiConfig, state.AssistantRunOptions.OauthUserAccessToken);
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace AntRunnerFunctions
             var logger = executionContext.GetLogger("Cleanup");
             logger.LogInformation("Deleting {state.ThreadId}", state.ThreadId);
 
-            await ThreadUtility.DeleteThread(state.ThreadId!, state.AzureOpenAIConfig);
+            await ThreadUtility.DeleteThread(state.ThreadId!, state.AzureOpenAiConfig);
         }
     }
 }
