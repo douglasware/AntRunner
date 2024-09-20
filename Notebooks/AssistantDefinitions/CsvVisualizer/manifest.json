@@ -1,0 +1,15 @@
+{
+  "name": "CsvVisualizer",
+  "description": "You create visualizations for the user to download with python using the provided file.",
+  "instructions": "",
+  "tools": [
+    { "type": "code_interpreter" }
+  ],
+  "tool_resources": {},
+  "top_p": 0.95,
+  "response_format": "auto",
+  "metadata": {
+  },
+  "model": "gpt-4o",
+  "temperature": 0.7
+}

@@ -206,9 +206,9 @@ namespace AntRunnerFunctions
         public static async Task<ThreadRun> CreateThreadAndRun([ActivityTrigger] AssistantRunnerState state, FunctionContext executionContext)
         {
             var logger = executionContext.GetLogger("CreateThreadAndRun");
-            logger.LogInformation("Running {state.AssistantRunOptions.AssistantName}: {state.AssistantRunOptions.Instructions}", state.AssistantRunOptions!.AssistantName, state.AssistantRunOptions.Instructions);
+            logger.LogInformation("Running {state.AssistantRunOptions.AssistantName}: {state.AssistantRunOptions}", state.AssistantRunOptions!.AssistantName, state.AssistantRunOptions.Instructions);
 
-            var ids = await ThreadUtility.CreateThreadAndRun(state.AssistantId, state.AssistantRunOptions.Instructions, state.AzureOpenAiConfig);
+            var ids = await ThreadUtility.CreateThreadAndRun(state.AssistantId, state.AssistantRunOptions, state.AzureOpenAiConfig);
 
             return ids;
         }

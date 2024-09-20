@@ -44,7 +44,7 @@
             <param name="assistantName">The name of the assistant.</param>
             <returns>A task that represents the asynchronous operation. The task result contains the assistant action authorization.</returns>
         </member>
-        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetFilesInOpenAPIFolder(System.String)">
+        <member name="M:AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles.GetFilesInOpenApiFolder(System.String)">
             <summary>
             Retrieves the list of files in the OpenAPI folder for the specified assistant from the file system or storage.
             </summary>
@@ -85,13 +85,14 @@
             Responsible for running assistant threads through interaction with various utilities.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.AssistantRunner.RunThread(AntRunnerLib.AssistantRunOptions,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.AssistantRunner.RunThread(AntRunnerLib.AssistantRunOptions,AntRunnerLib.AzureOpenAiConfig,System.Boolean)">
             <summary>
             Runs the assistant thread with the specified run options and configuration.
             It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
             </summary>
             <param name="assistantRunOptions">The options for running the assistant.</param>
             <param name="config">The configuration for Azure OpenAI.</param>
+            <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
             <returns>The output of the thread run including possible additional run output from addtional messages when using the default evaluator</returns>
         </member>
         <member name="T:AntRunnerLib.AssistantRunnerState">
@@ -106,10 +107,10 @@
         </member>
         <member name="P:AntRunnerLib.AssistantRunnerState.AssistantId">
             <summary>
-            Assistant to run Id
+            Assistant to run
             </summary>
         </member>
-        <member name="P:AntRunnerLib.AssistantRunnerState.AzureOpenAIConfig">
+        <member name="P:AntRunnerLib.AssistantRunnerState.AzureOpenAiConfig">
             <summary>
             Endpoint and API key
             </summary>
@@ -126,12 +127,12 @@
         </member>
         <member name="P:AntRunnerLib.AssistantRunnerState.ThreadRunId">
             <summary>
-            ID of the the run
+            ID of the run
             </summary>
         </member>
         <member name="P:AntRunnerLib.AssistantRunnerState.AssistantDefinition">
             <summary>
-            AssistantDefintion from storage for use in the API to create an assistant
+            Assistant definition from storage for use in the API to create an assistant
             </summary>
         </member>
         <member name="P:AntRunnerLib.AssistantRunnerState.RootRun">
@@ -187,31 +188,32 @@
         </member>
         <member name="T:AntRunnerLib.AssistantUtility">
             <summary>
-            Fetch and create assistants
+            Fetch and autoCreate assistants
             </summary>
         </member>
-        <member name="M:AntRunnerLib.AssistantUtility.GetAssistantId(System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.AssistantUtility.GetAssistantId(System.String,AntRunnerLib.AzureOpenAiConfig,System.Boolean)">
             <summary>
-            Looks for an assistant and returns an Id if found, otherwise null
+            Looks for an assistant and returns an ID if found, otherwise null
             </summary>
             <param name="assistantResourceName">The name of the embedded resource </param>
-            <param name="azureOpenAIConfig"></param>
+            <param name="azureOpenAiConfig"></param>
+            <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
             <returns></returns>
         </member>
-        <member name="M:AntRunnerLib.AssistantUtility.Create(System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.AssistantUtility.Create(System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Creates an assistant from a stored definition
             </summary>
             <param name="assistantName"></param>
-            <param name="azureOpenAIConfig"></param>
+            <param name="azureOpenAiConfig"></param>
             <returns></returns>
         </member>
-        <member name="M:AntRunnerLib.AssistantUtility.Create(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.AssistantUtility.Create(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Creates an assistant
             </summary>
             <param name="assistantCreateRequest"></param>
-            <param name="azureOpenAIConfig"></param>
+            <param name="azureOpenAiConfig"></param>
             <returns></returns>
         </member>
         <member name="M:AntRunnerLib.AssistantUtility.GetAssistantCreateRequest(System.String)">
@@ -221,18 +223,19 @@
             <param name="assistantName"></param>
             <returns></returns>
         </member>
-        <member name="M:AntRunnerLib.AssistantUtility.ListAssistants(AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.AssistantUtility.ListAssistants(AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Lists the assistants in the OpenAI deployment
             </summary>
-            <param name="azureOpenAIConfig"></param>
+            <param name="azureOpenAiConfig"></param>
             <returns></returns>
         </member>
-        <member name="M:AntRunnerLib.AssistantUtility.DeleteAssistant(System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.AssistantUtility.DeleteAssistant(System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Delete an assistant by name
             </summary>
             <param name="assistantName"></param>
+            <param name="azureOpenAiConfig"></param>
             <returns></returns>
         </member>
         <member name="T:AntRunnerLib.AzureOpenAiConfigFactory">
@@ -247,32 +250,32 @@
         </member>
         <member name="M:AntRunnerLib.AzureOpenAiConfigFactory.Get">
             <summary>
-            Gets an instance of the <see cref="T:AntRunnerLib.AzureOpenAIConfig"/> class.
+            Gets an instance of the <see cref="T:AntRunnerLib.AzureOpenAiConfig"/> class.
             </summary>
-            <returns>A new instance of <see cref="T:AntRunnerLib.AzureOpenAIConfig"/>.</returns>
+            <returns>A new instance of <see cref="T:AntRunnerLib.AzureOpenAiConfig"/>.</returns>
         </member>
-        <member name="T:AntRunnerLib.AzureOpenAIConfig">
+        <member name="T:AntRunnerLib.AzureOpenAiConfig">
             <summary>
             Represents the configuration settings for connecting to the Azure OpenAI service.
             </summary>
         </member>
-        <member name="P:AntRunnerLib.AzureOpenAIConfig.ResourceName">
+        <member name="P:AntRunnerLib.AzureOpenAiConfig.ResourceName">
             <summary>
             The name of an Azure OpenAI Service
             </summary>
         </member>
-        <member name="P:AntRunnerLib.AzureOpenAIConfig.ApiKey">
+        <member name="P:AntRunnerLib.AzureOpenAiConfig.ApiKey">
             <summary>
             The API key for the Azure OpenAI service.
             </summary>
         </member>
-        <member name="P:AntRunnerLib.AzureOpenAIConfig.ApiVersion">
+        <member name="P:AntRunnerLib.AzureOpenAiConfig.ApiVersion">
             <summary>
             A valid API Version
             See https://learn.microsoft.com/en-us/azure/ai-services/openai/reference
             </summary>
         </member>
-        <member name="P:AntRunnerLib.AzureOpenAIConfig.DeploymentId">
+        <member name="P:AntRunnerLib.AzureOpenAiConfig.DeploymentId">
             <summary>
             The model e.g. "GPT-4o"
             </summary>
@@ -282,11 +285,11 @@
             Utility class for managing the OpenAI client.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.ClientUtility.GetOpenAiClient(AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.ClientUtility.GetOpenAiClient(AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Gets the OpenAI client with the specified configuration.
             </summary>
-            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
             <returns>The OpenAI client.</returns>
         </member>
         <member name="T:AntRunnerLib.EnvironmentSettings">
@@ -305,29 +308,94 @@
             Provides methods to create code interpreter files for an assistant.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.CodeInterpreterFiles.CreateCodeInterpreterFiles(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.CodeInterpreterFiles.CreateCodeInterpreterFiles(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Creates code interpreter files for a given assistant by uploading them to an OpenAI storage.
             </summary>
             <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
-            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
             <returns>A task that represents the asynchronous operation. The task result contains a list of uploaded file IDs.</returns>
+        </member>
+        <member name="M:AntRunnerLib.CodeInterpreterFiles.RetrieveFileContent(System.String,AntRunnerLib.AzureOpenAiConfig)">
+            <summary>
+            Retrieves the content of a file from OpenAI storage.
+            </summary>
+            <param name="fileId">The ID of the file to retrieve.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains the file content.</returns>
+        </member>
+        <member name="M:AntRunnerLib.CodeInterpreterFiles.DownloadFile(System.String,System.String,AntRunnerLib.AzureOpenAiConfig)">
+            <summary>
+            Downloads a file from OpenAI storage and saves it to the specified path.
+            </summary>
+            <param name="fileId">The ID of the file to download.</param>
+            <param name="path">The path where the file should be saved.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="T:AntRunnerLib.Files">
+            <summary>
+            These are the same independent of the tool, ie. code_interpreter and file_search are the same.
+            Use these methods for files added as attachments to messages.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.Files.UploadFiles(System.Collections.Generic.List{System.String},AntRunnerLib.AzureOpenAiConfig)">
+            <summary>
+            Uploads a list of files to OpenAI storage and returns a list of uploaded file IDs.
+            </summary>
+            <param name="filePaths">The list of file paths to upload.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <returns>A task that represents the asynchronous operation. The task result contains a list of uploaded file IDs.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when filePaths is null.</exception>
+            <exception cref="T:System.Exception">Thrown when an error occurs during file upload.</exception>
+        </member>
+        <member name="M:AntRunnerLib.Files.DeleteFiles(System.Collections.Generic.List{System.String},AntRunnerLib.AzureOpenAiConfig)">
+            <summary>
+            Deletes a list of files from OpenAI storage.
+            </summary>
+            <param name="fileIds">The list of file IDs to delete.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when fileIds is null.</exception>
+            <exception cref="T:System.Exception">Thrown when an error occurs during file deletion.</exception>
+        </member>
+        <member name="T:AntRunnerLib.MessageAnnotationExtensions">
+            <summary>
+            Provides extension methods for the MessageAnnotation class.
+            </summary>
+        </member>
+        <member name="M:AntRunnerLib.MessageAnnotationExtensions.DownloadFile(OpenAI.ObjectModels.SharedModels.MessageAnnotation,System.String,AntRunnerLib.AzureOpenAiConfig)">
+            <summary>
+            Downloads a file from OpenAI storage and saves it to the specified path.
+            </summary>
+            <param name="messageAnnotation">The MessageAnnotation object.</param>
+            <param name="path">The path where the file should be saved.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AntRunnerLib.MessageAnnotationExtensions.GetFileName(OpenAI.ObjectModels.SharedModels.MessageAnnotation,AntRunnerLib.AzureOpenAiConfig)">
+            <summary>
+            Returns the file name from the MessageAnnotation object without 'sandbox:/mnt/data/'
+            </summary>
+            <param name="messageAnnotation">The MessageAnnotation object.</param>
+            <param name="azureOpenAiConfig"></param>
+            <returns>The file name without the prefix.</returns>
         </member>
         <member name="T:AntRunnerLib.VectorStore">
             <summary>
             Provides methods to ensure and manage vector stores for an assistant.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.VectorStore.EnsureVectorStore(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.VectorStore.EnsureVectorStore(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Ensures that a vector store exists for the given assistant, creating it if necessary.
             </summary>
             <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
             <param name="vectorStoreName">The name of the vector store.</param>
-            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
             <returns>A task that represents the asynchronous operation. The task result contains the vector store ID.</returns>
         </member>
-        <member name="M:AntRunnerLib.VectorStore.CreateVectorFiles(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.VectorStore.CreateVectorFiles(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Creates vector files for the given assistant and vector store.
             Ensures that the files are uploaded and associated with the vector store.
@@ -335,14 +403,14 @@
             <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
             <param name="vectorStoreName">The name of the vector store.</param>
             <param name="vectorStoreId">The ID of the vector store.</param>
-            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
         </member>
-        <member name="M:AntRunnerLib.VectorStore.CheckForVectorStoreCompletion(System.Collections.Generic.Dictionary{System.String,System.String},AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.VectorStore.CheckForVectorStoreCompletion(System.Collections.Generic.Dictionary{System.String,System.String},AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Checks if the vector stores have completed their processing.
             </summary>
             <param name="vectorStores">A dictionary of vector store names and their IDs.</param>
-            <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+            <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
             <returns>A task that represents the asynchronous operation. The task result indicates whether all vector stores have completed processing.</returns>
         </member>
         <member name="M:AntRunnerLib.VectorStore.GetFilePrefixFromName(System.String)">
@@ -428,14 +496,14 @@
             Base64 file content for use by the assistant or thread
             </summary>
         </member>
-        <member name="P:AntRunnerLib.ResourceFile.Name">
+        <member name="P:AntRunnerLib.ResourceFile.Path">
             <summary>
-            File name
+            File path
             </summary>
         </member>
-        <member name="P:AntRunnerLib.ResourceFile.Base64Content">
+        <member name="P:AntRunnerLib.ResourceFile.FileId">
             <summary>
-            The file content as Base64 string
+            File Id in azure open ai files
             </summary>
         </member>
         <member name="P:AntRunnerLib.ResourceFile.ResourceType">
@@ -498,7 +566,7 @@
         </member>
         <member name="T:AntRunnerLib.ThreadConversationMessageType">
             <summary>
-            Enum representing the type of a conversation message.
+            Enum representing the type of conversation message.
             </summary>
         </member>
         <member name="T:AntRunnerLib.ThreadConversationMessage">
@@ -522,57 +590,57 @@
             Utility class for managing threads and runs within the assistant orchestrator.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.ThreadUtility.CreateThreadAndRun(System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.ThreadUtility.CreateThreadAndRun(System.String,AntRunnerLib.AssistantRunOptions,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Creates a thread and runs with the specified assistant ID and message.
             </summary>
             <param name="assistantId">The assistant ID.</param>
-            <param name="message">The message content.</param>
-            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="assistantRunOptions"></param>
+            <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
             <returns>A task representing the asynchronous operation, with a result of the created thread run.</returns>
         </member>
-        <member name="M:AntRunnerLib.ThreadUtility.UpdateThreadAndRun(System.String,System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.ThreadUtility.UpdateThreadAndRun(System.String,System.String,System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Updates a thread and runs it with the specified assistant ID and message.
             </summary>
             <param name="threadId">The thread ID.</param>
             <param name="assistantId">The assistant ID.</param>
             <param name="message">The message content.</param>
-            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
             <returns>A task representing the asynchronous operation, with a result of the updated thread run.</returns>
         </member>
-        <member name="M:AntRunnerLib.ThreadUtility.GetRun(System.String,System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.ThreadUtility.GetRun(System.String,System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Retrieves the specified run of a thread.
             </summary>
             <param name="threadId">The thread ID.</param>
             <param name="threadRunId">The thread run ID.</param>
-            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
             <returns>A task representing the asynchronous operation, with a result of the run response.</returns>
         </member>
-        <member name="M:AntRunnerLib.ThreadUtility.GetThreadOutput(System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.ThreadUtility.GetThreadOutput(System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Retrieves the final output of the thread by aggregating runs and messages.
             </summary>
             <param name="threadId">The thread ID.</param>
-            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
             <returns>A task representing the asynchronous operation, with a result of the thread run output.</returns>
         </member>
-        <member name="M:AntRunnerLib.ThreadUtility.DeleteThread(System.String,AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.ThreadUtility.DeleteThread(System.String,AntRunnerLib.AzureOpenAiConfig)">
             <summary>
             Deletes the specified thread.
             </summary>
             <param name="threadId">The thread ID.</param>
-            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
             <returns>A task representing the asynchronous operation.</returns>
         </member>
-        <member name="M:AntRunnerLib.ThreadUtility.PerformRunRequiredActions(System.String,OpenAI.ObjectModels.SharedModels.RunResponse,AntRunnerLib.AzureOpenAIConfig,System.String)">
+        <member name="M:AntRunnerLib.ThreadUtility.PerformRunRequiredActions(System.String,OpenAI.ObjectModels.SharedModels.RunResponse,AntRunnerLib.AzureOpenAiConfig,System.String)">
             <summary>
             Performs the required actions for the given run.
             </summary>
             <param name="assistantName">The assistant name.</param>
             <param name="currentRun">The current run response.</param>
-            <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+            <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
             <param name="oAuthUserAccessToken">Optional: The OAuth user access token.</param>
         </member>
         <member name="M:AntRunnerLib.ThreadUtility.EnsureRequestBuilderCache(System.String,System.String)">
@@ -585,7 +653,7 @@
         </member>
         <member name="T:FunctionCalling.ActionType">
             <summary>
-            WebA[i indicates an external API call, while LocalFunction indicates a local function call based on a valid static method in a loaded assembly.
+            WebApi indicates an external API call, while LocalFunction indicates a local function call based on a valid static method in a loaded assembly.
             </summary>
         </member>
         <member name="F:FunctionCalling.ActionType.WebApi">
@@ -648,7 +716,7 @@
             Gets or sets the additional parameters for the request.
             </summary>
         </member>
-        <member name="P:FunctionCalling.ActionRequestBuilder.oAuth">
+        <member name="P:FunctionCalling.ActionRequestBuilder.OAuth">
             <summary>
             Gets or sets a value indicating whether the request uses OAuth for authentication.
             </summary>
@@ -678,7 +746,7 @@
             </summary>
             <returns>The result of the local function execution.</returns>
         </member>
-        <member name="M:FunctionCalling.ActionRequestBuilder.CreateURL(System.String,System.String)">
+        <member name="M:FunctionCalling.ActionRequestBuilder.CreateUrl(System.String,System.String)">
             <summary>
             Creates the complete URL by combining the baseUrl and path.
             </summary>
@@ -691,7 +759,7 @@
             Provides helper methods for validating and parsing OpenAPI specifications.
             </summary>
         </member>
-        <member name="M:FunctionCalling.OpenApiHelper.ValidateAndParseOpenAPISpec(System.String)">
+        <member name="M:FunctionCalling.OpenApiHelper.ValidateAndParseOpenApiSpec(System.String)">
             <summary>
             Validates and parses the OpenAPI specification string.
             </summary>
@@ -879,7 +947,7 @@
             <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
             <returns></returns>
         </member>
-        <member name="M:OpenAI.Interfaces.IFileServiceExtension.RetrieveFileContent(OpenAI.Interfaces.IFileService,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Interfaces.FileServiceExtension.RetrieveFileContent(OpenAI.Interfaces.IFileService,System.String,System.Threading.CancellationToken)">
             <summary>
                 Returns the contents of the specified file
             </summary>
@@ -925,12 +993,12 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="P:OpenAI.Interfaces.IOpenAIService.Files">
+        <member name="P:OpenAI.Interfaces.IOpenAiService.Files">
             <summary>
                 Files are used to upload documents that can be used across features like FineTunes />
             </summary>
         </member>
-        <member name="P:OpenAI.Interfaces.IOpenAIService.Beta">
+        <member name="P:OpenAI.Interfaces.IOpenAiService.Beta">
             <summary>
                 Beta
             </summary>
@@ -1115,42 +1183,42 @@
                 Delete a vector store.
             </summary>
         </member>
-        <member name="T:OpenAI.Managers.OpenAIService">
+        <member name="T:OpenAI.Managers.OpenAiService">
             <summary>
                 Beta service for OpenAI.
             </summary>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.AssistantCreate(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.AssistantCreate(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.AssistantList(OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.AssistantList(OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.AssistantRetrieve(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.AssistantRetrieve(System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.AssistantModify(System.String,OpenAI.ObjectModels.RequestModels.AssistantModifyRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.AssistantModify(System.String,OpenAI.ObjectModels.RequestModels.AssistantModifyRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.AssistantDelete(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.AssistantDelete(System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ListFile(System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ListFile(System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.UploadFile(System.String,System.Byte[],System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.UploadFile(System.String,System.Byte[],System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.DeleteFile(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.DeleteFile(System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RetrieveFile(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RetrieveFile(System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RetrieveFileContent``1(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RetrieveFileContent``1(System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.CreateMessage(System.String,OpenAI.ObjectModels.RequestModels.MessageCreateRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.CreateMessage(System.String,OpenAI.ObjectModels.RequestModels.MessageCreateRequest,System.Threading.CancellationToken)">
             <summary>
                 Create a message.
             </summary>
@@ -1160,7 +1228,7 @@
             <returns></returns>
             <exception cref="T:System.ArgumentNullException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ListMessages(System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ListMessages(System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
                 Returns a list of messages for a given thread.
             </summary>
@@ -1170,16 +1238,16 @@
             <returns></returns>
             <exception cref="T:System.NotImplementedException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RetrieveMessage(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RetrieveMessage(System.String,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ModifyMessage(System.String,System.String,OpenAI.ObjectModels.RequestModels.ModifyMessageRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ModifyMessage(System.String,System.String,OpenAI.ObjectModels.RequestModels.ModifyMessageRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.DeleteMessage(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.DeleteMessage(System.String,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RunCreate(System.String,OpenAI.ObjectModels.RequestModels.RunCreateRequest,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RunCreate(System.String,OpenAI.ObjectModels.RequestModels.RunCreateRequest,System.String,System.Threading.CancellationToken)">
             <summary>
                 Create a run.
             </summary>
@@ -1190,10 +1258,10 @@
             <returns></returns>
             <exception cref="T:System.ArgumentNullException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RunModify(System.String,System.String,OpenAI.ObjectModels.RequestModels.RunModifyRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RunModify(System.String,System.String,OpenAI.ObjectModels.RequestModels.RunModifyRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RunRetrieve(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RunRetrieve(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
                 Retrieves a run.
             </summary>
@@ -1203,7 +1271,7 @@
             <returns></returns>
             <exception cref="T:System.NotImplementedException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RunCancel(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RunCancel(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
                 Cancels a run that is in_progress.
             </summary>
@@ -1213,7 +1281,7 @@
             <returns></returns>
             <exception cref="T:System.ArgumentNullException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RunSubmitToolOutputs(System.String,System.String,OpenAI.ObjectModels.RequestModels.SubmitToolOutputsToRunRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RunSubmitToolOutputs(System.String,System.String,OpenAI.ObjectModels.RequestModels.SubmitToolOutputsToRunRequest,System.Threading.CancellationToken)">
             <summary>
                 Submit tool outputs to run
                 <para>
@@ -1229,42 +1297,42 @@
             <returns></returns>
             <exception cref="T:System.NotImplementedException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.CreateThreadAndRun(OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.CreateThreadAndRun(OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ListRuns(System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ListRuns(System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RunStepsList(System.String,System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RunStepsList(System.String,System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.RunStepRetrieve(System.String,System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.RunStepRetrieve(System.String,System.String,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.Dispose">
+        <member name="M:OpenAI.Managers.OpenAiService.Dispose">
             <summary>
                 Method to dispose the HttpContext if created internally.
             </summary>
         </member>
-        <member name="P:OpenAI.Managers.OpenAIService.Files">
+        <member name="P:OpenAI.Managers.OpenAiService.Files">
             <inheritdoc />
         </member>
-        <member name="P:OpenAI.Managers.OpenAIService.Beta">
+        <member name="P:OpenAI.Managers.OpenAiService.Beta">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.SetDefaultModelId(System.String)">
+        <member name="M:OpenAI.Managers.OpenAiService.SetDefaultModelId(System.String)">
             <summary>
                 Sets default Model Id
             </summary>
             <param name="modelId"></param>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.GetDefaultModelId">
+        <member name="M:OpenAI.Managers.OpenAiService.GetDefaultModelId">
             <summary>
                 Get default Model Id
             </summary>
             <returns></returns>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ThreadCreate(OpenAI.ObjectModels.RequestModels.ThreadCreateRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ThreadCreate(OpenAI.ObjectModels.RequestModels.ThreadCreateRequest,System.Threading.CancellationToken)">
             <summary>
                 Create a thread.
             </summary>
@@ -1273,7 +1341,7 @@
             <returns></returns>
             <exception cref="T:System.NotImplementedException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ThreadRetrieve(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ThreadRetrieve(System.String,System.Threading.CancellationToken)">
             <summary>
                 Retrieves a thread.
             </summary>
@@ -1282,7 +1350,7 @@
             <returns></returns>
             <exception cref="T:System.ArgumentNullException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ThreadDelete(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ThreadDelete(System.String,System.Threading.CancellationToken)">
             <summary>
                 Delete a thread.
             </summary>
@@ -1291,37 +1359,37 @@
             <returns></returns>
             <exception cref="T:System.ArgumentNullException"></exception>
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ModifyThread(System.String,OpenAI.ObjectModels.RequestModels.ModifyThreadRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ModifyThread(System.String,OpenAI.ObjectModels.RequestModels.ModifyThreadRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ListVectorStores(OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ListVectorStores(OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.CreateVectorStore(OpenAI.ObjectModels.RequestModels.CreateVectorStoreRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.CreateVectorStore(OpenAI.ObjectModels.RequestModels.CreateVectorStoreRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ModifyVectorStore(System.String,OpenAI.ObjectModels.RequestModels.UpdateVectorStoreRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ModifyVectorStore(System.String,OpenAI.ObjectModels.RequestModels.UpdateVectorStoreRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.DeleteVectorStore(System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.DeleteVectorStore(System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.CreateVectorStoreFile(System.String,OpenAI.ObjectModels.RequestModels.CreateVectorStoreFileRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.CreateVectorStoreFile(System.String,OpenAI.ObjectModels.RequestModels.CreateVectorStoreFileRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.GetVectorStoreFile(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.GetVectorStoreFile(System.String,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.DeleteVectorStoreFile(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.DeleteVectorStoreFile(System.String,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.GetVectorStoreFileBatch(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.GetVectorStoreFileBatch(System.String,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.CancelVectorStoreFileBatch(System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.CancelVectorStoreFileBatch(System.String,System.String,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:OpenAI.Managers.OpenAIService.ListFilesInVectorStoreBatch(System.String,System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
+        <member name="M:OpenAI.Managers.OpenAiService.ListFilesInVectorStoreBatch(System.String,System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4">
@@ -1341,14 +1409,14 @@
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_0314">
             <summary>
                 Snapshot of gpt-4 from March 14th 2023. Unlike gpt-4, this model will not receive updates, and will only be
-                supported for a three month period ending on June 14th 2023.
+                supported for a three-month period ending on June 14th 2023.
                 8,192 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_32k_0314">
             <summary>
                 Snapshot of gpt-4-32 from March 14th 2023. Unlike gpt-4-32k, this model will not receive updates, and will only be
-                supported for a three month period ending on June 14th 2023.
+                supported for a three-month period ending on June 14th 2023.
                 32,768 tokens	Up to Sep 2021
             </summary>
         </member>
@@ -1450,14 +1518,14 @@
         <member name="P:OpenAI.ObjectModels.Models.ChatGpt3_5Turbo0301">
             <summary>
                 Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
-                only be supported for a three month period ending on June 1st 2023.
+                only be supported for a three-month period ending on June 1st 2023.
                 4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_0301">
             <summary>
                 Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
-                only be supported for a three month period ending on June 1st 2023.
+                only be supported for a three-month period ending on June 1st 2023.
                 4,096 tokens	Up to Sep 2021
             </summary>
         </member>
@@ -1779,15 +1847,15 @@
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.MaxPromptTokens">
             <summary>
-                The maximum number of prompt tokens that may be used over the course of the run. The run will make a best effort to
+                The maximum number of prompt tokens that may be used over the course of the run. The run will try to
                 use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of
                 prompt tokens specified, the run will end with status `incomplete`. See `incomplete_details` for more info.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.MaxCompletionTokens">
             <summary>
-                The maximum number of completion tokens that may be used over the course of the run. The run will make a best
-                effort to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
+                The maximum number of completion tokens that may be used over the course of the run. The run will 
+                try to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
                 the number of completion tokens specified, the run will end with status `incomplete`. See `incomplete_details` for
                 more info.
             </summary>
@@ -2007,7 +2075,7 @@
             <summary>
                 Set of 16 key-value pairs that can be attached to an object.
                 This can be useful for storing additional information about the object in a structured format.
-                Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
+                Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.Attachment.FileId">
@@ -2129,15 +2197,15 @@
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.MaxPromptTokens">
             <summary>
-                The maximum number of prompt tokens that may be used over the course of the run. The run will make a best effort to
+                The maximum number of prompt tokens that may be used over the course of the run. The run will make try to
                 use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of
                 prompt tokens specified, the run will end with status `incomplete`. See `incomplete_details` for more info.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.MaxCompletionTokens">
             <summary>
-                The maximum number of completion tokens that may be used over the course of the run. The run will make a best
-                effort to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
+                The maximum number of completion tokens that may be used over the course of the run. The run will 
+                try to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
                 the number of completion tokens specified, the run will end with status `incomplete`. See `incomplete_details` for
                 more info.
             </summary>
@@ -2534,7 +2602,7 @@
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantFileResponse.AssistantId">
             <summary>
-                The Unix timestamp (in seconds) for when the assistant file was created.
+                The ID
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantFileResponse.CreatedAt">
@@ -2721,7 +2789,7 @@
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageAnnotation.Type">
             <summary>
-                type can be：file_citation、file_path
+            type can be：file_citation、file_path
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageAnnotation.Text">
@@ -2731,12 +2799,17 @@
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.FileCitation.FileId">
             <summary>
-                The ID of the specific File the citation/content  is from.
+            The ID of the specific File the citation/content  is from.
+            </summary>
+        </member>
+        <member name="P:OpenAI.ObjectModels.SharedModels.FileCitation.FileName">
+            <summary>
+            A patch to file the file name by fetching the file with file_id
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.FileCitation.Quote">
             <summary>
-                The specific quote in the file.
+            The specific quote in the file. - always null currently from OpenAI api
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.FilePathAnnotation.FileId">
@@ -3182,7 +3255,7 @@
         </member>
         <member name="M:OpenAI.OpenAiOptions.CreateAzureSettings(System.String,System.String,System.String,System.String)">
             <summary>
-                Create an instance of this class with the necessary information to connect to the azure open ai api
+                Create an instance of this class with the necessary information to connect to the azure open AI api
             </summary>
             <param name="resourceName">Resource Name of your Azure OpenAI resource</param>
             <param name="deploymentId">The id of your deployment of OpenAI</param>
@@ -3192,7 +3265,7 @@
         </member>
         <member name="M:OpenAI.OpenAiOptions.CreateAzureSettingsWithBaseDomain(System.String,System.String,System.String,System.String)">
             <summary>
-                Create an instance of this class with the necessary information to connect to the azure open ai api
+                Create an instance of this class with the necessary information to connect to the azure open AI api
             </summary>
             <param name="deploymentId">The id of your deployment of OpenAI</param>
             <param name="baseDomain">Base Domain of your Azure OpenAI service</param>
@@ -3221,7 +3294,7 @@
                 Encode This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
             </summary>
             <param name="text"></param>
-            <param name="cleanUpCREOL">set it true to get rid of CR</param>
+            <param name="cleanUpCreol">set it true to get rid of CR</param>
             <returns></returns>
         </member>
         <member name="M:OpenAI.Tokenizer.GPT3.TokenizerGpt3.TokenCount(System.String,System.Boolean)">
@@ -3229,7 +3302,7 @@
                 Get token count. This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
             </summary>
             <param name="text"></param>
-            <param name="cleanUpCREOL">set it true to get rid of CR</param>
+            <param name="cleanUpCreol">set it true to get rid of CR</param>
             <returns></returns>
         </member>
     </members>

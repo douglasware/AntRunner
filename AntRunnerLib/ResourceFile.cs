@@ -18,14 +18,14 @@ namespace AntRunnerLib
     public class ResourceFile
     {
         /// <summary>
-        /// File name
+        /// File path
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
 
         /// <summary>
-        /// The file content as Base64 string
+        /// File Id in azure open ai files
         /// </summary>
-        public string Base64Content { get; set; } = string.Empty;
+        public string FileId { get; set; } = string.Empty;
 
         /// <summary>
         /// Specifies the file's purpose

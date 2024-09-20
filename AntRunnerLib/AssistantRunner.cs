@@ -28,7 +28,7 @@ namespace AntRunnerLib
             Trace.TraceInformation($"RunAssistant got assistant: {assistantId}");
 
             // Create a new thread and run it using the assistant ID and run options
-            var ids = await ThreadUtility.CreateThreadAndRun(assistantId, assistantRunOptions.Instructions, config);
+            var ids = await ThreadUtility.CreateThreadAndRun(assistantId, assistantRunOptions, config);
 
             // Check if thread creation and execution was successful
             if (ids.ThreadRunId == null || ids.ThreadId == null)
@@ -85,7 +85,7 @@ namespace AntRunnerLib
                                     {
                                         await ThreadUtility.PerformRunRequiredActions(assistantRunOptions.AssistantName, currentRun, config, assistantRunOptions.OauthUserAccessToken);
                                     }
-                                    else if (complete = currentRun.Status == "completed")
+                                    else if (currentRun.Status != null && (complete = currentRun.Status == "completed"))
                                     {
                                         // Update run results upon completion
                                         runResults = await ThreadUtility.GetThreadOutput(ids.ThreadId, config);

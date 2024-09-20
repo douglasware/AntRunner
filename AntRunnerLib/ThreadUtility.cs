@@ -20,24 +20,56 @@ namespace AntRunnerLib
         /// Creates a thread and runs with the specified assistant ID and message.
         /// </summary>
         /// <param name="assistantId">The assistant ID.</param>
-        /// <param name="message">The message content.</param>
+        /// <param name="assistantRunOptions"></param>
         /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <returns>A task representing the asynchronous operation, with a result of the created thread run.</returns>
-        public static async Task<ThreadRun> CreateThreadAndRun(string assistantId, string message, AzureOpenAiConfig? azureOpenAiConfig)
+        public static async Task<ThreadRun> CreateThreadAndRun(string assistantId, AssistantRunOptions assistantRunOptions, AzureOpenAiConfig? azureOpenAiConfig)
         {
             // Get the OpenAI client using the provided Azure OpenAI configuration.
             var client = GetOpenAiClient(azureOpenAiConfig);
 
             // Construct the thread creation request with the user message.
             ThreadCreateRequest threadOptions = new ThreadCreateRequest();
-            threadOptions.Messages = [new() { Role = "user", Content = new OpenAI.ObjectModels.MessageContentOneOfType(message) }];
+            threadOptions.Messages = [new() { Role = "user", Content = new OpenAI.ObjectModels.MessageContentOneOfType(assistantRunOptions.Instructions) }];
 
-            // Create a new thread and run it with the given assistant ID and thread options.
-            var run = await client.Runs.CreateThreadAndRun(new CreateThreadAndRunRequest
+            var createThreadAndRunRequest = new CreateThreadAndRunRequest
             {
                 AssistantId = assistantId,
                 Thread = threadOptions,
-            });
+            };
+
+            if (assistantRunOptions.Files is { Count: > 0 })
+            {
+                var filePaths = new List<string>();
+                foreach (var resourceFile in assistantRunOptions.Files)
+                {
+                    filePaths.Add(resourceFile.Path);
+                }
+
+                var fileIds = await Files.UploadFiles(filePaths, azureOpenAiConfig);
+                if(fileIds.Count != filePaths.Count)
+                {
+                    throw new Exception($"Mismatch in counts {fileIds.Count} != {filePaths.Count}. Not all files were uploaded successfully");
+                }
+
+                for (int i = 0; i < assistantRunOptions.Files.Count; i++)
+                {
+                    if (assistantRunOptions.Files[i].ResourceType == ResourceType.CodeInterpreterToolResource)
+                    {
+                        createThreadAndRunRequest.ToolResources ??= new();
+                        createThreadAndRunRequest.ToolResources.CodeInterpreter ??= new();
+                        createThreadAndRunRequest.ToolResources.CodeInterpreter.FileIds ??= new();
+                        createThreadAndRunRequest.ToolResources.CodeInterpreter.FileIds.Add(fileIds[i]);
+                    }
+                    else
+                    {
+                        throw new Exception($"Unsupported resource type {assistantRunOptions.Files[i].ResourceType}");
+                    }
+                }
+            }
+
+            // Create a new thread and run it with the given assistant ID and thread options.
+            var run = await client.Runs.CreateThreadAndRun(createThreadAndRunRequest);
 
             // Return the thread ID and the newly created thread run ID.
             return new() { ThreadId = run.ThreadId, ThreadRunId = run.Id };
@@ -150,13 +182,16 @@ namespace AntRunnerLib
                             var messageContent = message.Content!.First();
                             if (messageContent == null) throw new Exception($"Couldn't get message content {message.Id}");
 
-                            if (messageContent.Text?.Annotations != null)
+                            var annotationsContent = (message.Content?.FirstOrDefault(o =>
+                                o.Text is { Annotations.Count: > 0 }));
+
+                            if (annotationsContent != null)
                             {
-                                annotations.AddRange(messageContent.Text.Annotations);
+                                annotations.AddRange(annotationsContent.Text!.Annotations!);
                             }
 
                             // Add the message to the conversation messages.
-                            output.ConversationMessages.Add(new() { MessageType = message.Role == "assistant" ? ThreadConversationMessageType.Assistant : ThreadConversationMessageType.User, Message = message.Content!.First()!.Text!.Value });
+                            output.ConversationMessages.Add(new() { MessageType = message.Role == "assistant" ? ThreadConversationMessageType.Assistant : ThreadConversationMessageType.User, Message = message.Content!.First(o => o.Text != null).Text!.Value });
                         }
                         else // run_step.Type == "tool_calls"
                         {
