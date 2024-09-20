@@ -235,17 +235,17 @@
             <param name="assistantName"></param>
             <returns></returns>
         </member>
-        <member name="T:AntRunnerLib.AzureOpenAIConfigFactory">
+        <member name="T:AntRunnerLib.AzureOpenAiConfigFactory">
             <summary>
             Gets the configuration settings for connecting to the Azure OpenAI service.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.AzureOpenAIConfigFactory.#cctor">
+        <member name="M:AntRunnerLib.AzureOpenAiConfigFactory.#cctor">
             <summary>
             Private constructor that initializes the configuration by reading environment variables.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.AzureOpenAIConfigFactory.Get">
+        <member name="M:AntRunnerLib.AzureOpenAiConfigFactory.Get">
             <summary>
             Gets an instance of the <see cref="T:AntRunnerLib.AzureOpenAIConfig"/> class.
             </summary>
@@ -282,7 +282,7 @@
             Utility class for managing the OpenAI client.
             </summary>
         </member>
-        <member name="M:AntRunnerLib.ClientUtility.GetOpenAIClient(AntRunnerLib.AzureOpenAIConfig)">
+        <member name="M:AntRunnerLib.ClientUtility.GetOpenAiClient(AntRunnerLib.AzureOpenAIConfig)">
             <summary>
             Gets the OpenAI client with the specified configuration.
             </summary>
