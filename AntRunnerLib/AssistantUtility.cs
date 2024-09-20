@@ -146,14 +146,14 @@ namespace AntRunnerLib
 
                 if (newAssistant.Error != null)
                 {
-                    throw new Exception(newAssistant.Error.ToString());
+                    throw new Exception(newAssistant.Error.Message);
                 }
 
                 return newAssistant.Id!;
             }
-            catch
+            catch(Exception ex)
             {
-                throw new Exception("Unable to create assistant. Model not found and default model is missing or not set in config.");
+                throw new Exception($"Unable to create assistant. {ex.Message}");
             }
         }
 

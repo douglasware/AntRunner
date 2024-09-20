@@ -38,7 +38,7 @@ internal class AzureOpenAiEndpointProvider : IOpenAiEndpointProvider
 
     public string FileRetrieve(string fileId)
     {
-        return $"{Prefix}/files/{fileId}{AzureVersionQueryString}";
+        return $"{AssistantPrefix}/files/{fileId}{AzureVersionQueryString}";
     }
 
     public string FileRetrieveContent(string fileId)
