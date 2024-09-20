@@ -39,7 +39,7 @@ namespace AntRunnerFunctions
                 assistantRunOptions = JsonSerializer.Deserialize<AssistantRunOptions>(requestBody);
                 if (assistantRunOptions == null)
                 {
-                    throw new Exception($"Can't serialze body to AssistantRunOptions: {requestBody}");
+                    throw new Exception($"Can't serialize body to AssistantRunOptions: {requestBody}");
                 }
 
                 if (req.Headers.Contains("Authorization")) assistantRunOptions.OauthUserAccessToken = req.Headers.TryGetValues("Authorization", out IEnumerable<string>? values) ? values.First() : null;
