@@ -41,7 +41,7 @@ namespace AntRunnerLib
             }";
 
             // Act
-            var result = openApiHelper.ValidateAndParseOpenAPISpec(validJson);
+            var result = openApiHelper.ValidateAndParseOpenApiSpec(validJson);
 
             // Assert
             Assert.IsTrue(result.Status);
@@ -56,7 +56,7 @@ namespace AntRunnerLib
             string invalidJson = @"{""invalid"":}";
 
             // Act
-            var result = openApiHelper.ValidateAndParseOpenAPISpec(invalidJson);
+            var result = openApiHelper.ValidateAndParseOpenApiSpec(invalidJson);
 
             // Assert
             Assert.IsFalse(result.Status);
@@ -94,7 +94,7 @@ namespace AntRunnerLib
                     }
                 }
             }";
-            var validationResult = openApiHelper.ValidateAndParseOpenAPISpec(validJson);
+            var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(validJson);
             var spec = validationResult.Spec;
 
             // Act
@@ -132,7 +132,7 @@ namespace AntRunnerLib
                 ],
                 ""paths"": {}
             }";
-            var validationResult = openApiHelper.ValidateAndParseOpenAPISpec(validJson);
+            var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(validJson);
             var spec = validationResult.Spec;
 
             // Act
@@ -161,7 +161,7 @@ namespace AntRunnerLib
             string fileContent = ReadFileContent(filePath);
 
             // Act
-            var validationResult = openApiHelper.ValidateAndParseOpenAPISpec(fileContent);
+            var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(fileContent);
             var spec = validationResult.Spec;
 
             if (spec == null)

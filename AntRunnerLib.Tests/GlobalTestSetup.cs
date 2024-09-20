@@ -11,9 +11,9 @@ namespace AntRunnerLib
     [TestClass]
     public class GlobalTestSetup
     {
-        private static BlobServiceClient? blobServiceClient;
-        private static BlobContainerClient? containerClient;
-        private static readonly string containerName = "assistants";
+        private static BlobServiceClient? _blobServiceClient;
+        private static BlobContainerClient? _containerClient;
+        private static readonly string ContainerName = "assistants";
 
         /// <summary>
         /// Initializes Azure Blob Storage for use in testing by setting necessary environment variables,
@@ -28,12 +28,12 @@ namespace AntRunnerLib
             context.GetType();
 
             Environment.SetEnvironmentVariable("ASSISTANTS_STORAGE_CONNECTION", "UseDevelopmentStorage=true");
-            Environment.SetEnvironmentVariable("ASSISTANTS_STORAGE_CONTAINER", containerName);
+            Environment.SetEnvironmentVariable("ASSISTANTS_STORAGE_CONTAINER", ContainerName);
 
-            blobServiceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("ASSISTANTS_STORAGE_CONNECTION"));
-            containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            _blobServiceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("ASSISTANTS_STORAGE_CONNECTION"));
+            _containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
 
-            await containerClient.CreateIfNotExistsAsync();
+            await _containerClient.CreateIfNotExistsAsync();
 
             string localPath = Path.Combine(Environment.CurrentDirectory, "TestData", "Assistants");
             await UploadDirectoryAsync(localPath, string.Empty);
@@ -46,7 +46,7 @@ namespace AntRunnerLib
         [AssemblyCleanup]
         public static async Task AssemblyCleanUp()
         {
-            if (await containerClient!.ExistsAsync())
+            if (await _containerClient!.ExistsAsync())
             {
                 //await containerClient.DeleteAsync();
             }
@@ -72,7 +72,7 @@ namespace AntRunnerLib
             foreach (var filePath in Directory.GetFiles(sourcePath))
             {
                 string blobName = Path.Combine(destPath, Path.GetFileName(filePath));
-                BlobClient blobClient = containerClient!.GetBlobClient(blobName.Replace("\\", "/"));
+                BlobClient blobClient = _containerClient!.GetBlobClient(blobName.Replace("\\", "/"));
                 await blobClient.UploadAsync(filePath, overwrite: true);
             }
         }

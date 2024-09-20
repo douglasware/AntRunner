@@ -12,7 +12,7 @@ namespace AntRunnerLib
             var func = new FunctionDefinitionBuilder("get_current_weather", "Gets the current weather at the user's location").Validate().Build();
             var expected = new AssistantCreateRequest()
             {
-                Name = "name",
+                Name = "AllProps",
                 Description = "Description",
                 Instructions = "Instructions",
                 Metadata = new Dictionary<string, string> { { "A", "B" } },
@@ -40,8 +40,8 @@ namespace AntRunnerLib
             Assert.AreEqual(expected.Description, actual.Description);
             Assert.AreEqual(expected.Instructions, actual.Instructions);
             Assert.AreEqual(expected.Metadata["A"], actual.Metadata!["A"]);
-            Assert.AreEqual(expected.ToolResources.CodeInterpreter.FileIds[0], actual.ToolResources!.CodeInterpreter.FileIds?[0]);
-            Assert.AreEqual(expected.ToolResources.FileSearch.VectorStoreIds[0], actual.ToolResources.FileSearch.VectorStoreIds?[0]);
+            Assert.AreEqual(expected.ToolResources.CodeInterpreter.FileIds[0], actual.ToolResources!.CodeInterpreter?.FileIds?[0]);
+            Assert.AreEqual(expected.ToolResources.FileSearch.VectorStoreIds[0], actual.ToolResources.FileSearch?.VectorStoreIds?[0]);
             Assert.AreEqual(expected.ResponseFormat.AsString, actual.ResponseFormat!.AsString);
             Assert.AreEqual(expected.Temperature, actual.Temperature);
             Assert.AreEqual(expected.TopP, actual.TopP);

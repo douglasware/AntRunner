@@ -11,9 +11,9 @@ namespace AntRunnerLib
     [TestClass]
     public class BlobStorageTests
     {
-        private static BlobServiceClient? blobServiceClient;
-        private static BlobContainerClient? containerClient;
-        private static readonly string? containerName = Environment.GetEnvironmentVariable("ASSISTANTS_STORAGE_CONTAINER");
+        private static BlobServiceClient? _blobServiceClient;
+        private static BlobContainerClient? _containerClient;
+        private static readonly string? ContainerName = Environment.GetEnvironmentVariable("ASSISTANTS_STORAGE_CONTAINER");
 
         /// <summary>
         /// Initializes resources for the test class, establishing a connection to Azure Blob Storage.
@@ -28,8 +28,8 @@ namespace AntRunnerLib
             context.GetType();
 
             string? connectionString = Environment.GetEnvironmentVariable("ASSISTANTS_STORAGE_CONNECTION");
-            blobServiceClient = new BlobServiceClient(connectionString);
-            containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            _blobServiceClient = new BlobServiceClient(connectionString);
+            _containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace AntRunnerLib
             Assert.IsTrue(localFiles.Count > 0, "TestData folder should not be empty.");
 
             var blobItems = new List<string>();
-            await foreach (var blobItem in containerClient!.GetBlobsAsync())
+            await foreach (var blobItem in _containerClient!.GetBlobsAsync())
             {
                 blobItems.Add(blobItem.Name);
             }

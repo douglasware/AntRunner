@@ -43,8 +43,8 @@ namespace AntRunnerLib.AssistantDefinitions.Tests
         [TestMethod]
         public async Task GetFilesInOpenAPIFolder_ReturnsExpectedFiles()
         {
-            var files = (await AssistantDefinitionFiles.GetFilesInOpenAPIFolder(AssistantName))?.Select(Path.GetFileName).OrderBy(f => f).ToList();
-            var expectedFiles = Directory.GetFiles(Path.Combine(TestDataPath, "OpenAPI")).Select(Path.GetFileName).Where(f => !f.Equals("auth.json", StringComparison.OrdinalIgnoreCase)).OrderBy(f => f).ToList();
+            var files = (await AssistantDefinitionFiles.GetFilesInOpenApiFolder(AssistantName))?.Select(Path.GetFileName).OrderBy(f => f).ToList();
+            var expectedFiles = Directory.GetFiles(Path.Combine(TestDataPath, "OpenAPI")).Select(Path.GetFileName).Where(f => !f!.Equals("auth.json", StringComparison.OrdinalIgnoreCase)).OrderBy(f => f).ToList();
 
             CollectionAssert.AreEqual(expectedFiles, files);
         }
