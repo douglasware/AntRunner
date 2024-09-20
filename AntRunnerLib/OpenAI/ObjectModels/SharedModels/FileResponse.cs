@@ -9,19 +9,19 @@ public record FileResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.ICre
     public int? Bytes { get; set; }
 
     [JsonPropertyName("filename")]
-    public string FileName { get; set; }
+    public string FileName { get; set; } = string.Empty;
 
     public UploadFilePurposes.UploadFilePurpose PurposeEnum => UploadFilePurposes.ToEnum(Purpose);
 
     [JsonPropertyName("purpose")]
-    public string Purpose { get; set; }
+    public string Purpose { get; set; } = string.Empty;
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = string.Empty;
 
     [JsonPropertyName("created_at")]
     public int CreatedAt { get; set; }
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 }

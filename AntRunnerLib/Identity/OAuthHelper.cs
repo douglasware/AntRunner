@@ -10,11 +10,11 @@ namespace AntRunnerLib.Identity
     {
         class CachedToken
         {
-            public string AccessToken { get; set; } = string.Empty;
-            public DateTimeOffset ExpiresOn { get; set; }
+            public string AccessToken { get; init; } = string.Empty;
+            public DateTimeOffset ExpiresOn { get; init; }
         }
 
-        private static ConcurrentDictionary<string, CachedToken> _cachedTokens = new ConcurrentDictionary<string, CachedToken>();
+        private static readonly ConcurrentDictionary<string, CachedToken> CachedTokens = new();
 
         /// <summary>
         /// Gets an OAuth token for a given client ID and tenant ID.
@@ -27,7 +27,7 @@ namespace AntRunnerLib.Identity
         public static async Task<string> GetToken(string clientId, string tenantId, string[] scopes, string? redirectUri = "http://localhost")
         {
             // Check if the token is already in the cache
-            if (_cachedTokens.TryGetValue(clientId, out var cachedToken))
+            if (CachedTokens.TryGetValue(clientId, out var cachedToken))
             {
                 if (DateTimeOffset.UtcNow < cachedToken.ExpiresOn)
                 {
@@ -69,7 +69,7 @@ namespace AntRunnerLib.Identity
             }
 
             // Add the token to the cache
-            _cachedTokens[clientId] = new() { AccessToken = result.AccessToken, ExpiresOn = result.ExpiresOn };
+            CachedTokens[clientId] = new() { AccessToken = result.AccessToken, ExpiresOn = result.ExpiresOn };
 
             return $"Bearer {result.AccessToken}";
         }

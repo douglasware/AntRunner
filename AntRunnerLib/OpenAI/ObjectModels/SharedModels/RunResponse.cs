@@ -14,20 +14,20 @@ public record RunResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.IMode
     ///     The ID of the thread that was executed on as a part of this run.
     /// </summary>
     [JsonPropertyName("thread_id")]
-    public string ThreadId { get; set; }
+    public string ThreadId { get; set; } = string.Empty;
 
     /// <summary>
     ///     The ID of the assistant used for execution of this run.
     /// </summary>
     [JsonPropertyName("assistant_id")]
-    public string AssistantId { get; set; }
+    public string AssistantId { get; set; } = string.Empty;
 
     /// <summary>
     ///     The status of the run, which can be either queued, in_progress, requires_action, cancelling, cancelled, failed,
     ///     completed, or expired.
     /// </summary>
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; }
 
     /// <summary>
     ///     Details on the action required to continue the run.
@@ -83,7 +83,7 @@ public record RunResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.IMode
     ///     The instructions that the assistant used for this run.
     /// </summary>
     [JsonPropertyName("instructions")]
-    public string Instructions { get; set; }
+    public string Instructions { get; set; } = string.Empty;
 
     /// <summary>
     ///     The list of tools that the assistant used for this run.
@@ -155,7 +155,7 @@ public record RunResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.IMode
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     ///     Set of 16 key-value pairs that can be attached to an object.
@@ -169,7 +169,7 @@ public record RunResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.IMode
     ///     The model that the assistant used for this run.
     /// </summary>
     [JsonPropertyName("model")]
-    public string Model { get; set; }
+    public string? Model { get; set; }
 }
 
 public class IncompleteDetails
@@ -179,5 +179,5 @@ public class IncompleteDetails
     ///     This will point to which specific token limit was reached over the course of the run.
     /// </summary>
     [JsonPropertyName("reason")]
-    public string Reason { get; set; }
+    public string Reason { get; set; } = string.Empty;
 }

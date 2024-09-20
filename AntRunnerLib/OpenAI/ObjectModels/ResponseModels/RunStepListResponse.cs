@@ -100,7 +100,7 @@ public record RunStepResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.I
     ///     The identifier of the run step, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
+    public string? Id { get; set; } = string.Empty;
 }
 
 public record RunStepDetails
@@ -115,7 +115,7 @@ public record RunStepDetails
     [JsonPropertyName("tool_calls")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonConverter(typeof(ToolCallsConverter))]
-    public List<IToolCall> ToolCalls { get; set; } = new List<IToolCall>();
+    public List<IToolCall> ToolCalls { get; set; } = new();
 
     public class RunStepMessageCreation
     {
@@ -181,7 +181,7 @@ public class RunStepDetailsToolCallsCodeObject : IToolCall
     public string Type { get; set; } = string.Empty;
 
     [JsonPropertyName("code_interpreter")]
-    public CodeInterpreter CodeInterpreterDetails { get; set; } = new CodeInterpreter();
+    public CodeInterpreter CodeInterpreterDetails { get; set; } = new();
 
     public class CodeInterpreter
     {
@@ -189,7 +189,7 @@ public class RunStepDetailsToolCallsCodeObject : IToolCall
         public string Input { get; set; } = string.Empty;
 
         [JsonPropertyName("outputs")]
-        public List<object> Outputs { get; set; } = new List<object>();
+        public List<object> Outputs { get; set; } = new();
     }
 
     public class CodeOutputLogs
@@ -207,7 +207,7 @@ public class RunStepDetailsToolCallsCodeObject : IToolCall
         public string Type { get; set; } = string.Empty;
 
         [JsonPropertyName("image")]
-        public ImageDetails Image { get; set; } = new ImageDetails();
+        public ImageDetails Image { get; set; } = new();
 
         public class ImageDetails
         {
@@ -226,7 +226,7 @@ public class RunStepDetailsToolCallsFileSearchObject : IToolCall
     public string Type { get; set; } = string.Empty;
 
     [JsonPropertyName("file_search")]
-    public object FileSearch { get; set; } = new object();  // This is an empty object.
+    public object FileSearch { get; set; } = new();  // This is an empty object.
 }
 
 public class RunStepDetailsToolCallsFunctionObject : IToolCall
@@ -238,7 +238,7 @@ public class RunStepDetailsToolCallsFunctionObject : IToolCall
     public string Type { get; set; } = string.Empty;
 
     [JsonPropertyName("function")]
-    public FunctionDetails Function { get; set; } = new FunctionDetails();
+    public FunctionDetails Function { get; set; } = new();
 
     public class FunctionDetails
     {

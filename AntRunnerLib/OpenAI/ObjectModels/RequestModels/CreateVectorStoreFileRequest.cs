@@ -9,5 +9,5 @@ public class CreateVectorStoreFileRequest
     ///     can access files.
     /// </summary>
     [JsonPropertyName("file_id")]
-    public string FileId { get; set; }
+    public string? FileId { get; set; }
 }

@@ -15,9 +15,9 @@ namespace AntRunnerLib
         public static void LoadAssembly(string assemblyPath)
         {
             // Load the assembly if it is not already loaded.
-            if (!AppDomain.CurrentDomain.GetAssemblies().Any(a => a.Location == assemblyPath))
+            if (AppDomain.CurrentDomain.GetAssemblies().All(a => a.Location != assemblyPath))
             {
-                Assembly assembly = Assembly.LoadFrom(assemblyPath);
+                Assembly.LoadFrom(assemblyPath);
             }
         }
     }

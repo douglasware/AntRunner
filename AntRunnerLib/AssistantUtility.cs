@@ -17,23 +17,23 @@ namespace AntRunnerLib
     public static class AssistantUtility
     {
         // The ConcurrentDictionary to act as our in-memory cache
-        private static readonly ConcurrentDictionary<string, AssistantCreateRequest?> _cache = new();
+        private static readonly ConcurrentDictionary<string, AssistantCreateRequest?> Cache = new();
 
         /// <summary>
-        /// Looks for an assistant and returns an Id if found, otherwise null
+        /// Looks for an assistant and returns an ID if found, otherwise null
         /// </summary>
         /// <param name="assistantResourceName">The name of the embedded resource </param>
-        /// <param name="azureOpenAIConfig"></param>
+        /// <param name="azureOpenAiConfig"></param>
         /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
         /// <returns></returns>
-        public static async Task<string?> GetAssistantId(string assistantResourceName, AzureOpenAIConfig? azureOpenAIConfig, bool autoCreate)
+        public static async Task<string?> GetAssistantId(string assistantResourceName, AzureOpenAiConfig? azureOpenAiConfig, bool autoCreate)
         {
             // I am on the fence about this design, but the intention is to allow invocation of an assitant if it exists in the endpoint
             // even if the definition is not stored anywhere used by the orchestrator
             var assistantDefinition = await GetAssistantCreateRequest(assistantResourceName);
             var assistantName = assistantDefinition?.Name ?? assistantResourceName;
 
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             var allAssistants = new List<AssistantResponse>();
             var hasMore = true;
@@ -60,14 +60,14 @@ namespace AntRunnerLib
             var assistant = allAssistants.FirstOrDefault(o => o.Name == assistantName);
             if(assistantDefinition != null && assistant == null)
             {
-                assistantDefinition.Model = assistantDefinition.Model ?? azureOpenAIConfig?.DeploymentId ?? string.Empty;
+                assistantDefinition.Model ??= azureOpenAiConfig?.DeploymentId ?? string.Empty;
             }
             if (assistant == null && assistantDefinition == null)
             {
                 throw new InvalidOperationException($"Assistant {assistantName} does not exist and no definition was found");
             }
             
-            if(assistant == null && autoCreate) return await Create(assistantDefinition!, azureOpenAIConfig);
+            if(assistant == null && autoCreate) return await Create(assistantDefinition!, azureOpenAiConfig);
 
             return assistant?.Id;
         }
@@ -76,11 +76,11 @@ namespace AntRunnerLib
         /// Creates an assistant from a stored definition
         /// </summary>
         /// <param name="assistantName"></param>
-        /// <param name="azureOpenAIConfig"></param>
+        /// <param name="azureOpenAiConfig"></param>
         /// <returns></returns>
-        public static async Task<string> Create(string assistantName, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<string> Create(string assistantName, AzureOpenAiConfig? azureOpenAiConfig)
         {
-            var assistantId = await GetAssistantId(assistantName, azureOpenAIConfig, false);
+            var assistantId = await GetAssistantId(assistantName, azureOpenAiConfig, false);
 
             if (string.IsNullOrWhiteSpace(assistantId))
             {
@@ -97,9 +97,9 @@ namespace AntRunnerLib
                     Trace.TraceInformation($"Ensuring vector store files.");
                     foreach (var vectorStoreName in assistantDefinition!.ToolResources.FileSearch.VectorStoreIds!)
                     {
-                        var vectorStoreId = await VectorStore.EnsureVectorStore(assistantDefinition, vectorStoreName, azureOpenAIConfig);
+                        var vectorStoreId = await VectorStore.EnsureVectorStore(assistantDefinition, vectorStoreName, azureOpenAiConfig);
                         vectorStoreIds[vectorStoreName] = vectorStoreId;
-                        await VectorStore.CreateVectorFiles(assistantDefinition, vectorStoreName, vectorStoreId, azureOpenAIConfig);
+                        await VectorStore.CreateVectorFiles(assistantDefinition, vectorStoreName, vectorStoreId, azureOpenAiConfig);
                     }
 
                     // Replace the file names in the assistant definition with the file ids
@@ -114,12 +114,12 @@ namespace AntRunnerLib
                     }
                 }
 
-                if (assistantDefinition.ToolResources?.CodeInterpreter?.FileIds != null && assistantDefinition.ToolResources?.CodeInterpreter?.FileIds.Count > 0)
+                if (assistantDefinition.ToolResources?.CodeInterpreter?.FileIds is { Count: > 0 })
                 {
-                    assistantDefinition.ToolResources.CodeInterpreter.FileIds = await CodeInterpreterFiles.CreateCodeInterpreterFiles(assistantDefinition!, azureOpenAIConfig);
+                    assistantDefinition.ToolResources.CodeInterpreter.FileIds = await CodeInterpreterFiles.CreateCodeInterpreterFiles(assistantDefinition!, azureOpenAiConfig);
                 }
 
-                assistantId = await Create(assistantDefinition!, azureOpenAIConfig);
+                assistantId = await Create(assistantDefinition!, azureOpenAiConfig);
                 Trace.TraceInformation($"Created assistant {assistantName}. Returning {assistantId}");
             }
             else
@@ -134,23 +134,22 @@ namespace AntRunnerLib
         /// Creates an assistant
         /// </summary>
         /// <param name="assistantCreateRequest"></param>
-        /// <param name="azureOpenAIConfig"></param>
+        /// <param name="azureOpenAiConfig"></param>
         /// <returns></returns>
-        public static async Task<string> Create(AssistantCreateRequest assistantCreateRequest, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<string> Create(AssistantCreateRequest assistantCreateRequest, AzureOpenAiConfig? azureOpenAiConfig)
         {
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
-            AssistantResponse newAssistant;
             try
             {
-                newAssistant = await client.AssistantCreate(assistantCreateRequest, assistantCreateRequest.Model);
+                var newAssistant = await client.AssistantCreate(assistantCreateRequest, assistantCreateRequest.Model);
 
                 if (newAssistant.Error != null)
                 {
                     throw new Exception(newAssistant.Error.ToString());
                 }
 
-                return newAssistant.Id;
+                return newAssistant.Id!;
             }
             catch
             {
@@ -166,7 +165,7 @@ namespace AntRunnerLib
         public static async Task<AssistantCreateRequest?> GetAssistantCreateRequest(string assistantName)
         {
             // Attempt to retrieve the assistant options from the cache.
-            if (!_cache.TryGetValue(assistantName, out var cachedOptions))
+            if (!Cache.TryGetValue(assistantName, out var cachedOptions))
             {
                 // If not in cache, load it from resources or blob storage
                 var json = await GetManifest(assistantName);
@@ -187,7 +186,7 @@ namespace AntRunnerLib
                     await AddFunctionTools(assistantName, options);
                     // Add to cache or update the existing cached value. 
                     // This method will add the value if the key isn't present, or update it if it is present.
-                    _cache.AddOrUpdate(assistantName, options, (key, oldValue) => options);
+                    Cache.AddOrUpdate(assistantName, options, (key, oldValue) => options);
                 }
 
                 return options;
@@ -200,11 +199,11 @@ namespace AntRunnerLib
         /// <summary>
         /// Lists the assistants in the OpenAI deployment
         /// </summary>
-        /// <param name="azureOpenAIConfig"></param>
+        /// <param name="azureOpenAiConfig"></param>
         /// <returns></returns>
-        public static async Task<List<AssistantResponse>?> ListAssistants(AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<List<AssistantResponse>?> ListAssistants(AzureOpenAiConfig? azureOpenAiConfig)
         {
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
             var resp = await client.AssistantList();
             if (resp.Error == null && resp.Data != null)
             {
@@ -217,20 +216,19 @@ namespace AntRunnerLib
         /// Delete an assistant by name
         /// </summary>
         /// <param name="assistantName"></param>
-        /// <param name="azureOpenAIConfig"></param>
+        /// <param name="azureOpenAiConfig"></param>
         /// <returns></returns>
-        public static async Task DeleteAssistant(string assistantName, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task DeleteAssistant(string assistantName, AzureOpenAiConfig? azureOpenAiConfig)
         {
-            var client = GetOpenAIClient(azureOpenAIConfig);
-            var assistants = await client.AssistantList();
+            var client = GetOpenAiClient(azureOpenAiConfig);
             var assistant = (await client.AssistantList())?.Data?.FirstOrDefault(o => o.Name == assistantName);
-            if (assistant != null) await client.AssistantDelete(assistant.Id);
+            if (assistant != null && !string.IsNullOrWhiteSpace(assistant.Id)) await client.AssistantDelete(assistant.Id);
             else throw new Exception($"{assistantName} not found.");
         }
 
         private static async Task AddFunctionTools(string assistantName, AssistantCreateRequest options)
         {
-            var openApiSchemaFiles = await GetFilesInOpenAPIFolder(assistantName);
+            var openApiSchemaFiles = await GetFilesInOpenApiFolder(assistantName);
             if (openApiSchemaFiles == null || !openApiSchemaFiles.Any()) return;
 
             foreach (var openApiSchemaFile in openApiSchemaFiles)
@@ -244,7 +242,7 @@ namespace AntRunnerLib
                 var json = Encoding.Default.GetString(schema);
                 var openApiHelper = new OpenApiHelper();
 
-                var validationResult = openApiHelper.ValidateAndParseOpenAPISpec(json);
+                var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(json);
                 var spec = validationResult.Spec;
 
                 if (!validationResult.Status || spec == null)

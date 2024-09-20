@@ -147,14 +147,14 @@ public static class Models
 
     /// <summary>
     ///     Snapshot of gpt-4 from March 14th 2023. Unlike gpt-4, this model will not receive updates, and will only be
-    ///     supported for a three month period ending on June 14th 2023.
+    ///     supported for a three-month period ending on June 14th 2023.
     ///     8,192 tokens	Up to Sep 2021
     /// </summary>
     public static string Gpt_4_0314 => "gpt-4-0314";
 
     /// <summary>
     ///     Snapshot of gpt-4-32 from March 14th 2023. Unlike gpt-4-32k, this model will not receive updates, and will only be
-    ///     supported for a three month period ending on June 14th 2023.
+    ///     supported for a three-month period ending on June 14th 2023.
     ///     32,768 tokens	Up to Sep 2021
     /// </summary>
     public static string Gpt_4_32k_0314 => "gpt-4-32k-0314";
@@ -313,7 +313,7 @@ public static class Models
 
     /// <summary>
     ///     Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
-    ///     only be supported for a three month period ending on June 1st 2023.
+    ///     only be supported for a three-month period ending on June 1st 2023.
     ///     4,096 tokens	Up to Sep 2021
     /// </summary>
     [Obsolete("Use Gpt_3_5_Turbo_0301 instead, this is just a naming change,the field will be removed in next versions")]
@@ -321,7 +321,7 @@ public static class Models
 
     /// <summary>
     ///     Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
-    ///     only be supported for a three month period ending on June 1st 2023.
+    ///     only be supported for a three-month period ending on June 1st 2023.
     ///     4,096 tokens	Up to Sep 2021
     /// </summary>
     public static string Gpt_3_5_Turbo_0301 => "gpt-3.5-turbo-0301";

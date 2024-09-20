@@ -4,9 +4,9 @@ using OpenAI.Managers;
 
 namespace OpenAI.Extensions;
 
-public static class OpenAIServiceCollectionExtensions
+public static class OpenAiServiceCollectionExtensions
 {
-    public static IHttpClientBuilder AddOpenAIService(this IServiceCollection services, Action<OpenAiOptions>? setupAction = null)
+    public static IHttpClientBuilder AddOpenAiService(this IServiceCollection services, Action<OpenAiOptions>? setupAction = null)
     {
         var optionsBuilder = services.AddOptions<OpenAiOptions>();
         optionsBuilder.BindConfiguration(OpenAiOptions.SettingKey);
@@ -15,10 +15,10 @@ public static class OpenAIServiceCollectionExtensions
             optionsBuilder.Configure(setupAction);
         }
 
-        return services.AddHttpClient<IOpenAIService, OpenAIService>();
+        return services.AddHttpClient<IOpenAiService, OpenAiService>();
     }
 
-    public static IHttpClientBuilder AddOpenAIService<TServiceInterface>(this IServiceCollection services, string name, Action<OpenAiOptions>? setupAction = null) where TServiceInterface : class, IOpenAIService
+    public static IHttpClientBuilder AddOpenAiService<TServiceInterface>(this IServiceCollection services, string name, Action<OpenAiOptions>? setupAction = null) where TServiceInterface : class, IOpenAiService
     {
         var optionsBuilder = services.AddOptions<OpenAiOptions>(name);
         optionsBuilder.BindConfiguration($"{OpenAiOptions.SettingKey}:{name}");

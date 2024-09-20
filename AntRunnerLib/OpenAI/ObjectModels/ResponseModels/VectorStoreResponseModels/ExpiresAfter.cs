@@ -8,7 +8,7 @@ public record ExpiresAfter
     ///     Anchor timestamp after which the expiration policy applies. Supported anchors: `last_active_at`.
     /// </summary>
     [JsonPropertyName("anchor")]
-    public string Anchor { get; set; }
+    public string Anchor { get; set; } = "last_active_at";
 
     /// <summary>
     ///     The number of days after the anchor time that the vector store will expire.

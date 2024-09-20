@@ -4,18 +4,18 @@
     /// <summary>
     /// Gets the configuration settings for connecting to the Azure OpenAI service.
     /// </summary>
-    public class AzureOpenAIConfigFactory
+    public class AzureOpenAiConfigFactory
     {
-        private AzureOpenAIConfigFactory() { }
+        private AzureOpenAiConfigFactory() { }
 
-        private static readonly AzureOpenAIConfig? _azureOpenAIConfig;
+        private static readonly AzureOpenAiConfig? AzureOpenAiConfig;
 
         /// <summary>
         /// Private constructor that initializes the configuration by reading environment variables.
         /// </summary>
-        static AzureOpenAIConfigFactory()
+        static AzureOpenAiConfigFactory()
         {
-            _azureOpenAIConfig = new AzureOpenAIConfig
+            AzureOpenAiConfig = new AzureOpenAiConfig
             {
                 ResourceName = Environment.GetEnvironmentVariable("AZURE_OPENAI_RESOURCE"),
                 ApiKey = Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY"),
@@ -25,18 +25,18 @@
         }
 
         /// <summary>
-        /// Gets an instance of the <see cref="AzureOpenAIConfig"/> class.
+        /// Gets an instance of the <see cref="AntRunnerLib.AzureOpenAiConfig"/> class.
         /// </summary>
-        /// <returns>A new instance of <see cref="AzureOpenAIConfig"/>.</returns>
+        /// <returns>A new instance of <see cref="AntRunnerLib.AzureOpenAiConfig"/>.</returns>
 #pragma warning disable CS8603 // Possible null reference return.
-        public static AzureOpenAIConfig Get() { return _azureOpenAIConfig; } // Clearly set in constructor!
+        public static AzureOpenAiConfig Get() { return AzureOpenAiConfig; } // Clearly set in constructor!
 #pragma warning restore CS8603 // Possible null reference return.
     }
 
     /// <summary>
     /// Represents the configuration settings for connecting to the Azure OpenAI service.
     /// </summary>
-    public record AzureOpenAIConfig
+    public record AzureOpenAiConfig
     {
         /// <summary>
         /// The name of an Azure OpenAI Service

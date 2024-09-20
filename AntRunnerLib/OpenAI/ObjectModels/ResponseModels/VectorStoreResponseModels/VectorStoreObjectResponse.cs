@@ -8,7 +8,7 @@ public record VectorStoreObjectResponse : BaseResponse
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>
     ///     The Unix timestamp (in seconds) for when the vector store was created.
@@ -20,7 +20,7 @@ public record VectorStoreObjectResponse : BaseResponse
     ///     The name of the vector store.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     ///     The total number of bytes used by the files in the vector store.
@@ -29,20 +29,20 @@ public record VectorStoreObjectResponse : BaseResponse
     public int UsageBytes { get; set; }
 
     [JsonPropertyName("file_counts")]
-    public FileCounts FileCounts { get; set; }
+    public FileCounts? FileCounts { get; set; }
 
     /// <summary>
     ///     The status of the vector store, which can be either `expired`, `in_progress`, or `completed`. A status of
     ///     `completed` indicates that the vector store is ready for use.
     /// </summary>
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; }
 
     /// <summary>
     ///     The expiration policy for a vector store.
     /// </summary>
     [JsonPropertyName("expires_after")]
-    public ExpiresAfter ExpiresAfter { get; set; }
+    public ExpiresAfter? ExpiresAfter { get; set; }
 
     /// <summary>
     ///     The Unix timestamp (in seconds) for when the vector store will expire.

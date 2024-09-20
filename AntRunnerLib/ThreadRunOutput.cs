@@ -17,12 +17,12 @@ namespace AntRunnerLib
         /// <summary>
         /// Gets or sets the status of the thread run.
         /// </summary>
-        public string Status { get; set; } = string.Empty;
+        public string? Status { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the list of conversation messages that occurred during the thread run.
         /// </summary>
-        public List<ThreadConversationMessage> ConversationMessages { get; set; } = new List<ThreadConversationMessage>();
+        public List<ThreadConversationMessage> ConversationMessages { get; set; } = new();
 
         /// <summary>
         /// Generates a dialog string from the conversation messages.
@@ -46,7 +46,7 @@ namespace AntRunnerLib
         /// <summary>
         /// Gets or sets the ID of the thread associated with the assistant.
         /// </summary>
-        public string ThreadId { get; set; }
+        public string ThreadId { get; set; } = string.Empty;
 
         /// <summary>
         /// File search and code interpreter annotations
@@ -56,7 +56,7 @@ namespace AntRunnerLib
     }
 
     /// <summary>
-    /// Enum representing the type of a conversation message.
+    /// Enum representing the type of conversation message.
     /// </summary>
     public enum ThreadConversationMessageType
     {

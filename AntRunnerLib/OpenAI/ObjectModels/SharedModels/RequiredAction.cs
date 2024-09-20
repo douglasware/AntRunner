@@ -12,13 +12,13 @@ public class RequiredAction
     ///     For now, this is always submit_tool_outputs.
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
 
     /// <summary>
     ///     Details on the tool outputs needed for this run to continue.
     /// </summary>
     [JsonPropertyName("submit_tool_outputs")]
-    public SubmitToolOutputs SubmitToolOutputs { get; set; }
+    public SubmitToolOutputs? SubmitToolOutputs { get; set; }
 }
 
 public class SubmitToolOutputs
@@ -27,5 +27,5 @@ public class SubmitToolOutputs
     ///     A list of the relevant tool calls.
     /// </summary>
     [JsonPropertyName("tool_calls")]
-    public List<ToolCall> ToolCalls { get; set; }
+    public List<ToolCall>? ToolCalls { get; set; }
 }

@@ -28,7 +28,7 @@ public class AssistantCreateRequest : IOpenAiModels.IModel, IOpenAiModels.IMetaD
     ///     `code_interpreter`, `file_search`, or `function`.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<ToolDefinition>? Tools { get; set; } = new List<ToolDefinition>();
+    public List<ToolDefinition>? Tools { get; set; } = new();
 
 
     /// <summary>
@@ -83,7 +83,7 @@ public class AssistantCreateRequest : IOpenAiModels.IModel, IOpenAiModels.IMetaD
     /// </summary>
     [JsonPropertyName("model")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Model { get; set; }
+    public string? Model { get; set; }
 
     /// <summary>
     ///     What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while

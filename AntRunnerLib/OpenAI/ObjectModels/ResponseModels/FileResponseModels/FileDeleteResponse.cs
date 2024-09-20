@@ -9,5 +9,5 @@ public record FileDeleteResponse : BaseResponse, IOpenAiModels.IId
     public bool Deleted { get; set; }
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 }

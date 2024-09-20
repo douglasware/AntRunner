@@ -21,12 +21,12 @@ namespace AntRunnerLib
         /// </summary>
         /// <param name="assistantId">The assistant ID.</param>
         /// <param name="message">The message content.</param>
-        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <returns>A task representing the asynchronous operation, with a result of the created thread run.</returns>
-        public static async Task<ThreadRun> CreateThreadAndRun(string assistantId, string message, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<ThreadRun> CreateThreadAndRun(string assistantId, string message, AzureOpenAiConfig? azureOpenAiConfig)
         {
             // Get the OpenAI client using the provided Azure OpenAI configuration.
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             // Construct the thread creation request with the user message.
             ThreadCreateRequest threadOptions = new ThreadCreateRequest();
@@ -49,12 +49,12 @@ namespace AntRunnerLib
         /// <param name="threadId">The thread ID.</param>
         /// <param name="assistantId">The assistant ID.</param>
         /// <param name="message">The message content.</param>
-        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <returns>A task representing the asynchronous operation, with a result of the updated thread run.</returns>
-        public static async Task<ThreadRun> UpdateThreadAndRun(string threadId, string assistantId, string message, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<ThreadRun> UpdateThreadAndRun(string threadId, string assistantId, string message, AzureOpenAiConfig? azureOpenAiConfig)
         {
             // Get the OpenAI client using the provided Azure OpenAI configuration.
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             // Construct the message creation request with the new message content.
             var newMessageRequest = new MessageCreateRequest();
@@ -82,12 +82,12 @@ namespace AntRunnerLib
         /// </summary>
         /// <param name="threadId">The thread ID.</param>
         /// <param name="threadRunId">The thread run ID.</param>
-        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <returns>A task representing the asynchronous operation, with a result of the run response.</returns>
-        public static async Task<RunResponse> GetRun(string threadId, string threadRunId, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<RunResponse> GetRun(string threadId, string threadRunId, AzureOpenAiConfig? azureOpenAiConfig)
         {
             // Get the OpenAI client using the provided Azure OpenAI configuration.
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             // Retrieve and return the specified run of the thread.
             return await client.RunRetrieve(threadId, threadRunId);
@@ -97,12 +97,12 @@ namespace AntRunnerLib
         /// Retrieves the final output of the thread by aggregating runs and messages.
         /// </summary>
         /// <param name="threadId">The thread ID.</param>
-        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <returns>A task representing the asynchronous operation, with a result of the thread run output.</returns>
-        public static async Task<ThreadRunOutput> GetThreadOutput(string threadId, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<ThreadRunOutput> GetThreadOutput(string threadId, AzureOpenAiConfig? azureOpenAiConfig)
         {
             var output = new ThreadRunOutput() { ThreadId = threadId };
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             // List runs of the thread in ascending order.
             var threadRuns = (await client.ListRuns(threadId, new PaginationRequest { Order = "asc" })).Data;
@@ -132,46 +132,49 @@ namespace AntRunnerLib
                 output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.User, Message = userMessages[i].Content![0].Text!.Value });
 
                 var threadRun = threadRuns[i];
-                var runSteps = await client.RunStepsList(threadId, threadRun.Id, new PaginationRequest { Order = "asc" });
-
-                output.Status = threadRun.Status;
-
-                foreach (var runStep in runSteps.Data!)
+                if (threadRun.Id != null)
                 {
-                    if (runStep.Status == "failed") continue;
+                    var runSteps = await client.RunStepsList(threadId, threadRun.Id, new PaginationRequest { Order = "asc" });
 
-                    if (runStep.Type == "message_creation")
+                    output.Status = threadRun.Status;
+
+                    foreach (var runStep in runSteps.Data!)
                     {
-                        var message = messages.FirstOrDefault(o => o.Id == runStep.StepDetails?.MessageCreation!.MessageId);
-                        if (message == null) throw new Exception($"Couldn't get message {runStep.StepDetails?.MessageCreation!.MessageId}");
+                        if (runStep.Status == "failed") continue;
 
-                        var messageContent = message.Content!.First();
-                        if (messageContent == null) throw new Exception($"Couldn't get message content {message.Id}");
-
-                        if (messageContent.Text?.Annotations != null)
+                        if (runStep.Type == "message_creation")
                         {
-                            annotations.AddRange(messageContent.Text.Annotations);
+                            var message = messages.FirstOrDefault(o => o.Id == runStep.StepDetails?.MessageCreation!.MessageId);
+                            if (message == null) throw new Exception($"Couldn't get message {runStep.StepDetails?.MessageCreation!.MessageId}");
+
+                            var messageContent = message.Content!.First();
+                            if (messageContent == null) throw new Exception($"Couldn't get message content {message.Id}");
+
+                            if (messageContent.Text?.Annotations != null)
+                            {
+                                annotations.AddRange(messageContent.Text.Annotations);
+                            }
+
+                            // Add the message to the conversation messages.
+                            output.ConversationMessages.Add(new() { MessageType = message.Role == "assistant" ? ThreadConversationMessageType.Assistant : ThreadConversationMessageType.User, Message = message.Content!.First()!.Text!.Value });
                         }
-
-                        // Add the message to the conversation messages.
-                        output.ConversationMessages.Add(new() { MessageType = message.Role == "assistant" ? ThreadConversationMessageType.Assistant : ThreadConversationMessageType.User, Message = message.Content!.First()!.Text!.Value });
-                    }
-                    else // run_step.Type == "tool_calls"
-                    {
-                        foreach (var toolCall in runStep.StepDetails!.ToolCalls)
+                        else // run_step.Type == "tool_calls"
                         {
-                            if (toolCall.Type == "code_interpreter")
+                            foreach (var toolCall in runStep.StepDetails!.ToolCalls)
                             {
-                                output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I ran this code:\n```\n{((RunStepDetailsToolCallsCodeObject)toolCall).CodeInterpreterDetails.Input}\n```" });
-                            }
-                            else if (toolCall.Type == "file_search")
-                            {
-                                output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = "I searched my knowledge base for the answer." });
-                            }
-                            else
-                            {
-                                var functionCall = (RunStepDetailsToolCallsFunctionObject)toolCall;
-                                output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I called the tool named {functionCall.Function.Name} with these arguments:\n```\n{functionCall.Function.Arguments}\n```\nand got this result:\n```\n{functionCall.Function.Output}\n```" });
+                                if (toolCall.Type == "code_interpreter")
+                                {
+                                    output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I ran this code:\n```\n{((RunStepDetailsToolCallsCodeObject)toolCall).CodeInterpreterDetails.Input}\n```" });
+                                }
+                                else if (toolCall.Type == "file_search")
+                                {
+                                    output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = "I searched my knowledge base for the answer." });
+                                }
+                                else
+                                {
+                                    var functionCall = (RunStepDetailsToolCallsFunctionObject)toolCall;
+                                    output.ConversationMessages.Add(new() { MessageType = ThreadConversationMessageType.Assistant, Message = $"I called the tool named {functionCall.Function.Name} with these arguments:\n```\n{functionCall.Function.Arguments}\n```\nand got this result:\n```\n{functionCall.Function.Output}\n```" });
+                                }
                             }
                         }
                     }
@@ -190,26 +193,26 @@ namespace AntRunnerLib
         /// Deletes the specified thread.
         /// </summary>
         /// <param name="threadId">The thread ID.</param>
-        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public static async Task DeleteThread(string threadId, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task DeleteThread(string threadId, AzureOpenAiConfig? azureOpenAiConfig)
         {
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             // Delete the specified thread.
             _ = await client.ThreadDelete(threadId);
         }
 
-        private static readonly ConcurrentDictionary<string, Dictionary<string, ActionRequestBuilder>> _requestBuilderCache = new();
+        private static readonly ConcurrentDictionary<string, Dictionary<string, ActionRequestBuilder>> RequestBuilderCache = new();
 
         /// <summary>
         /// Performs the required actions for the given run.
         /// </summary>
         /// <param name="assistantName">The assistant name.</param>
         /// <param name="currentRun">The current run response.</param>
-        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <param name="oAuthUserAccessToken">Optional: The OAuth user access token.</param>
-        public static async Task PerformRunRequiredActions(string assistantName, RunResponse currentRun, AzureOpenAIConfig? azureOpenAIConfig, string? oAuthUserAccessToken = null)
+        public static async Task PerformRunRequiredActions(string assistantName, RunResponse currentRun, AzureOpenAiConfig? azureOpenAiConfig, string? oAuthUserAccessToken = null)
         {
             var threadId = currentRun.ThreadId;
             var threadRunId = currentRun.Id;
@@ -218,13 +221,13 @@ namespace AntRunnerLib
             // Ensure the request builder cache is populated for the given assistant.
             await EnsureRequestBuilderCache(assistantName, assistantId);
 
-            if (!_requestBuilderCache.TryGetValue(assistantId, out var builders)) throw new Exception($"No request builders found for {assistantName}: {assistantId}");
+            if (!RequestBuilderCache.TryGetValue(assistantId, out var builders)) throw new Exception($"No request builders found for {assistantName}: {assistantId}");
 
             var requiredToolcalls = new Dictionary<string, ToolCall>();
             var submitToolOutputsToRunRequest = new SubmitToolOutputsToRunRequest();
 
             // Iterate through each required tool call and execute the necessary requests.
-            foreach (var requiredOutput in currentRun.RequiredAction!.SubmitToolOutputs.ToolCalls)
+            foreach (var requiredOutput in currentRun.RequiredAction!.SubmitToolOutputs?.ToolCalls!)
             {
                 if (requiredOutput.FunctionCall == null) continue;
 
@@ -256,8 +259,8 @@ namespace AntRunnerLib
             }
 
             // Submit the tool outputs to complete the current run.
-            var client = GetOpenAIClient(azureOpenAIConfig);
-            await client.RunSubmitToolOutputs(threadId, threadRunId, submitToolOutputsToRunRequest);
+            var client = GetOpenAiClient(azureOpenAiConfig);
+            await client.RunSubmitToolOutputs(threadId, threadRunId ?? throw new InvalidOperationException(), submitToolOutputsToRunRequest);
         }
 
         /// <summary>
@@ -269,12 +272,12 @@ namespace AntRunnerLib
         private static async Task EnsureRequestBuilderCache(string assistantName, string assistantId)
         {
             // Check if the request builder cache already contains the assistant ID.
-            if (!_requestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ActionRequestBuilder>? actionRequestBuilders))
+            if (!RequestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ActionRequestBuilder>? actionRequestBuilders))
             {
                 var assistantRequestBuilders = new Dictionary<string, ActionRequestBuilder>();
 
                 // Retrieve the OpenAPI schema files from the assistant definition folder.
-                var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenAPIFolder(assistantName);
+                var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenApiFolder(assistantName);
                 if (openApiSchemaFiles == null || !openApiSchemaFiles.Any()) return;
 
                 foreach (var openApiSchemaFile in openApiSchemaFiles)
@@ -290,7 +293,7 @@ namespace AntRunnerLib
                     var openApiHelper = new OpenApiHelper();
 
                     // Validate and parse the OpenAPI specification from the JSON string.
-                    var validationResult = openApiHelper.ValidateAndParseOpenAPISpec(json);
+                    var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(json);
                     var spec = validationResult.Spec;
 
                     // Check if the validation was successful and if the specification is not null.
@@ -314,7 +317,7 @@ namespace AntRunnerLib
                 }
 
                 // Add the assistant request builders to the request builder cache.
-                _requestBuilderCache[assistantId] = assistantRequestBuilders;
+                RequestBuilderCache[assistantId] = assistantRequestBuilders;
             }
         }
     }

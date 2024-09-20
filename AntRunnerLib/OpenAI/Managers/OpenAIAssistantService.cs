@@ -6,7 +6,7 @@ using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
 
-public partial class OpenAIService : IAssistantService
+public partial class OpenAiService : IAssistantService
 {
     /// <inheritdoc />
     public async Task<AssistantResponse> AssistantCreate(AssistantCreateRequest request, string? modelId = null, CancellationToken cancellationToken = default)

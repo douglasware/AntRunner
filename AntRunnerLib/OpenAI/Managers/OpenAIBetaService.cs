@@ -5,7 +5,7 @@ namespace OpenAI.Managers;
 /// <summary>
 ///     Beta service for OpenAI.
 /// </summary>
-public partial class OpenAIService : IBetaService
+public partial class OpenAiService : IBetaService
 {
     public IAssistantService Assistants => this;
 

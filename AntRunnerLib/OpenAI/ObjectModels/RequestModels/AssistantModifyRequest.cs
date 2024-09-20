@@ -73,7 +73,7 @@ public class AssistantModifyRequest : IOpenAiModels.IModel, IOpenAiModels.IMetaD
     ///     ID of the model to use
     /// </summary>
     [JsonPropertyName("model")]
-    public string Model { get; set; }
+    public string? Model { get; set; }
 
     /// <summary>
     ///     What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while

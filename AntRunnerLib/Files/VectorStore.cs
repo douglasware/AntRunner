@@ -18,12 +18,12 @@ namespace AntRunnerLib
         /// </summary>
         /// <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
         /// <param name="vectorStoreName">The name of the vector store.</param>
-        /// <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+        /// <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the vector store ID.</returns>
-        public static async Task<string> EnsureVectorStore(AssistantCreateRequest assistant, string vectorStoreName, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<string> EnsureVectorStore(AssistantCreateRequest assistant, string vectorStoreName, AzureOpenAiConfig? azureOpenAiConfig)
         {
             // Get the OpenAI client using the provided Azure OpenAI configuration
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             // List existing vector stores
             var stores = await client.ListVectorStores(new PaginationRequest() { Limit = 100 });
@@ -59,8 +59,8 @@ namespace AntRunnerLib
         /// <param name="assistant">The AssistantCreateRequest object containing assistant details.</param>
         /// <param name="vectorStoreName">The name of the vector store.</param>
         /// <param name="vectorStoreId">The ID of the vector store.</param>
-        /// <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
-        public static async Task CreateVectorFiles(AssistantCreateRequest assistant, string vectorStoreName, string vectorStoreId, AzureOpenAIConfig? azureOpenAIConfig)
+        /// <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
+        public static async Task CreateVectorFiles(AssistantCreateRequest assistant, string vectorStoreName, string vectorStoreId, AzureOpenAiConfig? azureOpenAiConfig)
         {
             // Determine if the files are stored in the file system
             bool fileSystem = false;
@@ -79,13 +79,13 @@ namespace AntRunnerLib
                 : await BlobStorage.GetFilesInVectorStoreFolder(assistant.Name!, vectorStoreName);
 
             // Check if any file paths were found
-            if (filePaths == null || filePaths.Count() == 0)
+            if (filePaths == null || !filePaths.Any())
             {
                 throw new Exception($"Error in CreateVectorFiles. {assistant.Name!} no files found for {vectorStoreName}");
             }
 
             // Get the OpenAI client using the provided Azure OpenAI configuration
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
 
             // List all files to check for existing files
             var allFiles = await client.Files.ListFile();
@@ -101,7 +101,7 @@ namespace AntRunnerLib
             // Add existing files with the same prefix to the dictionary
             foreach (var file in allFiles.Data)
             {
-                if (file.FileName.StartsWith(assistantFilePrefix)) existingFiles[file.FileName] = file.Id;
+                if (file.FileName.StartsWith(assistantFilePrefix)) existingFiles[file.FileName] = file.Id!;
             }
 
             // Upload files if they do not already exist
@@ -134,7 +134,7 @@ namespace AntRunnerLib
             }
 
             // Wait for the batch process to complete
-            while (batch.FileCounts.InProgress > 0)
+            while (batch.FileCounts is { InProgress: > 0 })
             {
                 Trace.TraceInformation($"Running batch {batch.FileCounts.InProgress} in progress");
                 await Task.Delay(10000);
@@ -142,7 +142,7 @@ namespace AntRunnerLib
             }
 
             // If any files failed, attempt to create the batch again
-            if (batch.FileCounts.Failed > 0)
+            if (batch.FileCounts is { Failed: > 0 })
             {
                 batch = await client.VectorStoreFiles.CreateVectorStoreFileBatch(vectorStoreId, new CreateVectorStoreFileBatchRequest() { FileIds = existingFiles.Values.ToList() });
             }
@@ -154,12 +154,12 @@ namespace AntRunnerLib
         /// Checks if the vector stores have completed their processing.
         /// </summary>
         /// <param name="vectorStores">A dictionary of vector store names and their IDs.</param>
-        /// <param name="azureOpenAIConfig">The configuration for Azure OpenAI. Can be null.</param>
+        /// <param name="azureOpenAiConfig">The configuration for Azure OpenAI. Can be null.</param>
         /// <returns>A task that represents the asynchronous operation. The task result indicates whether all vector stores have completed processing.</returns>
-        public static async Task<bool> CheckForVectorStoreCompletion(Dictionary<string, string?> vectorStores, AzureOpenAIConfig? azureOpenAIConfig)
+        public static async Task<bool> CheckForVectorStoreCompletion(Dictionary<string, string?> vectorStores, AzureOpenAiConfig? azureOpenAiConfig)
         {
             // Get the OpenAI client using the provided Azure OpenAI configuration
-            var client = GetOpenAIClient(azureOpenAIConfig);
+            var client = GetOpenAiClient(azureOpenAiConfig);
             var stores = await client.ListVectorStores(new PaginationRequest { Limit = 25 });
 
             // Check if listing the stores resulted in an error

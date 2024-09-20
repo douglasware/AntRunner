@@ -6,7 +6,7 @@ namespace OpenAI.ObjectModels.RequestModels;
 public class CreateThreadAndRunRequest : IOpenAiModels.IAssistantId, IOpenAiModels.IModel
 {
     [JsonPropertyName("thread")]
-    public ThreadCreateRequest Thread { get; set; }
+    public ThreadCreateRequest? Thread { get; set; }
 
     /// <summary>
     ///     Override the default system message of the assistant. This is useful for modifying the behavior on a per-run basis.
@@ -63,7 +63,7 @@ public class CreateThreadAndRunRequest : IOpenAiModels.IAssistantId, IOpenAiMode
     public bool? Stream { get; set; }
 
     /// <summary>
-    ///     The maximum number of prompt tokens that may be used over the course of the run. The run will make a best effort to
+    ///     The maximum number of prompt tokens that may be used over the course of the run. The run will try to
     ///     use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of
     ///     prompt tokens specified, the run will end with status `incomplete`. See `incomplete_details` for more info.
     /// </summary>
@@ -71,8 +71,8 @@ public class CreateThreadAndRunRequest : IOpenAiModels.IAssistantId, IOpenAiMode
     public int? MaxPromptTokens { get; set; }
 
     /// <summary>
-    ///     The maximum number of completion tokens that may be used over the course of the run. The run will make a best
-    ///     effort to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
+    ///     The maximum number of completion tokens that may be used over the course of the run. The run will 
+    ///     try to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
     ///     the number of completion tokens specified, the run will end with status `incomplete`. See `incomplete_details` for
     ///     more info.
     /// </summary>
@@ -84,7 +84,7 @@ public class CreateThreadAndRunRequest : IOpenAiModels.IAssistantId, IOpenAiMode
     ///     run.
     /// </summary>
     [JsonPropertyName("truncation_strategy")]
-    public TruncationStrategy TruncationStrategy { get; set; }
+    public TruncationStrategy? TruncationStrategy { get; set; }
 
     /// <summary>
     ///     Controls which (if any) tool is called by the model.
@@ -96,7 +96,7 @@ public class CreateThreadAndRunRequest : IOpenAiModels.IAssistantId, IOpenAiMode
     /// </summary>
 
     [JsonPropertyName("tool_choice")]
-    public AssistantsApiToolChoiceOneOfType ToolChoice { get; set; }
+    public AssistantsApiToolChoiceOneOfType? ToolChoice { get; set; }
 
     /// <summary>
     ///     Specifies the format that the model must output. Compatible with [GPT-4 Turbo](/docs/models/gpt-4-and-gpt-4-turbo)
@@ -111,13 +111,13 @@ public class CreateThreadAndRunRequest : IOpenAiModels.IAssistantId, IOpenAiMode
     /// </summary>
     [JsonPropertyName("response_format")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ResponseFormatOneOfType ResponseFormat { get; set; }
+    public ResponseFormatOneOfType? ResponseFormat { get; set; }
 
     /// <summary>
     ///     The ID of the [assistant](/docs/api-reference/assistants) to use to execute this run.
     /// </summary>
     [JsonPropertyName("assistant_id")]
-    public string AssistantId { get; set; }
+    public string? AssistantId { get; set; }
 
     /// <summary>
     ///     The ID of the [Model](/docs/api-reference/models) to be used to execute this run. If a value is provided here, it
@@ -126,7 +126,7 @@ public class CreateThreadAndRunRequest : IOpenAiModels.IAssistantId, IOpenAiMode
     /// </summary>
     [JsonPropertyName("model")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Model { get; set; }
+    public string? Model { get; set; }
 }
 
 [JsonConverter(typeof(AssistantsApiToolChoiceConverter))]
@@ -143,11 +143,11 @@ public class ToolResources
 {
     [JsonPropertyName("code_interpreter")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public CodeInterpreter CodeInterpreter { get; set; }
+    public CodeInterpreter? CodeInterpreter { get; set; }
 
     [JsonPropertyName("file_search")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public FileSearch FileSearch { get; set; }
+    public FileSearch? FileSearch { get; set; }
 }
 
 public class FileSearch
@@ -201,11 +201,11 @@ public class ToolsItem
     ///     The type of the tool. Currently, only `function` is supported.
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = "function";
 
     [JsonPropertyName("function")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Function Function { get; set; }
+    public Function? Function { get; set; }
 }
 
 public class Function
@@ -214,13 +214,13 @@ public class Function
     ///     The name of the function.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     ///     The arguments passed to the function.
     /// </summary>
     [JsonPropertyName("arguments")]
-    public string Arguments { get; set; }
+    public string? Arguments { get; set; }
 
     /// <summary>
     ///     The output of the function. This will be `null` if the outputs have not been

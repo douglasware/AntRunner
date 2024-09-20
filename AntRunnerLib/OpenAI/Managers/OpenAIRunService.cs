@@ -7,7 +7,7 @@ using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
 
-public partial class OpenAIService : IRunService
+public partial class OpenAiService : IRunService
 {
     /// <summary>
     ///     Create a run.

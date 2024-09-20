@@ -11,11 +11,11 @@ public record MessageText
     ///     The data that makes up the text.
     /// </summary>
     [JsonPropertyName("value")]
-    public string Value { get; set; }
+    public string Value { get; set; } = string.Empty;
 
     /// <summary>
     ///     annotations
     /// </summary>
     [JsonPropertyName("annotations")]
-    public List<MessageAnnotation> Annotations { get; set; }
+    public List<MessageAnnotation>? Annotations { get; set; }
 }

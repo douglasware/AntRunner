@@ -9,5 +9,5 @@ public class CreateVectorStoreFileBatchRequest
     ///     `file_search` that can access files.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; set; }
+    public List<string>? FileIds { get; set; }
 }

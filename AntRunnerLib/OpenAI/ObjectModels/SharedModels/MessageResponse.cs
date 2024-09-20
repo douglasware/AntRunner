@@ -18,13 +18,13 @@ public record MessageResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.I
     ///     The thread ID that this message belongs to.
     /// </summary>
     [JsonPropertyName("thread_id")]
-    public string ThreadId { get; set; }
+    public string ThreadId { get; set; } = string.Empty;
 
     /// <summary>
     ///     The entity that produced the message. One of user or assistant.
     /// </summary>
     [JsonPropertyName("role")]
-    public string Role { get; set; }
+    public string Role { get; set; } = string.Empty;
 
     /// <summary>
     ///     The content of the message in array of text and/or images.
@@ -36,7 +36,7 @@ public record MessageResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.I
     ///     The status of the message, which can be either in_progress, incomplete, or completed.
     /// </summary>
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; } 
 
 
     /// <summary>
@@ -70,7 +70,7 @@ public record MessageResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.I
     ///     A maximum of 10 files can be attached to a message.
     /// </summary>
     [JsonPropertyName("attachments")]
-    public List<Attachment> Attachments { get; set; }
+    public List<Attachment>? Attachments { get; set; }
 
     /// <summary>
     ///     If applicable, the ID of the assistant that authored this message.
@@ -88,7 +88,7 @@ public record MessageResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.I
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     ///     Set of 16 key-value pairs that can be attached to an object.
@@ -106,7 +106,7 @@ public record MessageResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.I
         ///     text and/or images. image_file text
         /// </summary>
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
 
         /// <summary>
         ///     The text content that is part of a message.

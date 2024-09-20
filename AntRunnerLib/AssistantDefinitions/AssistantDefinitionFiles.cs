@@ -43,9 +43,9 @@
         /// </summary>
         /// <param name="assistantName">The name of the assistant.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the list of files in the OpenAPI folder.</returns>
-        public static async Task<IEnumerable<string>?> GetFilesInOpenAPIFolder(string assistantName)
+        public static async Task<IEnumerable<string>?> GetFilesInOpenApiFolder(string assistantName)
         {
-            return FileStorage.GetFilesInOpenAPIFolder(assistantName) ?? await BlobStorage.GetFilesInOpenAPIFolder(assistantName);
+            return FileStorage.GetFilesInOpenApiFolder(assistantName) ?? await BlobStorage.GetFilesInOpenApiFolder(assistantName);
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ public record AssistantResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels
     ///     Files are ordered by their creation date in ascending order.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; set; }
+    public List<string>? FileIds { get; set; }
 
     /// <summary>
     ///     The Unix timestamp (in seconds) for when the assistant was created.
@@ -43,13 +43,13 @@ public record AssistantResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     ///     A list of tools enabled on the assistant.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<ToolDefinition> Tools { get; set; }
+    public List<ToolDefinition>? Tools { get; set; }
 
     /// <summary>
     /// A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool requires a list of vector store IDs.
@@ -101,7 +101,7 @@ public record AssistantResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels
     /// </summary>
     [JsonPropertyName("model")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Model { get; set; }
+    public string? Model { get; set; }
 
     /// <summary>
     ///     What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while

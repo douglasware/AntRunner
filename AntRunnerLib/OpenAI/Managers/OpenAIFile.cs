@@ -7,7 +7,7 @@ using OpenAI.ObjectModels.SharedModels;
 namespace OpenAI.Managers;
 
 #pragma warning disable CS1591
-public partial class OpenAIService : IFileService
+public partial class OpenAiService : IFileService
 #pragma warning restore CS1591
 {
     /// <inheritdoc />

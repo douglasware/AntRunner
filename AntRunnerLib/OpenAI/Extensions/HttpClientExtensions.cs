@@ -172,10 +172,10 @@ internal static class HttpClientExtensions
             Vary = response.Headers.Vary?.ToString(),
             XRequestId = response.Headers.GetHeaderValue("x-request-id"),
             StrictTransportSecurity = response.Headers.GetHeaderValue("strict-transport-security"),
-            CFCacheStatus = response.Headers.GetHeaderValue("cf-cache-status"),
+            CfCacheStatus = response.Headers.GetHeaderValue("cf-cache-status"),
             SetCookie = response.Headers.Contains("set-cookie") ? response.Headers.GetValues("set-cookie").ToList() : null,
             Server = response.Headers.Server?.ToString(),
-            CF_RAY = response.Headers.GetHeaderValue("cf-ray"),
+            CfRay = response.Headers.GetHeaderValue("cf-ray"),
             AltSvc = response.Headers.GetHeaderValue("alt-svc"),
             All = response.Headers.ToDictionary(x => x.Key, x => x.Value.AsEnumerable()),
 
@@ -192,7 +192,7 @@ internal static class HttpClientExtensions
                 ResetTokensUsageBased = response.Headers.GetHeaderValue("x-ratelimit-reset-tokens_usage_based")
             },
 
-            OpenAI = new()
+            OpenAi = new()
             {
                 Model = response.Headers.GetHeaderValue("openai-model"),
                 Organization = response.Headers.GetHeaderValue("openai-organization"),

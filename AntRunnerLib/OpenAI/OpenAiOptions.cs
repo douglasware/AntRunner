@@ -130,7 +130,7 @@ public class OpenAiOptions
     public bool UseBeta { get; set; } = false;
 
     /// <summary>
-    ///     Create an instance of this class with the necessary information to connect to the azure open ai api
+    ///     Create an instance of this class with the necessary information to connect to the azure open AI api
     /// </summary>
     /// <param name="resourceName">Resource Name of your Azure OpenAI resource</param>
     /// <param name="deploymentId">The id of your deployment of OpenAI</param>
@@ -150,7 +150,7 @@ public class OpenAiOptions
     }
 
     /// <summary>
-    ///     Create an instance of this class with the necessary information to connect to the azure open ai api
+    ///     Create an instance of this class with the necessary information to connect to the azure open AI api
     /// </summary>
     /// <param name="deploymentId">The id of your deployment of OpenAI</param>
     /// <param name="baseDomain">Base Domain of your Azure OpenAI service</param>

@@ -8,7 +8,7 @@ public record VectorStoreFileBatchObject : BaseResponse
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
 
     /// <summary>
@@ -22,15 +22,15 @@ public record VectorStoreFileBatchObject : BaseResponse
     ///     is attached to.
     /// </summary>
     [JsonPropertyName("vector_store_id")]
-    public string VectorStoreId { get; set; }
+    public string VectorStoreId { get; set; } = string.Empty;
 
     /// <summary>
     ///     The status of the vector store files batch, which can be either `in_progress`, `completed`, `cancelled` or
     ///     `failed`.
     /// </summary>
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; } 
 
     [JsonPropertyName("file_counts")]
-    public FileCounts FileCounts { get; set; }
+    public FileCounts? FileCounts { get; set; }
 }

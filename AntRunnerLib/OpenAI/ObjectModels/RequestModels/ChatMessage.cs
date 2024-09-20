@@ -10,10 +10,6 @@ namespace OpenAI.ObjectModels.RequestModels;
 /// </summary>
 public class ChatMessage
 {
-    public ChatMessage()
-    {
-    }
-
     /// <summary>
     /// </summary>
     /// <param name="role">The role of the author of this message. One of system, user, or assistant.</param>

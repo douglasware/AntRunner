@@ -5,7 +5,7 @@ using OpenAI.Interfaces;
 
 namespace OpenAI.Managers;
 
-public partial class OpenAIService : IOpenAIService, IDisposable
+public partial class OpenAiService : IOpenAiService, IDisposable
 {
     private readonly bool _disposeHttpClient;
     private readonly IOpenAiEndpointProvider _endpointProvider;
@@ -13,11 +13,11 @@ public partial class OpenAIService : IOpenAIService, IDisposable
     private string? _defaultModelId;
 
     [ActivatorUtilitiesConstructor]
-    public OpenAIService(IOptions<OpenAiOptions> settings, HttpClient httpClient) : this(settings.Value, httpClient)
+    public OpenAiService(IOptions<OpenAiOptions> settings, HttpClient httpClient) : this(settings.Value, httpClient)
     {
     }
 
-    public OpenAIService(OpenAiOptions settings, HttpClient? httpClient = null)
+    public OpenAiService(OpenAiOptions settings, HttpClient? httpClient = null)
     {
         settings.Validate();
 

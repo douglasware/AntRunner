@@ -15,5 +15,5 @@ public record DeletionStatusResponse : BaseResponse, IOpenAiModels.IId
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 }

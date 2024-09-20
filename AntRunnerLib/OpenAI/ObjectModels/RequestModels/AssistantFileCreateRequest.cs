@@ -9,5 +9,5 @@ public class AssistantFileCreateRequest
     ///     code_interpreter that can access files.
     /// </summary>
     [JsonPropertyName("file_id")]
-    public string FileId { get; set; }
+    public required string FileId { get; set; }
 }

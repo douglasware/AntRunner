@@ -60,7 +60,7 @@ public interface IFileService
     Task<FileContentResponse<T?>> RetrieveFileContent<T>(string fileId, CancellationToken cancellationToken = default);
 }
 
-public static class IFileServiceExtension
+public static class FileServiceExtension
 {
     public static Task<FileUploadResponse> FileUpload(this IFileService service, string purpose, Stream file, string fileName, CancellationToken cancellationToken = default)
     {

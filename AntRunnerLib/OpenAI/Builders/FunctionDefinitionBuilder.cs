@@ -70,8 +70,13 @@ public class FunctionDefinitionBuilder
     ///     Validates the name of the function.
     /// </summary>
     /// <param name="functionName">The name of the function to validate</param>
-    public static void ValidateName(string functionName)
+    public static void ValidateName(string? functionName)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            throw new ArgumentNullException(nameof(functionName), "Function name must not be null or empty.");
+        }
+
         var invalidChars = functionName.Where(ch => !ValidNameChars.Contains(ch)).ToList();
         if (functionName.Length > 64 || invalidChars.Count > 0)
         {

@@ -5,7 +5,7 @@ using OpenAI.ObjectModels.ResponseModels;
 
 namespace OpenAI.Managers;
 
-public partial class OpenAIService : IRunStepService
+public partial class OpenAiService : IRunStepService
 {
     /// <inheritdoc />
     public async Task<RunStepListResponse> RunStepsList(string threadId, string runId, PaginationRequest? request = null, CancellationToken cancellationToken = default)

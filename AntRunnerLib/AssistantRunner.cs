@@ -17,7 +17,7 @@ namespace AntRunnerLib
         /// <param name="config">The configuration for Azure OpenAI.</param>
         /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
         /// <returns>The output of the thread run including possible additional run output from addtional messages when using the default evaluator</returns>
-        public static async Task<ThreadRunOutput?> RunThread(AssistantRunOptions assistantRunOptions, AzureOpenAIConfig config, bool autoCreate = true)
+        public static async Task<ThreadRunOutput?> RunThread(AssistantRunOptions assistantRunOptions, AzureOpenAiConfig config, bool autoCreate = true)
         {
             // Retrieve the assistant ID using the assistant name from the configuration
             var assistantId = await AssistantUtility.GetAssistantId(assistantRunOptions!.AssistantName, config, autoCreate);
@@ -96,7 +96,7 @@ namespace AntRunnerLib
                             {
                                 break;
                             }
-                        };
+                        }
                     }
 
                     Trace.TraceInformation($"Dialog: {runResults.Dialog}");

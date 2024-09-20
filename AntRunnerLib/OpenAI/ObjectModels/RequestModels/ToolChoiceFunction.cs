@@ -16,7 +16,7 @@ public class ToolChoice
     ///     Check <see cref="StaticValues.CompletionStatics.ToolChoiceType" /> for possible values.
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     [JsonPropertyName("function")]
     public FunctionTool? Function { get; set; }
@@ -36,7 +36,7 @@ public class ToolChoice
     public class FunctionTool
     {
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }
 

@@ -8,16 +8,16 @@ namespace OpenAI.ObjectModels.SharedModels;
 public record MessageAnnotation
 {
     /// <summary>
-    ///     type can be：file_citation、file_path
+    /// type can be：file_citation、file_path
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
 
     /// <summary>
     ///     The text in the message content that needs to be replaced.
     /// </summary>
     [JsonPropertyName("text")]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
     [JsonPropertyName("start_index")]
     public int StartIndex { get; set; }
@@ -36,16 +36,23 @@ public record MessageAnnotation
 public record FileCitation
 {
     /// <summary>
-    ///     The ID of the specific File the citation/content  is from.
+    /// The ID of the specific File the citation/content  is from.
     /// </summary>
     [JsonPropertyName("file_id")]
-    public string FileId { get; set; }
+    public string FileId { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The specific quote in the file.
+    /// A patch to file the file name by fetching the file with file_id
+    /// </summary>
+    [JsonPropertyName("file_name")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The specific quote in the file. - always null currently from OpenAI api
     /// </summary>
     [JsonPropertyName("quote")]
-    public string Quote { get; set; }
+    public string? Quote { get; set; }
 }
 
 public record FilePathAnnotation
@@ -54,5 +61,5 @@ public record FilePathAnnotation
     /// The ID of the file that was generated.
     /// </summary>
     [JsonPropertyName("file_id")]
-    public string FileId { get; set; }
+    public string FileId { get; set; } = string.Empty;
 }

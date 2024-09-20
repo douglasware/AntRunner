@@ -1,6 +1,6 @@
 ﻿namespace OpenAI.Interfaces;
 
-public interface IOpenAIService
+public interface IOpenAiService
 {
     /// <summary>
     ///     Files are used to upload documents that can be used across features like FineTunes />

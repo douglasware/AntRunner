@@ -80,7 +80,7 @@ namespace AntRunnerLib.AssistantDefinitions
             return null;
         }
 
-        internal static IEnumerable<string>? GetFilesInOpenAPIFolder(string assistantName)
+        internal static IEnumerable<string>? GetFilesInOpenApiFolder(string assistantName)
         {
             var folderPath = GetFolderPath(assistantName, "OpenAPI");
             return EnumerateFilesInFolder(folderPath)?.Where(o => !o.Contains("auth.json", StringComparison.OrdinalIgnoreCase));

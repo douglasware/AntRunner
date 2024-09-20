@@ -14,14 +14,14 @@ namespace AntRunnerLib
         public AssistantRunOptions? AssistantRunOptions { get; set; }
 
         /// <summary>
-        /// Assistant to run Id
+        /// Assistant to run
         /// </summary>
         public string AssistantId { get; set; } = string.Empty;
 
         /// <summary>
         /// Endpoint and API key
         /// </summary>
-        public AzureOpenAIConfig? AzureOpenAIConfig { get; set; }
+        public AzureOpenAiConfig? AzureOpenAiConfig { get; set; }
         
         /// <summary>
         /// Time the orchestration started
@@ -34,12 +34,12 @@ namespace AntRunnerLib
         public string? ThreadId { get; set; }
 
         /// <summary>
-        /// ID of the the run
+        /// ID of the run
         /// </summary>
         public string? ThreadRunId { get; set; }
 
         /// <summary>
-        /// AssistantDefintion from storage for use in the API to create an assistant
+        /// Assistant definition from storage for use in the API to create an assistant
         /// </summary>
         public AssistantCreateRequest? AssistantDefinition { get; set; }
 

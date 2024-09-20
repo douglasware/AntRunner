@@ -12,7 +12,7 @@ public record VectorStoreFileObject : BaseResponse
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
 
     /// <summary>
@@ -32,14 +32,14 @@ public record VectorStoreFileObject : BaseResponse
     ///     is attached to.
     /// </summary>
     [JsonPropertyName("vector_store_id")]
-    public string VectorStoreId { get; set; }
+    public string VectorStoreId { get; set; } = string.Empty;
 
     /// <summary>
     ///     The status of the vector store file, which can be either `in_progress`, `completed`, `cancelled`, or `failed`. The
     ///     status `completed` indicates that the vector store file is ready for use.
     /// </summary>
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; }
 
     /// <summary>
     ///     The last error associated with this vector store file. Will be `null` if there are no errors.

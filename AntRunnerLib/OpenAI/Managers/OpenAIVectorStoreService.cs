@@ -6,7 +6,7 @@ using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
 
-public partial class OpenAIService : IVectorStores
+public partial class OpenAiService : IVectorStores
 {
     /// <inheritdoc />
     public async Task<VectorStoreListObjectResponse> ListVectorStores(PaginationRequest request, CancellationToken cancellationToken = default)
@@ -38,7 +38,7 @@ public partial class OpenAIService : IVectorStores
     }
 }
 
-public partial class OpenAIService : IVectorStoreFiles
+public partial class OpenAiService : IVectorStoreFiles
 {
     public async Task<VectorStoreFileListObject> ListVectorStoreFiles(string vectorStoreId, VectorStoreFileListRequest vectorStoreFileListRequest, CancellationToken cancellationToken = default)
     {

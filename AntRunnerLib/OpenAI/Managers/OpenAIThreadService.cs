@@ -5,7 +5,7 @@ using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
 
-public partial class OpenAIService : IThreadService
+public partial class OpenAiService : IThreadService
 {
     /// <summary>
     ///     Create a thread.

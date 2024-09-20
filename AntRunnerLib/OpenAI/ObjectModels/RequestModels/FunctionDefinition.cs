@@ -13,7 +13,7 @@ public class FunctionDefinition
     ///     or contain underscores and dashes, with a maximum length of 64.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     ///     A description of what the function does, used by the model to choose when and how to call the function.

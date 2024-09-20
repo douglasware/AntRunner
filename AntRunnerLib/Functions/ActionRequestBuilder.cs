@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace FunctionCalling
 {
     /// <summary>
-    /// WebA[i indicates an external API call, while LocalFunction indicates a local function call based on a valid static method in a loaded assembly.
+    /// WebApi indicates an external API call, while LocalFunction indicates a local function call based on a valid static method in a loaded assembly.
     /// </summary>
     public enum ActionType
     {
@@ -30,13 +30,7 @@ namespace FunctionCalling
         /// <summary>
         /// Gets the type of action to perform.
         /// </summary>
-        public ActionType ActionType
-        {
-            get
-            {
-                return (new Uri(BaseUrl)).Scheme.Contains("tool", StringComparison.InvariantCultureIgnoreCase) ? ActionType.LocalFunction : ActionType.WebApi;
-            }
-        }
+        public ActionType ActionType => (new Uri(BaseUrl)).Scheme.Contains("tool", StringComparison.InvariantCultureIgnoreCase) ? ActionType.LocalFunction : ActionType.WebApi;
 
         /// <summary>
         /// Gets or sets the baseUrl of the request.
@@ -71,7 +65,7 @@ namespace FunctionCalling
         /// <summary>
         /// Gets the authentication headers for the request.
         /// </summary>
-        public Dictionary<string, string> AuthHeaders { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> AuthHeaders { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the additional parameters for the request.
@@ -81,7 +75,7 @@ namespace FunctionCalling
         /// <summary>
         /// Gets or sets a value indicating whether the request uses OAuth for authentication.
         /// </summary>
-        public bool oAuth { get; set; } = false;
+        public bool OAuth { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionRequestBuilder"/> class with specified parameters.
@@ -112,7 +106,7 @@ namespace FunctionCalling
             IsConsequential = isConsequential;
             ContentType = contentType ?? throw new ArgumentNullException(nameof(contentType));
             AuthHeaders = authHeaders;
-            this.oAuth = oAuth;
+            this.OAuth = oAuth;
 
             // Initialize the HTTP Client Factory if not already done
             if (_httpClientFactory == null)
@@ -138,7 +132,7 @@ namespace FunctionCalling
             }
 
             // Construct the complete URL
-            string url = CreateURL(BaseUrl, Path);
+            string url = CreateUrl(BaseUrl, Path);
 
             // Append query parameters to the URL if it's a GET request
             if (Method.Equals(HttpMethod.Get.Method, StringComparison.OrdinalIgnoreCase) && Params != null)
@@ -158,7 +152,7 @@ namespace FunctionCalling
             }
 
             // Add OAuth token to the request if specified
-            if (oAuth)
+            if (OAuth)
             {
                 if (string.IsNullOrEmpty(oAuthUserAccessToken)) throw new ArgumentNullException("No oAuth token");
                 request.Headers.TryAddWithoutValidation("Authorization", oAuthUserAccessToken);
@@ -274,7 +268,7 @@ namespace FunctionCalling
         /// <param name="domain">The baseUrl of the request.</param>
         /// <param name="path">The path of the request.</param>
         /// <returns>The complete URL as a string.</returns>
-        private string CreateURL(string domain, string path)
+        private string CreateUrl(string domain, string path)
         {
             var uri = new Uri(new Uri(domain), path);
             return uri.ToString();

@@ -17,7 +17,7 @@ namespace FunctionCalling
         /// </summary>
         /// <param name="specString">The OpenAPI specification string in JSON or YAML format.</param>
         /// <returns>A <see cref="ValidationResult"/> indicating the validation result.</returns>
-        public ValidationResult ValidateAndParseOpenAPISpec(string specString)
+        public ValidationResult ValidateAndParseOpenApiSpec(string specString)
         {
             try
             {
@@ -281,9 +281,8 @@ namespace FunctionCalling
                 {
                     var domainAuth = JsonSerializer.Deserialize<DomainAuth>(authJson);
 
-                    if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.ContainsKey(host))
+                    if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out var actionAuthConfig))
                     {
-                        var actionAuthConfig = domainAuth.HostAuthorizationConfigurations[host];
                         if(actionAuthConfig.AuthType == AuthType.service_http && actionAuthConfig.HeaderKey != null && actionAuthConfig.HeaderValueEnvironmentVariable != null && Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable) != null)
                         {
                             authHeaders[actionAuthConfig.HeaderKey] = Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable)!;

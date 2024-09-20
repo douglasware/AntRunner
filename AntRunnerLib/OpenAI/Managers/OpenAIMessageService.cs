@@ -6,7 +6,7 @@ using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
 
-public partial class OpenAIService : IMessageService
+public partial class OpenAiService : IMessageService
 {
     /// <summary>
     ///     Create a message.

@@ -9,31 +9,31 @@ namespace AntRunnerLib
     /// </summary>
     public class ClientUtility
     {
-        public static OpenAIService? _instance;
-        public static AzureOpenAIConfig _lastConfig = new();
+        public static OpenAiService? Instance;
+        public static AzureOpenAiConfig LastConfig = new();
 
         /// <summary>
         /// Gets the OpenAI client with the specified configuration.
         /// </summary>
-        /// <param name="azureOpenAIConfig">The Azure OpenAI configuration.</param>
+        /// <param name="azureOpenAiConfig">The Azure OpenAI configuration.</param>
         /// <returns>The OpenAI client.</returns>
-        public static OpenAIService GetOpenAIClient(AzureOpenAIConfig? azureOpenAIConfig)
+        public static OpenAiService GetOpenAiClient(AzureOpenAiConfig? azureOpenAiConfig)
         {
-            if(_lastConfig != azureOpenAIConfig)
+            if(LastConfig != azureOpenAiConfig)
             {
-                _instance = null;
-                _lastConfig = azureOpenAIConfig ?? new();
+                Instance = null;
+                LastConfig = azureOpenAiConfig ?? new();
             }
 
-            _instance ??= new OpenAIService(new OpenAiOptions()
+            Instance ??= new OpenAiService(new OpenAiOptions()
                 {
                     ProviderType = ProviderType.Azure,
-                    ApiVersion = azureOpenAIConfig?.ApiVersion ?? "2024-05-01-preview",
-                    ResourceName = azureOpenAIConfig?.ResourceName,
-                    ApiKey = azureOpenAIConfig?.ApiKey ?? "",
-                    DeploymentId = azureOpenAIConfig?.DeploymentId ?? ""
+                    ApiVersion = azureOpenAiConfig?.ApiVersion ?? "2024-05-01-preview",
+                    ResourceName = azureOpenAiConfig?.ResourceName,
+                    ApiKey = azureOpenAiConfig?.ApiKey ?? "",
+                    DeploymentId = azureOpenAiConfig?.DeploymentId ?? ""
                 });
-            return _instance;
+            return Instance;
         }
     }
 }

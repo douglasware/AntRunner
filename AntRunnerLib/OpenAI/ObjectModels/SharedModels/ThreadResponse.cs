@@ -24,7 +24,7 @@ public record ThreadResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.IC
     ///     The identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     ///     Set of 16 key-value pairs that can be attached to an object.

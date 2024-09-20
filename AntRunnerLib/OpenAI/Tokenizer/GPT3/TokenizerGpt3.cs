@@ -19,16 +19,16 @@ public static class TokenizerGpt3
     ///     Encode This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
     /// </summary>
     /// <param name="text"></param>
-    /// <param name="cleanUpCREOL">set it true to get rid of CR</param>
+    /// <param name="cleanUpCreol">set it true to get rid of CR</param>
     /// <returns></returns>
-    public static IEnumerable<int> Encode(string text, bool cleanUpCREOL = false)
+    public static IEnumerable<int> Encode(string text, bool cleanUpCreol = false)
     {
         if (string.IsNullOrEmpty(text))
         {
             yield break;
         }
 
-        if (cleanUpCREOL)
+        if (cleanUpCreol)
         {
             text = text.Replace("\r", "");
         }
@@ -43,16 +43,16 @@ public static class TokenizerGpt3
     ///     Get token count. This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
     /// </summary>
     /// <param name="text"></param>
-    /// <param name="cleanUpCREOL">set it true to get rid of CR</param>
+    /// <param name="cleanUpCreol">set it true to get rid of CR</param>
     /// <returns></returns>
-    public static int TokenCount(string text, bool cleanUpCREOL = false)
+    public static int TokenCount(string text, bool cleanUpCreol = false)
     {
         if (string.IsNullOrEmpty(text))
         {
             return 0;
         }
 
-        if (cleanUpCREOL)
+        if (cleanUpCreol)
         {
             text = text.Replace("\r", "");
         }

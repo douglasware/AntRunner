@@ -9,7 +9,7 @@ public class MessageCreateRequest : IOpenAiModels.IMetaData
     {
     }
 
-    public MessageCreateRequest(string role, MessageContentOneOfType content, List<Attachment>? attachments = null, Dictionary<string, string>? metaData = null)
+    public MessageCreateRequest(string role, MessageContentOneOfType? content, List<Attachment>? attachments = null, Dictionary<string, string>? metaData = null)
     {
         Role = role;
         Content = content;
@@ -29,7 +29,7 @@ public class MessageCreateRequest : IOpenAiModels.IMetaData
     /// </summary>
     [JsonPropertyName("content")]
 
-    public MessageContentOneOfType Content { get; set; }
+    public MessageContentOneOfType? Content { get; set; }
 
     /// <summary>
     ///     A list of files attached to the message, and the tools they should be added to.
@@ -57,11 +57,11 @@ public class Attachment
     ///     .
     /// </summary>
     [JsonPropertyName("file_id")]
-    public string FileId { get; set; }
+    public string? FileId { get; set; }
 
     /// <summary>
     ///     The tools to add this file to.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<ToolDefinition> Tools { get; set; }
+    public List<ToolDefinition>? Tools { get; set; }
 }

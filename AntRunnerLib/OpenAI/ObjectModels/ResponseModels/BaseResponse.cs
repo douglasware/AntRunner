@@ -38,7 +38,7 @@ public record RateLimitInfo
     public string? ResetTokensUsageBased { get; set; }
 }
 
-public record OpenAIInfo
+public record OpenAiInfo
 {
     public string? Model { get; set; }
     public string? Organization { get; set; }
@@ -55,14 +55,14 @@ public record ResponseHeaderValues
     public string? Vary { get; set; }
     public string? XRequestId { get; set; }
     public string? StrictTransportSecurity { get; set; }
-    public string? CFCacheStatus { get; set; }
+    public string? CfCacheStatus { get; set; }
     public List<string>? SetCookie { get; set; }
     public string? Server { get; set; }
-    public string? CF_RAY { get; set; }
+    public string? CfRay { get; set; }
     public string? AltSvc { get; set; }
     public Dictionary<string, IEnumerable<string>>? All { get; set; }
     public RateLimitInfo? RateLimits { get; set; }
-    public OpenAIInfo? OpenAI { get; set; }
+    public OpenAiInfo? OpenAi { get; set; }
 }
 
 public record DataWithPagingBaseResponse<T> : BaseResponse where T : IList
@@ -71,10 +71,10 @@ public record DataWithPagingBaseResponse<T> : BaseResponse where T : IList
     public T? Data { get; set; }
 
     [JsonPropertyName("first_id")]
-    public string FirstId { get; set; }
+    public string? FirstId { get; set; }
 
     [JsonPropertyName("last_id")]
-    public string LastId { get; set; }
+    public string? LastId { get; set; }
 
     [JsonPropertyName("has_more")]
     public bool HasMore { get; set; }
@@ -108,7 +108,7 @@ public class Error
     public string? Message { get; private set; }
 
     [JsonIgnore]
-    public List<string?> Messages { get; private set; }
+    public List<string?>? Messages { get; private set; }
 
     [JsonPropertyName("message")]
     [JsonConverter(typeof(MessageConverter))]
