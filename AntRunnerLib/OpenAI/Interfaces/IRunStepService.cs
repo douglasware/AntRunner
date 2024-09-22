@@ -6,7 +6,7 @@ namespace OpenAI.Interfaces;
 public interface IRunStepService
 {
     /// <summary>
-    ///     Returns a list of run steps belonging to a run.
+    /// Returns a list of run steps belonging to a run.
     /// </summary>
     /// <param name="threadId">The ID of the thread the run and run steps belong to.</param>
     /// <param name="runId">The ID of the run steps belong to.</param>
@@ -16,7 +16,7 @@ public interface IRunStepService
     Task<RunStepListResponse> RunStepsList(string threadId, string runId, PaginationRequest? request = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Retrieves a run step.
+    /// Retrieves a run step.
     /// </summary>
     /// <param name="threadId">The ID of the thread to which the run and run step belongs.</param>
     /// <param name="runId">The ID of the run to which the run step belongs.</param>

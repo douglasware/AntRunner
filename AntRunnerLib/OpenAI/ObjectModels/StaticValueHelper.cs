@@ -32,13 +32,13 @@ public class StaticValues
             public static string Size1024 => "1024x1024";
 
             /// <summary>
-            ///     Only dall-e-3 model
+            /// Only dall-e-3 model
             /// </summary>
             // ReSharper disable once InconsistentNaming
             public static string Size1792x1024 => "1792x1024";
 
             /// <summary>
-            ///     Only dall-e-3 model
+            /// Only dall-e-3 model
             /// </summary>
             // ReSharper disable once InconsistentNaming
             public static string Size1024x1792 => "1024x1792";

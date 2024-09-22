@@ -6,7 +6,7 @@ namespace OpenAI.Interfaces;
 public interface IThreadService
 {
     /// <summary>
-    ///     Create a thread.
+    /// Create a thread.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
@@ -14,7 +14,7 @@ public interface IThreadService
     Task<ThreadResponse> ThreadCreate(ThreadCreateRequest? request = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Retrieves a thread.
+    /// Retrieves a thread.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="cancellationToken"></param>
@@ -22,7 +22,7 @@ public interface IThreadService
     Task<ThreadResponse> ThreadRetrieve(string threadId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Delete a thread.
+    /// Delete a thread.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="cancellationToken"></param>
@@ -30,7 +30,7 @@ public interface IThreadService
     Task<DeletionStatusResponse> ThreadDelete(string threadId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Modifies a thread.
+    /// Modifies a thread.
     /// </summary>
     Task<ThreadResponse> ModifyThread(string threadId, ModifyThreadRequest requestBody, CancellationToken cancellationToken = default);
 }

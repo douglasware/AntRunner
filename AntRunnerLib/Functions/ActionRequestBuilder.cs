@@ -73,6 +73,14 @@ namespace FunctionCalling
         public Dictionary<string, object>? Params { get; set; }
 
         /// <summary>
+        /// Gets or sets the response schemas for the API operations.
+        /// This dictionary holds the response schema for the `200` status code for each operation.
+        /// The key is the operation ID, and the value is the JSON schema representing the successful response.
+        /// </summary>
+        public Dictionary<string, JsonElement> ResponseSchemas { get; set; } = new ();
+
+
+        /// <summary>
         /// Gets or sets a value indicating whether the request uses OAuth for authentication.
         /// </summary>
         public bool OAuth { get; set; }

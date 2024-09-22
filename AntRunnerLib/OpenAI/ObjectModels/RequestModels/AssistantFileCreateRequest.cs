@@ -5,8 +5,8 @@ namespace OpenAI.ObjectModels.RequestModels;
 public class AssistantFileCreateRequest
 {
     /// <summary>
-    ///     A File ID (with purpose="assistants") that the assistant should use. Useful for tools like retrieval and
-    ///     code_interpreter that can access files.
+    /// A File ID (with purpose="assistants") that the assistant should use. Useful for tools like retrieval and
+    /// code_interpreter that can access files.
     /// </summary>
     [JsonPropertyName("file_id")]
     public required string FileId { get; set; }

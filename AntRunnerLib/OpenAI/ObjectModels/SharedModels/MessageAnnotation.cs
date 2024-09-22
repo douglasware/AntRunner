@@ -3,7 +3,7 @@
 namespace OpenAI.ObjectModels.SharedModels;
 
 /// <summary>
-///     File citation |File path
+/// File citation |File path
 /// </summary>
 public record MessageAnnotation
 {
@@ -14,7 +14,7 @@ public record MessageAnnotation
     public string Type { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The text in the message content that needs to be replaced.
+    /// The text in the message content that needs to be replaced.
     /// </summary>
     [JsonPropertyName("text")]
     public string? Text { get; set; }

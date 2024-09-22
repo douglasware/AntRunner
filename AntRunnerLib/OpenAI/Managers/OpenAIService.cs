@@ -64,7 +64,7 @@ public partial class OpenAiService : IOpenAiService, IDisposable
     }
 
     /// <summary>
-    ///     Method to dispose the HttpContext if created internally.
+    /// Method to dispose the HttpContext if created internally.
     /// </summary>
     public void Dispose()
     {
@@ -79,7 +79,7 @@ public partial class OpenAiService : IOpenAiService, IDisposable
     public IBetaService Beta => this;
 
     /// <summary>
-    ///     Sets default Model Id
+    /// Sets default Model Id
     /// </summary>
     /// <param name="modelId"></param>
     public void SetDefaultModelId(string modelId)
@@ -88,7 +88,7 @@ public partial class OpenAiService : IOpenAiService, IDisposable
     }
 
     /// <summary>
-    ///     Get default Model Id
+    /// Get default Model Id
     /// </summary>
     /// <returns></returns>
     public string? GetDefaultModelId()

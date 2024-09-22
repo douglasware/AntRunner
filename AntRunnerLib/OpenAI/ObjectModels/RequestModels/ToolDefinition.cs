@@ -4,19 +4,19 @@ using System.Text.Json.Serialization;
 namespace OpenAI.ObjectModels.RequestModels;
 
 /// <summary>
-///     Definition of a valid tool.
+/// Definition of a valid tool.
 /// </summary>
 public class ToolDefinition
 {
     /// <summary>
-    ///     Required. The type of the tool. Currently, only function is supported.
+    /// Required. The type of the tool. Currently, only function is supported.
     /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
 
     /// <summary>
-    ///     A list of functions the model may generate JSON inputs for.
+    /// A list of functions the model may generate JSON inputs for.
     /// </summary>
     [JsonPropertyName("function")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

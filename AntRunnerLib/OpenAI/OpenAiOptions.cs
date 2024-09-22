@@ -1,17 +1,17 @@
 ﻿namespace OpenAI;
 
 /// <summary>
-///     Provider Type
+/// Provider Type
 /// </summary>
 public enum ProviderType
 {
     /// <summary>
-    ///     OpenAi Provider
+    /// OpenAi Provider
     /// </summary>
     OpenAi = 1,
 
     /// <summary>
-    ///     Azure Provider
+    /// Azure Provider
     /// </summary>
     Azure = 2
 }
@@ -24,7 +24,7 @@ public class OpenAiOptions
     private const string OpenAiDefaultAssistantsApiVersion = "v2";
 
     /// <summary>
-    ///     Setting key for Json Setting Bindings
+    /// Setting key for Json Setting Bindings
     /// </summary>
     public static readonly string SettingKey = "OpenAIServiceOptions";
 
@@ -33,37 +33,37 @@ public class OpenAiOptions
     private string? _baseDomain;
 
     /// <summary>
-    ///     Get Provider Type
+    /// Get Provider Type
     /// </summary>
     public ProviderType ProviderType { get; set; } = ProviderType.OpenAi;
 
     /// <summary>
-    ///     Calls to the Assistants API require that you pass a beta HTTP header.
-    ///     This is handled automatically if you’re using OpenAI’s official Python or Node.js SDKs.
-    ///     <a href="https://platform.openai.com/docs/assistants/overview">assistants overview</a> page.
+    /// Calls to the Assistants API require that you pass a beta HTTP header.
+    /// This is handled automatically if you’re using OpenAI’s official Python or Node.js SDKs.
+    /// <a href="https://platform.openai.com/docs/assistants/overview">assistants overview</a> page.
     /// </summary>
     public string? Assistants => $"assistants={OpenAiDefaultAssistantsApiVersion}";
 
     /// <summary>
-    ///     For users who belong to multiple organizations, you can pass a header to specify which organization is used for an
-    ///     API request. Usage from these API requests will count against the specified organization's subscription quota.
-    ///     Organization IDs can be found on your
-    ///     <a href="https://platform.openai.com/account/org-settings">Organization settings</a> page.
+    /// For users who belong to multiple organizations, you can pass a header to specify which organization is used for an
+    /// API request. Usage from these API requests will count against the specified organization's subscription quota.
+    /// Organization IDs can be found on your
+    /// <a href="https://platform.openai.com/account/org-settings">Organization settings</a> page.
     /// </summary>
     public string? Organization { get; set; }
 
     /// <summary>
-    ///     The OpenAI API uses API keys for authentication. Visit your
-    ///     <a href="https://platform.openai.com/account/api-keys">API Keys page</a> to retrieve the API key you'll use in
-    ///     your requests.
-    ///     Remember that your API key is a secret! Do not share it with others or expose it in any client-side code(browsers,
-    ///     apps). Production requests must be routed through your own backend server where your API key can be securely loaded
-    ///     from an environment variable or key management service.
+    /// The OpenAI API uses API keys for authentication. Visit your
+    /// <a href="https://platform.openai.com/account/api-keys">API Keys page</a> to retrieve the API key you'll use in
+    /// your requests.
+    /// Remember that your API key is a secret! Do not share it with others or expose it in any client-side code(browsers,
+    /// apps). Production requests must be routed through your own backend server where your API key can be securely loaded
+    /// from an environment variable or key management service.
     /// </summary>
     public string ApiKey { get; set; } = null!;
 
     /// <summary>
-    ///     Default Api Version
+    /// Default Api Version
     /// </summary>
     public string ApiVersion
     {
@@ -80,7 +80,7 @@ public class OpenAiOptions
     }
 
     /// <summary>
-    ///     Base Domain
+    /// Base Domain
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public string BaseDomain
@@ -101,17 +101,17 @@ public class OpenAiOptions
     }
 
     /// <summary>
-    ///     Azure Deployment Id
+    /// Azure Deployment Id
     /// </summary>
     public string? DeploymentId { get; set; }
 
     /// <summary>
-    ///     Azure Resource Name
+    /// Azure Resource Name
     /// </summary>
     public string? ResourceName { get; set; }
 
     /// <summary>
-    ///     Default model id. If you are working with only one model, this will save you from few line extra code.
+    /// Default model id. If you are working with only one model, this will save you from few line extra code.
     /// </summary>
     [Obsolete("Use Default Model Id")]
     public string? DefaultEngineId
@@ -123,14 +123,14 @@ public class OpenAiOptions
     public bool ValidateApiOptions { get; set; } = true;
 
     /// <summary>
-    ///     Default model id. If you are working with only one model, this will save you from few line extra code.
+    /// Default model id. If you are working with only one model, this will save you from few line extra code.
     /// </summary>
     public string? DefaultModelId { get; set; }
 
     public bool UseBeta { get; set; } = false;
 
     /// <summary>
-    ///     Create an instance of this class with the necessary information to connect to the azure open AI api
+    /// Create an instance of this class with the necessary information to connect to the azure open AI api
     /// </summary>
     /// <param name="resourceName">Resource Name of your Azure OpenAI resource</param>
     /// <param name="deploymentId">The id of your deployment of OpenAI</param>
@@ -150,7 +150,7 @@ public class OpenAiOptions
     }
 
     /// <summary>
-    ///     Create an instance of this class with the necessary information to connect to the azure open AI api
+    /// Create an instance of this class with the necessary information to connect to the azure open AI api
     /// </summary>
     /// <param name="deploymentId">The id of your deployment of OpenAI</param>
     /// <param name="baseDomain">Base Domain of your Azure OpenAI service</param>
@@ -170,7 +170,7 @@ public class OpenAiOptions
     }
 
     /// <summary>
-    ///     Validate Settings
+    /// Validate Settings
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
     public void Validate()

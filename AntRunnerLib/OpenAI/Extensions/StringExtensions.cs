@@ -1,12 +1,12 @@
 ﻿namespace OpenAI.Extensions;
 
 /// <summary>
-///     Extension methods for string manipulation
+/// Extension methods for string manipulation
 /// </summary>
 public static class StringExtensions
 {
     /// <summary>
-    ///     Remove the search string from the beginning of string if it exists
+    /// Remove the search string from the beginning of string if it exists
     /// </summary>
     /// <param name="text"></param>
     /// <param name="search"></param>

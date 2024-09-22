@@ -10,7 +10,7 @@ namespace OpenAI.Managers;
 public partial class OpenAiService : IRunService
 {
     /// <summary>
-    ///     Create a run.
+    /// Create a run.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="request"></param>
@@ -46,7 +46,7 @@ public partial class OpenAiService : IRunService
     }
 
     /// <summary>
-    ///     Retrieves a run.
+    /// Retrieves a run.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="runId"></param>
@@ -69,7 +69,7 @@ public partial class OpenAiService : IRunService
     }
 
     /// <summary>
-    ///     Cancels a run that is in_progress.
+    /// Cancels a run that is in_progress.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="runId"></param>
@@ -87,12 +87,12 @@ public partial class OpenAiService : IRunService
     }
 
     /// <summary>
-    ///     Submit tool outputs to run
-    ///     <para>
-    ///         When a run has the status: "requires_action" and required_action.type is submit_tool_outputs,
-    ///         this endpoint can be used to submit the outputs from the tool calls once they're all completed.
-    ///         All outputs must be submitted in a single request.
-    ///     </para>
+    /// Submit tool outputs to run
+    /// <para>
+    ///     When a run has the status: "requires_action" and required_action.type is submit_tool_outputs,
+    ///     this endpoint can be used to submit the outputs from the tool calls once they're all completed.
+    ///     All outputs must be submitted in a single request.
+    /// </para>
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="runId"></param>

@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace OpenAI.Tokenizer.GPT3;
 
 /// <summary>
-///     GPT3 Settings.
+/// GPT3 Settings.
 /// </summary>
 internal static class TokenizerGpt3Settings
 {

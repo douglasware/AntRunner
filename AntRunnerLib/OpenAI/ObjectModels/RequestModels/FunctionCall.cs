@@ -4,21 +4,21 @@ using System.Text.Json.Serialization;
 namespace OpenAI.ObjectModels.RequestModels;
 
 /// <summary>
-///     Describes a function call returned from GPT.
-///     A function call contains a function name, and a dictionary
-///     mapping function argument names to their values.
+/// Describes a function call returned from GPT.
+/// A function call contains a function name, and a dictionary
+/// mapping function argument names to their values.
 /// </summary>
 public class FunctionCall
 {
     /// <summary>
-    ///     Function name
+    /// Function name
     /// </summary>
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
     /// <summary>
-    ///     Function arguments, returned as a JSON-encoded dictionary mapping
-    ///     argument names to argument values.
+    /// Function arguments, returned as a JSON-encoded dictionary mapping
+    /// argument names to argument values.
     /// </summary>
     [JsonPropertyName("arguments")]
     public string? Arguments { get; set; }

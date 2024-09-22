@@ -227,6 +227,22 @@ namespace FunctionCalling
                         }
                     }
 
+                    var responseSchemas = new Dictionary<string, JsonElement>();
+                    if (operationObj.TryGetProperty("responses", out var responses))
+                    {
+                        foreach (var response in responses.EnumerateObject())
+                        {
+                            if (response.Name == "200" && response.Value.TryGetProperty("content", out var content))
+                            {
+                                var mediaType = content.EnumerateObject().FirstOrDefault();
+                                var schema = mediaType.Value.GetProperty("schema");
+
+                                responseSchemas["200"] = schema;
+                                break;
+                            }
+                        }
+                    }
+
                     // Construct ParametersDefinition from properties and required fields
                     var parametersDefinition = new ParametersDefinition
                     {
@@ -241,7 +257,8 @@ namespace FunctionCalling
                         Name = operationId ?? throw new InvalidOperationException("Operation ID not found"),
                         Description = description ?? string.Empty,
                         Parameters = parametersDefinition,
-                        ContentType = contentType
+                        ContentType = contentType,
+                        ResponseSchemas = responseSchemas
                     };
 
                     // Wrap FunctionDefinition in a ToolDefinition
@@ -283,11 +300,11 @@ namespace FunctionCalling
 
                     if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out var actionAuthConfig))
                     {
-                        if(actionAuthConfig.AuthType == AuthType.service_http && actionAuthConfig.HeaderKey != null && actionAuthConfig.HeaderValueEnvironmentVariable != null && Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable) != null)
+                        if (actionAuthConfig.AuthType == AuthType.service_http && actionAuthConfig.HeaderKey != null && actionAuthConfig.HeaderValueEnvironmentVariable != null && Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable) != null)
                         {
                             authHeaders[actionAuthConfig.HeaderKey] = Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable)!;
                         }
-                        else if(actionAuthConfig.AuthType == AuthType.azure_oauth)
+                        else if (actionAuthConfig.AuthType == AuthType.azure_oauth)
                         {
                             oAuth = true;
                         }
@@ -305,17 +322,23 @@ namespace FunctionCalling
                         : $"{methodProperty.Name}_{pathProperty.Name}";
 
                     var toolDefinition = toolDefinitions.FirstOrDefault(o => o.Function?.AsObject?.Name == operationId);
+                    var responseSchemas = toolDefinition?.Function?.AsObject?.ResponseSchemas;
 
                     var actionRequest = new ActionRequestBuilder(
                         baseUrl,
                         pathProperty.Name,
                         methodProperty.Name,
                         operationId!,
-                        false, 
+                        false,
                         toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
                         authHeaders,
                         oAuth
                     );
+
+                    if (responseSchemas != null && responseSchemas.ContainsKey("200"))
+                    {
+                        actionRequest.ResponseSchemas["200"] = responseSchemas["200"];
+                    }
 
                     requestBuilders[operationId!] = actionRequest;
                 }

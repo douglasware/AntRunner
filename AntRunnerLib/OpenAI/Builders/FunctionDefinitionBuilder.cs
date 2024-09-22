@@ -4,19 +4,19 @@ using OpenAI.ObjectModels.SharedModels;
 namespace OpenAI.Builders;
 
 /// <summary>
-///     FunctionDefinitionBuilder is used to build and validate a FunctionDefinition object.
+/// FunctionDefinitionBuilder is used to build and validate a FunctionDefinition object.
 /// </summary>
 public class FunctionDefinitionBuilder
 {
     /// <summary>
-    ///     String constant for validation of function name.
+    /// String constant for validation of function name.
     /// </summary>
     private const string ValidNameChars = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789-_";
 
     private readonly FunctionDefinition _definition;
 
     /// <summary>
-    ///     Initializes a new instance of FunctionDefinitionBuilder.
+    /// Initializes a new instance of FunctionDefinitionBuilder.
     /// </summary>
     /// <param name="name">The name of the function</param>
     /// <param name="description">The optional description of the function</param>
@@ -48,7 +48,7 @@ public class FunctionDefinitionBuilder
     }
 
     /// <summary>
-    ///     Validates the function definition.
+    /// Validates the function definition.
     /// </summary>
     /// <returns>The FunctionDefinitionBuilder instance for fluent configuration</returns>
     public FunctionDefinitionBuilder Validate()
@@ -58,7 +58,7 @@ public class FunctionDefinitionBuilder
     }
 
     /// <summary>
-    ///     Builds the FunctionDefinition object.
+    /// Builds the FunctionDefinition object.
     /// </summary>
     /// <returns>The built FunctionDefinition object</returns>
     public FunctionDefinition Build()
@@ -67,7 +67,7 @@ public class FunctionDefinitionBuilder
     }
 
     /// <summary>
-    ///     Validates the name of the function.
+    /// Validates the name of the function.
     /// </summary>
     /// <param name="functionName">The name of the function to validate</param>
     public static void ValidateName(string? functionName)

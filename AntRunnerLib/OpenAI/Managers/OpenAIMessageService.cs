@@ -9,7 +9,7 @@ namespace OpenAI.Managers;
 public partial class OpenAiService : IMessageService
 {
     /// <summary>
-    ///     Create a message.
+    /// Create a message.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="request"></param>
@@ -27,7 +27,7 @@ public partial class OpenAiService : IMessageService
     }
 
     /// <summary>
-    ///     Returns a list of messages for a given thread.
+    /// Returns a list of messages for a given thread.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="request"></param>

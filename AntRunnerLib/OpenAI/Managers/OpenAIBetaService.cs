@@ -3,7 +3,7 @@
 namespace OpenAI.Managers;
 
 /// <summary>
-///     Beta service for OpenAI.
+/// Beta service for OpenAI.
 /// </summary>
 public partial class OpenAiService : IBetaService
 {

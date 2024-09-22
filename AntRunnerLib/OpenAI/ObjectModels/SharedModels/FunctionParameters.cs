@@ -3,8 +3,8 @@
 namespace OpenAI.ObjectModels.SharedModels;
 
 /// <summary>
-///     Function parameter is a JSON Schema object.
-///     https://json-schema.org/understanding-json-schema/reference/object.html
+/// Function parameter is a JSON Schema object.
+/// https://json-schema.org/understanding-json-schema/reference/object.html
 /// </summary>
 public class PropertyDefinition
 {
@@ -20,53 +20,53 @@ public class PropertyDefinition
     }
 
     /// <summary>
-    ///     Required. Function parameter object type. Default value is "object".
+    /// Required. Function parameter object type. Default value is "object".
     /// </summary>
     [JsonPropertyName("type")]
     public string Type { get; set; } = "object";
 
     /// <summary>
-    ///     Optional. Argument description.
+    /// Optional. Argument description.
     /// </summary>
     [JsonPropertyName("description")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
 
     /// <summary>
-    ///     Optional. Example.
+    /// Optional. Example.
     /// </summary>
     [JsonPropertyName("example")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Example { get; set; }
 
     /// <summary>
-    ///     Optional. List of allowed values for this argument.
+    /// Optional. List of allowed values for this argument.
     /// </summary>
     [JsonPropertyName("enum")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? Enum { get; set; }
 
     /// <summary>
-    ///     Optional. Argument description.
+    /// Optional. Argument description.
     /// </summary>
     [JsonPropertyName("default")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Default { get; set; }
 
     /// <summary>
-    ///     Optional. The parameters the functions accepts, described as a JSON Schema object.
-    ///     See the <a href="https://platform.openai.com/docs/guides/gpt/function-calling">guide</a> for examples,
-    ///     and the <a href="https://json-schema.org/understanding-json-schema/">JSON Schema reference</a> for
-    ///     documentation about the format.
+    /// Optional. The parameters the functions accepts, described as a JSON Schema object.
+    /// See the <a href="https://platform.openai.com/docs/guides/gpt/function-calling">guide</a> for examples,
+    /// and the <a href="https://json-schema.org/understanding-json-schema/">JSON Schema reference</a> for
+    /// documentation about the format.
     /// </summary>
     [JsonPropertyName("parameters")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ParametersDefinition? Parameters { get; set; }
 
     /// <summary>
-    ///     If type is "array", this specifies the element type for all items in the array.
-    ///     If type is not "array", this should be null.
-    ///     For more details, see https://json-schema.org/understanding-json-schema/reference/array.html
+    /// If type is "array", this specifies the element type for all items in the array.
+    /// If type is not "array", this should be null.
+    /// For more details, see https://json-schema.org/understanding-json-schema/reference/array.html
     /// </summary>
     [JsonPropertyName("items")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -147,7 +147,7 @@ public class PropertyDefinition
     }
 
     /// <summary>
-    ///     Converts a FunctionObjectTypes enumeration value to its corresponding string representation.
+    /// Converts a FunctionObjectTypes enumeration value to its corresponding string representation.
     /// </summary>
     /// <param name="type">The type to convert</param>
     /// <returns>The string representation of the given type</returns>
@@ -171,20 +171,20 @@ public class ParametersDefinition
 {
 
     /// <summary>
-    ///     Required. Function parameter object type. Default value is "object".
+    /// Required. Function parameter object type. Default value is "object".
     /// </summary>
     [JsonPropertyName("type")]
     public string Type { get; set; } = "object";
 
     /// <summary>
-    ///     Optional. List of "function arguments", as a dictionary that maps from argument name
-    ///     to an object that describes the type, maybe possible enum values, and so on.
+    /// Optional. List of "function arguments", as a dictionary that maps from argument name
+    /// to an object that describes the type, maybe possible enum values, and so on.
     /// </summary>
     [JsonPropertyName("properties")]
     public IDictionary<string, PropertyDefinition>? Properties { get; set; }
 
     /// <summary>
-    ///     Optional. List of "function arguments" which are required.
+    /// Optional. List of "function arguments" which are required.
     /// </summary>
     [JsonPropertyName("required")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

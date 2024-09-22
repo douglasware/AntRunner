@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace OpenAI.Tokenizer.GPT3;
 
 /// <summary>
-///     GPT3 Tokenizer.
+/// GPT3 Tokenizer.
 /// </summary>
 public static class TokenizerGpt3
 {
@@ -16,7 +16,7 @@ public static class TokenizerGpt3
     private static readonly Regex EncodingRegex = new(@"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+", RegexOptions.Compiled);
 
     /// <summary>
-    ///     Encode This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
+    /// Encode This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
     /// </summary>
     /// <param name="text"></param>
     /// <param name="cleanUpCreol">set it true to get rid of CR</param>
@@ -40,7 +40,7 @@ public static class TokenizerGpt3
     }
 
     /// <summary>
-    ///     Get token count. This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
+    /// Get token count. This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
     /// </summary>
     /// <param name="text"></param>
     /// <param name="cleanUpCreol">set it true to get rid of CR</param>

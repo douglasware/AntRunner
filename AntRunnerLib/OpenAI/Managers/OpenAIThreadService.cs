@@ -8,7 +8,7 @@ namespace OpenAI.Managers;
 public partial class OpenAiService : IThreadService
 {
     /// <summary>
-    ///     Create a thread.
+    /// Create a thread.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
@@ -20,7 +20,7 @@ public partial class OpenAiService : IThreadService
     }
 
     /// <summary>
-    ///     Retrieves a thread.
+    /// Retrieves a thread.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="cancellationToken"></param>
@@ -37,7 +37,7 @@ public partial class OpenAiService : IThreadService
     }
 
     /// <summary>
-    ///     Delete a thread.
+    /// Delete a thread.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="cancellationToken"></param>
