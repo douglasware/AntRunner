@@ -94,15 +94,16 @@ namespace FunctionCalling
         /// <param name="operation">The operation name of the request.</param>
         /// <param name="isConsequential">Indicates whether the request is consequential.</param>
         /// <param name="contentType">The content type of the request.</param>
+        /// <param name="responseSchemas"></param>
         /// <param name="authHeaders">The authentication headers for the request.</param>
         /// <param name="oAuth">Indicates whether the request uses OAuth for authentication.</param>
-        public ActionRequestBuilder(
-            string baseUrl,
+        public ActionRequestBuilder(string baseUrl,
             string path,
             string method,
             string operation,
             bool isConsequential,
             string contentType,
+            Dictionary<string, JsonElement> responseSchemas,
             Dictionary<string, string> authHeaders,
             bool oAuth = false)
         {
@@ -113,6 +114,7 @@ namespace FunctionCalling
             Operation = operation ?? throw new ArgumentNullException(nameof(operation));
             IsConsequential = isConsequential;
             ContentType = contentType ?? throw new ArgumentNullException(nameof(contentType));
+            ResponseSchemas = responseSchemas ?? ResponseSchemas;
             AuthHeaders = authHeaders;
             this.OAuth = oAuth;
 
@@ -296,6 +298,7 @@ namespace FunctionCalling
                 operation: this.Operation,
                 isConsequential: this.IsConsequential,
                 contentType: this.ContentType,
+                responseSchemas: this.ResponseSchemas.ToDictionary(),
                 authHeaders: new Dictionary<string, string>(this.AuthHeaders),
                 oAuth: this.OAuth)
             {

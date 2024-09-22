@@ -331,13 +331,14 @@ namespace FunctionCalling
                         operationId!,
                         false,
                         toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
+                        responseSchemas!,
                         authHeaders,
                         oAuth
                     );
 
-                    if (responseSchemas != null && responseSchemas.ContainsKey("200"))
+                    if (responseSchemas != null && responseSchemas.TryGetValue("200", out var schema))
                     {
-                        actionRequest.ResponseSchemas["200"] = responseSchemas["200"];
+                        actionRequest.ResponseSchemas["200"] = schema;
                     }
 
                     requestBuilders[operationId!] = actionRequest;

@@ -284,7 +284,29 @@ namespace AntRunnerLib
                         {
                             // Execute the request and collect the response.
                             var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken);
-                            output = await response.Content.ReadAsStringAsync();
+                            var responseContent = await response.Content.ReadAsStringAsync();
+
+                            if (builder.ResponseSchemas != null && builder.ResponseSchemas.ContainsKey("200"))
+                            {
+                                try
+                                {
+                                    var contentJson = JsonDocument.Parse(responseContent).RootElement;
+                                    var schemaJson = builder.ResponseSchemas["200"];
+
+                                    var filteredJson = FilterJsonBySchema(contentJson, schemaJson);
+                                    output = filteredJson.GetRawText();
+                                }
+                                catch
+                                {
+                                    // If filtering fails, use the original response content.
+                                    output = responseContent;
+                                }
+                            }
+                            else
+                            {
+                                // If no response schema, use the original response content.
+                                output = responseContent;
+                            }
                         }
                         else
                         {
@@ -369,6 +391,42 @@ namespace AntRunnerLib
                 // Add the assistant request builders to the request builder cache.
                 RequestBuilderCache[assistantId] = assistantRequestBuilders;
             }
+        }
+
+        public static JsonElement FilterJsonBySchema(JsonElement content, JsonElement schema)
+        {
+            var filteredContent = new Dictionary<string, object>();
+
+            foreach (var property in schema.GetProperty("properties").EnumerateObject())
+            {
+                if (content.TryGetProperty(property.Name, out var value))
+                {
+                    var type = property.Value.GetProperty("type").GetString();
+
+                    if (type == "object" && property.Value.TryGetProperty("properties", out var nestedSchema))
+                    {
+                        filteredContent[property.Name] = FilterJsonBySchema(value, property.Value);
+                    }
+                    else if (type == "array" && property.Value.TryGetProperty("items", out var itemSchema))
+                    {
+                        var filteredArray = new List<object>();
+
+                        foreach (var item in value.EnumerateArray())
+                        {
+                            filteredArray.Add(FilterJsonBySchema(item, itemSchema));
+                        }
+
+                        filteredContent[property.Name] = filteredArray;
+                    }
+                    else
+                    {
+                        filteredContent[property.Name] = value;
+                    }
+                }
+            }
+
+            var jsonString = JsonSerializer.Serialize(filteredContent);
+            return JsonDocument.Parse(jsonString).RootElement;
         }
     }
 }
