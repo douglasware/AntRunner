@@ -107,7 +107,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [ "Off", "Moderate", "Strict" ],
+              "enum": ["Off", "Moderate", "Strict"],
               "default": "Moderate"
             },
             "description": "Used to filter webpages, images, and videos for adult content."
@@ -137,12 +137,291 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": [ "Raw", "HTML" ],
+              "enum": ["Raw", "HTML"],
               "default": "HTML"
             },
             "description": "The type of markers to use for text decorations (see the textDecorations query parameter)."
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_type": {
+                      "type": "string"
+                    },
+                    "queryContext": {
+                      "type": "object",
+                      "properties": {
+                        "originalQuery": {
+                          "type": "string"
+                        },
+                        "askUserForLocation": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "webPages": {
+                      "type": "object",
+                      "properties": {
+                        "webSearchUrl": {
+                          "type": "string"
+                        },
+                        "totalEstimatedMatches": {
+                          "type": "integer"
+                        },
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "url": {
+                                "type": "string"
+                              },
+                              "isFamilyFriendly": {
+                                "type": "boolean"
+                              },
+                              "displayUrl": {
+                                "type": "string"
+                              },
+                              "snippet": {
+                                "type": "string"
+                              },
+                              "dateLastCrawled": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "cachedPageUrl": {
+                                "type": "string"
+                              },
+                              "language": {
+                                "type": "string"
+                              },
+                              "isNavigational": {
+                                "type": "boolean"
+                              },
+                              "noCache": {
+                                "type": "boolean"
+                              },
+                              "siteName": {
+                                "type": "string"
+                              },
+                              "thumbnailUrl": {
+                                "type": "string"
+                              },
+                              "datePublished": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "datePublishedDisplayText": {
+                                "type": "string"
+                              },
+                              "primaryImageOfPage": {
+                                "type": "object",
+                                "properties": {
+                                  "thumbnailUrl": {
+                                    "type": "string"
+                                  },
+                                  "width": {
+                                    "type": "integer"
+                                  },
+                                  "height": {
+                                    "type": "integer"
+                                  },
+                                  "sourceWidth": {
+                                    "type": "integer"
+                                  },
+                                  "sourceHeight": {
+                                    "type": "integer"
+                                  },
+                                  "imageId": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "richFacts": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "label": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "items": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "text": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "hint": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "images": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "readLink": {
+                          "type": "string"
+                        },
+                        "webSearchUrl": {
+                          "type": "string"
+                        },
+                        "isFamilyFriendly": {
+                          "type": "boolean"
+                        },
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "webSearchUrl": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "thumbnailUrl": {
+                                "type": "string"
+                              },
+                              "datePublished": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "contentUrl": {
+                                "type": "string"
+                              },
+                              "hostPageUrl": {
+                                "type": "string"
+                              },
+                              "contentSize": {
+                                "type": "string"
+                              },
+                              "encodingFormat": {
+                                "type": "string"
+                              },
+                              "hostPageDisplayUrl": {
+                                "type": "string"
+                              },
+                              "width": {
+                                "type": "integer"
+                              },
+                              "height": {
+                                "type": "integer"
+                              },
+                              "thumbnail": {
+                                "type": "object",
+                                "properties": {
+                                  "width": {
+                                    "type": "integer"
+                                  },
+                                  "height": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "relatedSearches": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string"
+                              },
+                              "displayText": {
+                                "type": "string"
+                              },
+                              "webSearchUrl": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "rankingResponse": {
+                      "type": "object",
+                      "properties": {
+                        "mainline": {
+                          "type": "object",
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "answerType": {
+                                    "type": "string"
+                                  },
+                                  "resultIndex": {
+                                    "type": "integer"
+                                  },
+                                  "value": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
