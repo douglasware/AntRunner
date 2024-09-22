@@ -261,6 +261,8 @@ namespace AntRunnerLib
             var requiredToolcalls = new Dictionary<string, ToolCall>();
             var submitToolOutputsToRunRequest = new SubmitToolOutputsToRunRequest();
 
+            var toolCallTasks = new List<Task<ToolOutput>>();
+
             // Iterate through each required tool call and execute the necessary requests.
             foreach (var requiredOutput in currentRun.RequiredAction!.SubmitToolOutputs?.ToolCalls!)
             {
@@ -270,28 +272,41 @@ namespace AntRunnerLib
 
                 if (builders.ContainsKey(requiredOutput.FunctionCall.Name!))
                 {
-                    var builder = builders[requiredOutput.FunctionCall.Name!];
+                    // Create a new builder instance for each tool call to avoid shared state.
+                    var builder = builders[requiredOutput.FunctionCall.Name!].Clone();
                     builder.Params = requiredOutput.FunctionCall.ParseArguments();
 
-                    var output = string.Empty;
-                    if (builder.ActionType == ActionType.WebApi)
+                    // Create a task to execute the tool call asynchronously.
+                    var task = Task.Run(async () =>
                     {
-                        // Execute the request and collect the response.
-                        var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken);
-                        output = await response.Content.ReadAsStringAsync();
-                    }
-                    else
-                    {
-                        output = JsonSerializer.Serialize(await builder.ExecuteLocalFunctionAsync());   
-                    }
-                    // Add the tool output to the submission request.
-                    submitToolOutputsToRunRequest.ToolOutputs.Add(new ToolOutput()
-                    {
-                        Output = output,
-                        ToolCallId = requiredOutput.Id
+                        var output = string.Empty;
+                        if (builder.ActionType == ActionType.WebApi)
+                        {
+                            // Execute the request and collect the response.
+                            var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken);
+                            output = await response.Content.ReadAsStringAsync();
+                        }
+                        else
+                        {
+                            output = JsonSerializer.Serialize(await builder.ExecuteLocalFunctionAsync());
+                        }
+                        // Create a ToolOutput object.
+                        return new ToolOutput()
+                        {
+                            Output = output,
+                            ToolCallId = requiredOutput.Id
+                        };
                     });
+
+                    toolCallTasks.Add(task);
                 }
             }
+
+            // Wait for all tool call tasks to complete.
+            var toolOutputs = await Task.WhenAll(toolCallTasks);
+
+            // Add all tool outputs to the submission request.
+            submitToolOutputsToRunRequest.ToolOutputs.AddRange(toolOutputs);
 
             // Submit the tool outputs to complete the current run.
             var client = GetOpenAiClient(azureOpenAiConfig);

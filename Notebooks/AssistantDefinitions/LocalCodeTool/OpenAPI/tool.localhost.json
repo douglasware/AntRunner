@@ -14,7 +14,7 @@
     "TestAssistant.LocalFunction.GetDateAndTime": {
       "get": {
         "operationId": "GetDateAndTime",
-        "summary": "Get the current date and time"
+        "summary": "Get the current date"
       }
     },
     "TestAssistant.LocalFunction.AddNumbers": {

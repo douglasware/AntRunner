@@ -10,7 +10,7 @@ namespace TestAssistant
     {
         public static string GetDateAndTime()
         {
-            return DateTime.Now.ToLongDateString();
+            return DateTime.Now.ToString("F");
         }
 
         public static int AddNumbers(int a, int b)

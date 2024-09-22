@@ -273,5 +273,27 @@ namespace FunctionCalling
             var uri = new Uri(new Uri(domain), path);
             return uri.ToString();
         }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ActionRequestBuilder"/> class that is a copy of the current instance.
+        /// </summary>
+        /// <returns>A new instance of <see cref="ActionRequestBuilder"/> that is a copy of this instance.</returns>
+        public ActionRequestBuilder Clone()
+        {
+            // Create a new instance of ActionRequestBuilder with the same properties
+            return new ActionRequestBuilder(
+                baseUrl: this.BaseUrl,
+                path: this.Path,
+                method: this.Method,
+                operation: this.Operation,
+                isConsequential: this.IsConsequential,
+                contentType: this.ContentType,
+                authHeaders: new Dictionary<string, string>(this.AuthHeaders),
+                oAuth: this.OAuth)
+            {
+                // Copy the Params dictionary if it is not null
+                Params = this.Params != null ? new Dictionary<string, object>(this.Params) : null
+            };
+        }
     }
 }
