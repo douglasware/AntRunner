@@ -1,0 +1,15 @@
+{
+  "name": "Web Search and Scrape",
+  "description": "We search the web for you!",
+  "instructions": "",
+  "tools": [
+    { "type": "code_interpreter" }
+  ],
+  "tool_resources": {},
+  "top_p": 0.95,
+  "response_format": "auto",
+  "metadata": {
+  },
+  "model": "gpt-4o",
+  "temperature": 0.7
+}
