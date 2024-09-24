@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>AntRunnner Library</Title>
-    <Version>0.7.11</Version>
+    <Version>0.8.6</Version>
     <Authors>Doug Ware</Authors>
     <Company>Elumenotion</Company>
     <Description>Makes using the Assistants API on Open AI or Azure API easy. </Description>
@@ -56,6 +56,6 @@
   </ItemGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;1529;1591</NoWarn>
-    <PackageReleaseNotes>Filter tool calls via response body schema</PackageReleaseNotes>
+    <PackageReleaseNotes>Handle incomplete status, increase poll timer to 1 second delay</PackageReleaseNotes>
   </PropertyGroup>
 </Project>

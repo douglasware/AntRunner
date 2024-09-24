@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
@@ -217,17 +218,50 @@ namespace FunctionCalling
 
             if (type == null) throw new InvalidOperationException($"Type {typeName} not found in any loaded assembly");
 
-            // Get the method from the containing type
-            var method = type.GetMethod(methodName);
+            // Get all methods with the specified name
+            var methods = type.GetMethods().Where(m => m.Name == methodName).ToArray();
 
-            if (method == null) throw new InvalidOperationException($"Method {methodName} not found in type {typeName}");
+            if (methods.Length == 0) throw new InvalidOperationException($"Method {methodName} not found in type {typeName}");
+
+            // Find a method that matches the provided parameters by name and type
+            MethodInfo? method = null;
+            foreach (var candidateMethod in methods)
+            {
+                var parameters = candidateMethod.GetParameters();
+                if (Params == null && parameters.All(p => p.IsOptional))
+                {
+                    method = candidateMethod;
+                    break;
+                }
+
+                if (Params != null)
+                {
+                    bool match = true;
+                    foreach (var param in parameters)
+                    {
+                        if (!param.IsOptional && !Params.ContainsKey(param.Name!))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        method = candidateMethod;
+                        break;
+                    }
+                }
+            }
+
+            if (method == null) throw new InvalidOperationException($"No matching method found for {methodName} with the provided parameters");
 
             // Get the parameters for the method
-            var parameters = method.GetParameters();
-            var paramValues = new object?[parameters.Length];
-            for (int i = 0; i < parameters.Length; i++)
+            var methodParameters = method.GetParameters();
+            var paramValues = new object?[methodParameters.Length];
+            for (int i = 0; i < methodParameters.Length; i++)
             {
-                var param = parameters[i];
+                var param = methodParameters[i];
                 if (Params != null && Params.TryGetValue(param.Name!, out var paramValue))
                 {
                     if (paramValue is JsonElement jsonElement)

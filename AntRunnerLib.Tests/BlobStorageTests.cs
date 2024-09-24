@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 
 
-namespace AntRunnerLib
+namespace AntRunnerLib.Tests
 {
 
     /// <summary>

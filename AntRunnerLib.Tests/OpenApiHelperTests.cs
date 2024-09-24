@@ -3,7 +3,7 @@ using System.Text.Json;
 using FunctionCalling;
 using OpenAI.ObjectModels.RequestModels;
 
-namespace AntRunnerLib
+namespace AntRunnerLib.Tests
 {
     [TestClass]
     public class OpenApiHelperTests

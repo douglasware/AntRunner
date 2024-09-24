@@ -1,10 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AntRunnerLib.AssistantDefinitions;
 
-namespace AntRunnerLib.AssistantDefinitions.Tests
+namespace AntRunnerLib.Tests
 {
     [TestClass]
     public class AssistantDefinitionFilesTests

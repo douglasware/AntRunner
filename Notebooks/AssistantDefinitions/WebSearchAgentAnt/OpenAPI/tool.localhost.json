@@ -11,9 +11,9 @@
     }
   ],
   "paths": {
-    "HtmlAgility.HtmlAgilityPackExtensions.ConvertUrlToMarkdownAsync": {
+    "AntRunnerLib.AssistantRunner.RunThread": {
       "post": {
-        "operationId": "GetContentFromUrl",
+        "operationId": "ExtractContentFromUrl",
         "summary": "Reads a web page and returns markdown of the content",
         "requestBody": {
           "required": true,
@@ -22,12 +22,18 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "url": {
+                  "assistantName": {
                     "type": "string",
-                    "description": "The address of the page to read"
+                    "description": "Required. Must be WebPageAgentAnt",
+                    "default": "WebPageAgentAnt"
+                  },
+                  "instructions": {
+                    "type": "string",
+                    "description": "Required. A url to a page and a question or statement that the assitant will use to extract relevant content. Example 'what is the timeout of the foo operation? http://www.example.com/doc'",
+                    "default": "WebPageAgentAnt"
                   }
                 },
-                "required": [ "url" ]
+                "required": [ "assistantName", "instructions" ]
               }
             }
           }

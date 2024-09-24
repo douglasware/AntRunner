@@ -1,7 +1,7 @@
 ﻿using OpenAI.Builders;
 using OpenAI.ObjectModels.RequestModels;
 
-namespace AntRunnerLib
+namespace AntRunnerLib.Tests
 {
     [TestClass]
     public class AssistantCreateRequestTests

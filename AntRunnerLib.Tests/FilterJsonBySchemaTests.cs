@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace AntRunnerLib
+namespace AntRunnerLib.Tests
 {
     [TestClass]
     public class FilterJsonBySchemaTests

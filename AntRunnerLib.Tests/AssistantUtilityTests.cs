@@ -1,4 +1,4 @@
-namespace AntRunnerLib
+namespace AntRunnerLib.Tests
 {
 
     /// <summary>

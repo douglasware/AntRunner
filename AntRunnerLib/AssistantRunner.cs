@@ -12,11 +12,12 @@ namespace AntRunnerLib
         /// <summary>
         /// Runs the assistant thread with the specified run options and configuration.
         /// It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
+        /// By default, the assistant will be created if it doesn't exist and a definition is found.
         /// </summary>
         /// <param name="assistantRunOptions">The options for running the assistant.</param>
         /// <param name="config">The configuration for Azure OpenAI.</param>
         /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
-        /// <returns>The output of the thread run including possible additional run output from addtional messages when using the default evaluator</returns>
+        /// <returns>The output of the thread run including possible additional run output from additional messages when using the default evaluator</returns>
         public static async Task<ThreadRunOutput?> RunThread(AssistantRunOptions assistantRunOptions, AzureOpenAiConfig config, bool autoCreate = true)
         {
             // Retrieve the assistant ID using the assistant name from the configuration
@@ -106,11 +107,19 @@ namespace AntRunnerLib
                 {
                     throw new Exception($"Run failed: {run.LastError}");
                 }
+                else if (run.Status == "incomplete")
+                {
+                    return new ThreadRunOutput()
+                    {
+                        Status = "incomplete",
+                        LastMessage = $"Run is incomplete because of {run.IncompleteDetails?.Reason}"
+                    };
+                }
                 else
                 {
                     // Wait for a short period before checking the run status again
-                    Trace.TraceInformation("RunAssistant waiting 1/4 second");
-                    await Task.Delay(250);
+                    Trace.TraceInformation("RunAssistant waiting 1 second");
+                    await Task.Delay(1000);
                 }
             } while (!completed);
 
@@ -118,6 +127,30 @@ namespace AntRunnerLib
             await ThreadUtility.DeleteThread(ids.ThreadId, config);
 
             return runResults;
+        }
+
+        /// <summary>
+        /// Runs the assistant thread with the specified assistant using the environment configuration.
+        /// It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
+        /// By default, the assistant will be created if it doesn't exist and a definition is found.
+        /// This method's main purpose is to provide a simplified way to run an assistant thread to allow the use of a thread run as a tool call via local functions.
+        /// </summary>
+        /// <param name="assistantName">The options for running the assistant.</param>
+        /// <param name="instructions">The configuration for Azure OpenAI.</param>
+        /// <param name="evaluator">A named evaluator. In this version it causes the UseConversationEvaluator to be true but does NOT use an assistant with the provided name</param>
+        /// <returns>The LastMessage from the thread run</returns>
+        public static async Task<string?> RunThread(string assistantName, string instructions, string? evaluator = "")
+        {
+            var config = AzureOpenAiConfigFactory.Get();
+            var assistantRunOptions = new AssistantRunOptions()
+            {
+                AssistantName = assistantName,
+                Instructions = instructions,
+                UseConversationEvaluator = evaluator != "" // TODO, specific evaluator as input instead of current canned one-size-fits-all
+            };
+            var output = await RunThread(assistantRunOptions, config!);
+            Trace.TraceInformation(output?.Dialog);
+            return output?.LastMessage;
         }
     }
 }

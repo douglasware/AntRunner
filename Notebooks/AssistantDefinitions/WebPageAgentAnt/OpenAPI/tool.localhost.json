@@ -11,7 +11,7 @@
     }
   ],
   "paths": {
-    "HtmlAgility.HtmlAgilityPackExtensions.ConvertUrlToMarkdownAsync": {
+    "HtmlAgility.HtmlAgilityPackExtensions.ConvertUrlToMarkdown": {
       "post": {
         "operationId": "GetContentFromUrl",
         "summary": "Reads a web page and returns markdown of the content",
