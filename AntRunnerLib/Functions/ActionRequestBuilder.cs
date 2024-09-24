@@ -202,7 +202,7 @@ namespace FunctionCalling
         /// Executes the local function asynchronously.
         /// </summary>
         /// <returns>The result of the local function execution.</returns>
-        public async Task<object> ExecuteLocalFunctionAsync()
+        public async Task<object?> ExecuteLocalFunctionAsync()
         {
             // Get the assembly name and method name from the Path
             var methodName = Path.Split('.').Last();
@@ -248,7 +248,25 @@ namespace FunctionCalling
             }
 
             // Invoke the method with the parameters
-            return await Task.Run(() => method.Invoke(null, paramValues)) ?? "Failed to execute function";
+            var result = method.Invoke(null, paramValues);
+
+            // If the method is async, await its completion
+            if (result is Task task)
+            {
+                await task.ConfigureAwait(false);
+                var taskType = task.GetType();
+                if (taskType.IsGenericType)
+                {
+                    var resultProperty = taskType.GetProperty("Result");
+                    if (resultProperty != null)
+                    {
+                        return resultProperty.GetValue(task);
+                    }
+                }
+                return null;
+            }
+
+            return result ?? "Failed to execute function";
         }
 
         private object? ConvertJsonElement(JsonElement jsonElement, Type targetType)

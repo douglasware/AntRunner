@@ -324,15 +324,18 @@ namespace AntRunnerLib
                 }
             }
 
-            // Wait for all tool call tasks to complete.
-            var toolOutputs = await Task.WhenAll(toolCallTasks);
+            if (toolCallTasks.Count > 0)
+            {
+                // Wait for all tool call tasks to complete.
+                var toolOutputs = await Task.WhenAll(toolCallTasks);
 
-            // Add all tool outputs to the submission request.
-            submitToolOutputsToRunRequest.ToolOutputs.AddRange(toolOutputs);
+                // Add all tool outputs to the submission request.
+                submitToolOutputsToRunRequest.ToolOutputs.AddRange(toolOutputs);
 
-            // Submit the tool outputs to complete the current run.
-            var client = GetOpenAiClient(azureOpenAiConfig);
-            await client.RunSubmitToolOutputs(threadId, threadRunId ?? throw new InvalidOperationException(), submitToolOutputsToRunRequest);
+                // Submit the tool outputs to complete the current run.
+                var client = GetOpenAiClient(azureOpenAiConfig);
+                await client.RunSubmitToolOutputs(threadId, threadRunId ?? throw new InvalidOperationException(), submitToolOutputsToRunRequest);
+            }
         }
 
         /// <summary>
