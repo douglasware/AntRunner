@@ -142,12 +142,11 @@
             "schema": {
               "type": "string",
               "enum": [
-                "Raw",
-                "HTML"
+                "Raw"
               ],
-              "default": "HTML"
+              "default": "Raw"
             },
-            "description": "The type of markers to use for text decorations (see the textDecorations query parameter)."
+            "description": "Required"
           }
         ],
         "responses": {
