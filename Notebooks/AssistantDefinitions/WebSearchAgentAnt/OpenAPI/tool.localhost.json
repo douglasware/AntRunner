@@ -30,7 +30,6 @@
                   "instructions": {
                     "type": "string",
                     "description": "Required. A url to a page and a question or statement that the assitant will use to extract relevant content. Example 'what is the timeout of the foo operation? http://www.example.com/doc'",
-                    "default": "WebPageAgentAnt"
                   }
                 },
                 "required": [ "assistantName", "instructions" ]
