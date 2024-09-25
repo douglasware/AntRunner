@@ -276,6 +276,8 @@ namespace AntRunnerLib
                     var builder = builders[requiredOutput.FunctionCall.Name!].Clone();
                     builder.Params = requiredOutput.FunctionCall.ParseArguments();
 
+                    Trace.TraceInformation($"{assistantName} using {builder.Operation} with {requiredOutput.FunctionCall.Arguments}");
+
                     // Create a task to execute the tool call asynchronously.
                     var task = Task.Run(async () =>
                     {
@@ -321,6 +323,10 @@ namespace AntRunnerLib
                     });
 
                     toolCallTasks.Add(task);
+                }
+                else
+                {
+                    throw new Exception($"No request builder found for {requiredOutput.FunctionCall.Name}");
                 }
             }
 

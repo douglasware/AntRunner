@@ -577,6 +577,11 @@
             File search and code interpreter annotations
             </summary>
         </member>
+        <member name="P:AntRunnerLib.ThreadRunOutput.Usage">
+            <summary>
+            Gets or sets the usage of the thread run.
+            </summary>
+        </member>
         <member name="T:AntRunnerLib.ThreadConversationMessageType">
             <summary>
             Enum representing the type of conversation message.

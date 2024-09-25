@@ -54,7 +54,7 @@ namespace AntRunnerLib
                 else if (run.Status == "completed")
                 {
                     runResults = await ThreadUtility.GetThreadOutput(ids.ThreadId, config);
-
+                    runResults.Usage = run.Usage;
                     // Optionally use a conversation evaluator if specified in the run options
                     if (assistantRunOptions.UseConversationEvaluator)
                     {
@@ -148,8 +148,9 @@ namespace AntRunnerLib
         /// <param name="instructions">The configuration for Azure OpenAI.</param>
         /// <param name="evaluator">A named evaluator. In this version it causes the UseConversationEvaluator to be true but does NOT use an assistant with the provided name</param>
         /// <returns>The LastMessage from the thread run</returns>
-        public static async Task<string?> RunThread(string assistantName, string instructions, string? evaluator = "")
+        public static async Task<string> RunThread(string assistantName, string instructions, string? evaluator = "")
         {
+            Trace.TraceInformation($"Running {assistantName}: {instructions}");
             var config = AzureOpenAiConfigFactory.Get();
             var assistantRunOptions = new AssistantRunOptions()
             {
@@ -157,9 +158,18 @@ namespace AntRunnerLib
                 Instructions = instructions,
                 UseConversationEvaluator = evaluator != "" // TODO, specific evaluator as input instead of current canned one-size-fits-all
             };
-            var output = await RunThread(assistantRunOptions, config!);
-            Trace.TraceInformation(output?.Dialog);
-            return output?.LastMessage;
+
+            // The primary purpose of this method is to provide a simplified way to run an assistant thread to allow the use of a thread run as a tool call via local functions.
+            // Accordingly, autoCreate is set to false to avoid creating an assistant if it doesn't exist because otherwise parallel runs would create multiple assistants.
+            var output = await RunThread(assistantRunOptions, config!, false);
+            if (output != null)
+            {
+                Trace.TraceInformation(
+                    $"Usage:{output.Usage?.PromptTokens}:{output.Usage?.CompletionTokens}:{output.Usage?.TotalTokens}");
+                return output.LastMessage;
+            }
+
+            return "Unable to process request";
         }
     }
 }

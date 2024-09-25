@@ -1,5 +1,6 @@
 ﻿using OpenAI.ObjectModels.SharedModels;
 using System.Text.Json.Serialization;
+using OpenAI.ObjectModels.ResponseModels;
 
 namespace AntRunnerLib
 {
@@ -53,6 +54,11 @@ namespace AntRunnerLib
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<MessageAnnotation>? Annotations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the usage of the thread run.
+        /// </summary>
+        public UsageResponse? Usage { get; set; }
     }
 
     /// <summary>

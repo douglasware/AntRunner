@@ -108,9 +108,22 @@ namespace FunctionCalling
                             var propertyDefinition = new PropertyDefinition
                             {
                                 Type = schema.GetProperty("type").GetString() ?? "string",
-                                Description = param.TryGetProperty("description", out var descriptionElement)
+                                Description = schema.TryGetProperty("description", out var descriptionElement)
                                     ? descriptionElement.GetString()
-                                    : null
+                                    : null,
+                                Default = schema.TryGetProperty("default", out var defaultElement)
+                                    ? (defaultElement.ValueKind == JsonValueKind.String
+                                        ? defaultElement.GetString()
+                                        : defaultElement.ValueKind == JsonValueKind.Null
+                                            ? null
+                                            : defaultElement.GetRawText())
+                                    : null,
+                                Example = schema.TryGetProperty("example", out var exampleElement)
+                                    ? exampleElement.GetString()
+                                    : null,
+                                Enum = (schema.TryGetProperty("enum", out var enumElement)
+                                    ? enumElement.EnumerateArray().Select(e => e.GetString()).ToList()
+                                    : null)!,
                             };
 
                             properties[paramName ?? throw new InvalidOperationException("Parameter name not found")] = propertyDefinition;
@@ -144,8 +157,22 @@ namespace FunctionCalling
                                         Type = property.Value.GetProperty("type").GetString() ?? "string",
                                         Description = property.Value.TryGetProperty("description", out var descriptionElement)
                                             ? descriptionElement.GetString()
-                                            : null
+                                            : null,
+                                        Default = property.Value.TryGetProperty("default", out var defaultElement)
+                                            ? (defaultElement.ValueKind == JsonValueKind.String
+                                                ? defaultElement.GetString()
+                                                : defaultElement.ValueKind == JsonValueKind.Null
+                                                    ? null
+                                                    : defaultElement.GetRawText())
+                                            : null,
+                                        Example = property.Value.TryGetProperty("example", out var exampleElement)
+                                            ? exampleElement.GetString()
+                                            : null,
+                                        Enum = (property.Value.TryGetProperty("enum", out var enumElement)
+                                            ? enumElement.EnumerateArray().Select(e => e.GetString()).ToList()
+                                            : null)!,
                                     };
+
 
                                     properties[property.Name] = propertyDefinition;
                                 }
@@ -176,27 +203,30 @@ namespace FunctionCalling
 
                                 if (itemsElement.TryGetProperty("properties", out var bodyProperties))
                                 {
-                                    foreach (var param in bodyProperties.EnumerateObject())
+                                    foreach (var property in bodyProperties.EnumerateObject())
                                     {
-                                        var paramName = param.Name;
+                                        var paramName = property.Name;
 
                                         var propertyDefinition = new PropertyDefinition
                                         {
-                                            Type = param.Value.GetProperty("type").GetString() ?? "string",
-                                            Description = param.Value.TryGetProperty("description", out var descriptionElement)
+                                            Type = property.Value.GetProperty("type").GetString() ?? "string",
+                                            Description = property.Value.TryGetProperty("description", out var descriptionElement)
                                                 ? descriptionElement.GetString()
                                                 : null,
+                                            Default = property.Value.TryGetProperty("default", out var defaultElement)
+                                                ? (defaultElement.ValueKind == JsonValueKind.String
+                                                    ? defaultElement.GetString()
+                                                    : defaultElement.ValueKind == JsonValueKind.Null
+                                                        ? null
+                                                        : defaultElement.GetRawText())
+                                                : null,
+                                            Example = property.Value.TryGetProperty("example", out var exampleElement)
+                                                ? exampleElement.GetString()
+                                                : null,
+                                            Enum = (property.Value.TryGetProperty("enum", out var enumElement)
+                                                ? enumElement.EnumerateArray().Select(e => e.GetString()).ToList()
+                                                : null)!,
                                         };
-
-                                        if (param.Value.TryGetProperty("enum", out var enumElement))
-                                        {
-                                            propertyDefinition.Enum = new List<string>();
-
-                                            foreach (var enumValue in enumElement.EnumerateArray())
-                                            {
-                                                propertyDefinition.Enum.Add(enumValue.GetString()!);
-                                            }
-                                        }
 
                                         body.Items.Properties[paramName] = propertyDefinition;
                                     }
