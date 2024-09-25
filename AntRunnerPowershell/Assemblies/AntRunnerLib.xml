@@ -89,11 +89,24 @@
             <summary>
             Runs the assistant thread with the specified run options and configuration.
             It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
+            By default, the assistant will be created if it doesn't exist and a definition is found.
             </summary>
             <param name="assistantRunOptions">The options for running the assistant.</param>
             <param name="config">The configuration for Azure OpenAI.</param>
             <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
-            <returns>The output of the thread run including possible additional run output from addtional messages when using the default evaluator</returns>
+            <returns>The output of the thread run including possible additional run output from additional messages when using the default evaluator</returns>
+        </member>
+        <member name="M:AntRunnerLib.AssistantRunner.RunThread(System.String,System.String,System.String)">
+            <summary>
+            Runs the assistant thread with the specified assistant using the environment configuration.
+            It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
+            By default, the assistant will be created if it doesn't exist and a definition is found.
+            This method's main purpose is to provide a simplified way to run an assistant thread to allow the use of a thread run as a tool call via local functions.
+            </summary>
+            <param name="assistantName">The options for running the assistant.</param>
+            <param name="instructions">The configuration for Azure OpenAI.</param>
+            <param name="evaluator">A named evaluator. In this version it causes the UseConversationEvaluator to be true but does NOT use an assistant with the provided name</param>
+            <returns>The LastMessage from the thread run</returns>
         </member>
         <member name="T:AntRunnerLib.AssistantRunnerState">
             <summary>
@@ -716,12 +729,19 @@
             Gets or sets the additional parameters for the request.
             </summary>
         </member>
+        <member name="P:FunctionCalling.ActionRequestBuilder.ResponseSchemas">
+            <summary>
+            Gets or sets the response schemas for the API operations.
+            This dictionary holds the response schema for the `200` status code for each operation.
+            The key is the operation ID, and the value is the JSON schema representing the successful response.
+            </summary>
+        </member>
         <member name="P:FunctionCalling.ActionRequestBuilder.OAuth">
             <summary>
             Gets or sets a value indicating whether the request uses OAuth for authentication.
             </summary>
         </member>
-        <member name="M:FunctionCalling.ActionRequestBuilder.#ctor(System.String,System.String,System.String,System.String,System.Boolean,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Boolean)">
+        <member name="M:FunctionCalling.ActionRequestBuilder.#ctor(System.String,System.String,System.String,System.String,System.Boolean,System.String,System.Collections.Generic.Dictionary{System.String,System.Text.Json.JsonElement},System.Collections.Generic.Dictionary{System.String,System.String},System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:FunctionCalling.ActionRequestBuilder"/> class with specified parameters.
             </summary>
@@ -731,6 +751,7 @@
             <param name="operation">The operation name of the request.</param>
             <param name="isConsequential">Indicates whether the request is consequential.</param>
             <param name="contentType">The content type of the request.</param>
+            <param name="responseSchemas"></param>
             <param name="authHeaders">The authentication headers for the request.</param>
             <param name="oAuth">Indicates whether the request uses OAuth for authentication.</param>
         </member>
@@ -753,6 +774,12 @@
             <param name="domain">The baseUrl of the request.</param>
             <param name="path">The path of the request.</param>
             <returns>The complete URL as a string.</returns>
+        </member>
+        <member name="M:FunctionCalling.ActionRequestBuilder.Clone">
+            <summary>
+            Creates a new instance of the <see cref="T:FunctionCalling.ActionRequestBuilder"/> class that is a copy of the current instance.
+            </summary>
+            <returns>A new instance of <see cref="T:FunctionCalling.ActionRequestBuilder"/> that is a copy of this instance.</returns>
         </member>
         <member name="T:FunctionCalling.OpenApiHelper">
             <summary>
@@ -804,47 +831,47 @@
         </member>
         <member name="T:OpenAI.Builders.FunctionDefinitionBuilder">
             <summary>
-                FunctionDefinitionBuilder is used to build and validate a FunctionDefinition object.
+            FunctionDefinitionBuilder is used to build and validate a FunctionDefinition object.
             </summary>
         </member>
         <member name="F:OpenAI.Builders.FunctionDefinitionBuilder.ValidNameChars">
             <summary>
-                String constant for validation of function name.
+            String constant for validation of function name.
             </summary>
         </member>
         <member name="M:OpenAI.Builders.FunctionDefinitionBuilder.#ctor(System.String,System.String)">
             <summary>
-                Initializes a new instance of FunctionDefinitionBuilder.
+            Initializes a new instance of FunctionDefinitionBuilder.
             </summary>
             <param name="name">The name of the function</param>
             <param name="description">The optional description of the function</param>
         </member>
         <member name="M:OpenAI.Builders.FunctionDefinitionBuilder.Validate">
             <summary>
-                Validates the function definition.
+            Validates the function definition.
             </summary>
             <returns>The FunctionDefinitionBuilder instance for fluent configuration</returns>
         </member>
         <member name="M:OpenAI.Builders.FunctionDefinitionBuilder.Build">
             <summary>
-                Builds the FunctionDefinition object.
+            Builds the FunctionDefinition object.
             </summary>
             <returns>The built FunctionDefinition object</returns>
         </member>
         <member name="M:OpenAI.Builders.FunctionDefinitionBuilder.ValidateName(System.String)">
             <summary>
-                Validates the name of the function.
+            Validates the name of the function.
             </summary>
             <param name="functionName">The name of the function to validate</param>
         </member>
         <member name="T:OpenAI.Extensions.StringExtensions">
             <summary>
-                Extension methods for string manipulation
+            Extension methods for string manipulation
             </summary>
         </member>
         <member name="M:OpenAI.Extensions.StringExtensions.RemoveIfStartWith(System.String,System.String)">
             <summary>
-                Remove the search string from the beginning of string if it exists
+            Remove the search string from the beginning of string if it exists
             </summary>
             <param name="text"></param>
             <param name="search"></param>
@@ -852,19 +879,19 @@
         </member>
         <member name="M:OpenAI.Interfaces.IAssistantService.AssistantCreate(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,System.Threading.CancellationToken)">
             <summary>
-                Create an assistant with a model and instructions.
+            Create an assistant with a model and instructions.
             </summary>
             <param name="request"></param>
             <param name="modelId">
-                ID of the model to use. You can use the List models API to see all of your available models, or
-                see our Model overview for descriptions of them.
+            ID of the model to use. You can use the List models API to see all of your available models, or
+            see our Model overview for descriptions of them.
             </param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="M:OpenAI.Interfaces.IAssistantService.AssistantList(OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of assistants.
+            Returns a list of assistants.
             </summary>
             <param name="request"></param>
             <param name="cancellationToken"></param>
@@ -872,7 +899,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IAssistantService.AssistantRetrieve(System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves an assistant.
+            Retrieves an assistant.
             </summary>
             <param name="assistantId">The ID of the assistant to retrieve.</param>
             <param name="cancellationToken"></param>
@@ -880,7 +907,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IAssistantService.AssistantModify(System.String,OpenAI.ObjectModels.RequestModels.AssistantModifyRequest,System.Threading.CancellationToken)">
             <summary>
-                Modifies an assistant.
+            Modifies an assistant.
             </summary>
             <param name="assistantId">The ID of the assistant to modify.</param>
             <param name="request"></param>
@@ -889,7 +916,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IAssistantService.AssistantDelete(System.String,System.Threading.CancellationToken)">
             <summary>
-                Delete an assistant.
+            Delete an assistant.
             </summary>
             <param name="assistantId">The ID of the assistant to delete.</param>
             <param name="cancellationToken"></param>
@@ -897,35 +924,35 @@
         </member>
         <member name="M:OpenAI.Interfaces.IFileService.ListFile(System.Threading.CancellationToken)">
             <summary>
-                Returns a list of files that belong to the user's organization.
+            Returns a list of files that belong to the user's organization.
             </summary>
             <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
             <returns></returns>
         </member>
         <member name="M:OpenAI.Interfaces.IFileService.UploadFile(System.String,System.Byte[],System.String,System.Threading.CancellationToken)">
             <summary>
-                Upload a file that contains document(s) to be used across various endpoints/features. Currently, the size of all
-                the files uploaded by one organization can be up to 1 GB. Please contact us if you need to increase the storage
-                limit.
+            Upload a file that contains document(s) to be used across various endpoints/features. Currently, the size of all
+            the files uploaded by one organization can be up to 1 GB. Please contact us if you need to increase the storage
+            limit.
             </summary>
             <param name="file">
-                Name of the <a href="https://jsonlines.readthedocs.io/en/latest/"> JSON Lines </a> file to be uploaded.
-                If the purpose is set to "fine-tune", each line is a JSON record with "prompt" and "completion" fields representing
-                your <a href="https://platform.openai.com/docs/guides/fine-tuning/prepare-training-data">training examples</a>.
+            Name of the <a href="https://jsonlines.readthedocs.io/en/latest/"> JSON Lines </a> file to be uploaded.
+            If the purpose is set to "fine-tune", each line is a JSON record with "prompt" and "completion" fields representing
+            your <a href="https://platform.openai.com/docs/guides/fine-tuning/prepare-training-data">training examples</a>.
             </param>
             <param name="fileName">Name of file</param>
             <param name="purpose">
-                The intended purpose of the uploaded documents.
-                Use "fine-tune" for <a href="https://platform.openai.com/docs/api-reference/fine-tunes">Fine-tuning</a>. This
-                allows us
-                to validate the format of the uploaded file.
+            The intended purpose of the uploaded documents.
+            Use "fine-tune" for <a href="https://platform.openai.com/docs/api-reference/fine-tunes">Fine-tuning</a>. This
+            allows us
+            to validate the format of the uploaded file.
             </param>
             <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
             <returns></returns>
         </member>
         <member name="M:OpenAI.Interfaces.IFileService.DeleteFile(System.String,System.Threading.CancellationToken)">
             <summary>
-                Delete a file.
+            Delete a file.
             </summary>
             <param name="fileId">The ID of the file to use for this request</param>
             <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
@@ -933,7 +960,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IFileService.RetrieveFile(System.String,System.Threading.CancellationToken)">
             <summary>
-                Returns information about a specific file.
+            Returns information about a specific file.
             </summary>
             <param name="fileId">The ID of the file to use for this request</param>
             <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
@@ -941,7 +968,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IFileService.RetrieveFileContent``1(System.String,System.Threading.CancellationToken)">
             <summary>
-                Returns the contents of the specified file
+            Returns the contents of the specified file
             </summary>
             <param name="fileId">The ID of the file to use for this request</param>
             <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
@@ -949,7 +976,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.FileServiceExtension.RetrieveFileContent(OpenAI.Interfaces.IFileService,System.String,System.Threading.CancellationToken)">
             <summary>
-                Returns the contents of the specified file
+            Returns the contents of the specified file
             </summary>
             <param name="service"></param>
             <param name="fileId">The ID of the file to use for this request</param>
@@ -958,7 +985,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IMessageService.CreateMessage(System.String,OpenAI.ObjectModels.RequestModels.MessageCreateRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a message.
+            Create a message.
             </summary>
             <param name="threadId"></param>
             <param name="request"></param>
@@ -967,7 +994,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IMessageService.ListMessages(System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of messages for a given thread.
+            Returns a list of messages for a given thread.
             </summary>
             <param name="threadId"></param>
             <param name="request"></param>
@@ -976,17 +1003,17 @@
         </member>
         <member name="M:OpenAI.Interfaces.IMessageService.RetrieveMessage(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieve a message.
+            Retrieve a message.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IMessageService.ModifyMessage(System.String,System.String,OpenAI.ObjectModels.RequestModels.ModifyMessageRequest,System.Threading.CancellationToken)">
             <summary>
-                Modifies a message.
+            Modifies a message.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IMessageService.DeleteMessage(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Deletes a message.
+            Deletes a message.
             </summary>
             <param name="threadId">The ID of the thread to which this message belongs.</param>
             <param name="messageId">The ID of the message to delete.</param>
@@ -995,17 +1022,17 @@
         </member>
         <member name="P:OpenAI.Interfaces.IOpenAiService.Files">
             <summary>
-                Files are used to upload documents that can be used across features like FineTunes />
+            Files are used to upload documents that can be used across features like FineTunes />
             </summary>
         </member>
         <member name="P:OpenAI.Interfaces.IOpenAiService.Beta">
             <summary>
-                Beta
+            Beta
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IRunService.RunCreate(System.String,OpenAI.ObjectModels.RequestModels.RunCreateRequest,System.String,System.Threading.CancellationToken)">
             <summary>
-                Create a run.
+            Create a run.
             </summary>
             <param name="threadId"></param>
             <param name="request"></param>
@@ -1015,7 +1042,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IRunService.RunRetrieve(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a run.
+            Retrieves a run.
             </summary>
             <param name="threadId"></param>
             <param name="runId"></param>
@@ -1024,7 +1051,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IRunService.RunCancel(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Cancels a run that is in_progress.
+            Cancels a run that is in_progress.
             </summary>
             <param name="threadId"></param>
             <param name="runId"></param>
@@ -1033,12 +1060,12 @@
         </member>
         <member name="M:OpenAI.Interfaces.IRunService.RunSubmitToolOutputs(System.String,System.String,OpenAI.ObjectModels.RequestModels.SubmitToolOutputsToRunRequest,System.Threading.CancellationToken)">
             <summary>
-                Submit tool outputs to run
-                <para>
-                    When a run has the status: "requires_action" and required_action.type is submit_tool_outputs,
-                    this endpoint can be used to submit the outputs from the tool calls once they're all completed.
-                    All outputs must be submitted in a single request.
-                </para>
+            Submit tool outputs to run
+            <para>
+                When a run has the status: "requires_action" and required_action.type is submit_tool_outputs,
+                this endpoint can be used to submit the outputs from the tool calls once they're all completed.
+                All outputs must be submitted in a single request.
+            </para>
             </summary>
             <param name="threadId"></param>
             <param name="runId"></param>
@@ -1048,7 +1075,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IRunService.RunModify(System.String,System.String,OpenAI.ObjectModels.RequestModels.RunModifyRequest,System.Threading.CancellationToken)">
             <summary>
-                Modifies a run.
+            Modifies a run.
             </summary>
             <param name="threadId">The ID of the [thread](/docs/api-reference/threads) that was run.</param>
             <param name="runId">The ID of the run to modify.</param>
@@ -1058,17 +1085,17 @@
         </member>
         <member name="M:OpenAI.Interfaces.IRunService.CreateThreadAndRun(OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a thread and run it in one request.
+            Create a thread and run it in one request.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IRunService.ListRuns(System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of runs belonging to a thread.
+            Returns a list of runs belonging to a thread.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IRunStepService.RunStepsList(System.String,System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of run steps belonging to a run.
+            Returns a list of run steps belonging to a run.
             </summary>
             <param name="threadId">The ID of the thread the run and run steps belong to.</param>
             <param name="runId">The ID of the run steps belong to.</param>
@@ -1078,7 +1105,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IRunStepService.RunStepRetrieve(System.String,System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a run step.
+            Retrieves a run step.
             </summary>
             <param name="threadId">The ID of the thread to which the run and run step belongs.</param>
             <param name="runId">The ID of the run to which the run step belongs.</param>
@@ -1088,7 +1115,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IThreadService.ThreadCreate(OpenAI.ObjectModels.RequestModels.ThreadCreateRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a thread.
+            Create a thread.
             </summary>
             <param name="request"></param>
             <param name="cancellationToken"></param>
@@ -1096,7 +1123,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IThreadService.ThreadRetrieve(System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a thread.
+            Retrieves a thread.
             </summary>
             <param name="threadId"></param>
             <param name="cancellationToken"></param>
@@ -1104,7 +1131,7 @@
         </member>
         <member name="M:OpenAI.Interfaces.IThreadService.ThreadDelete(System.String,System.Threading.CancellationToken)">
             <summary>
-                Delete a thread.
+            Delete a thread.
             </summary>
             <param name="threadId"></param>
             <param name="cancellationToken"></param>
@@ -1112,80 +1139,80 @@
         </member>
         <member name="M:OpenAI.Interfaces.IThreadService.ModifyThread(System.String,OpenAI.ObjectModels.RequestModels.ModifyThreadRequest,System.Threading.CancellationToken)">
             <summary>
-                Modifies a thread.
+            Modifies a thread.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.ListVectorStoreFiles(System.String,OpenAI.ObjectModels.RequestModels.VectorStoreFileListRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of vector store files.
+            Returns a list of vector store files.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.CreateVectorStoreFile(System.String,OpenAI.ObjectModels.RequestModels.CreateVectorStoreFileRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a vector store file by attaching a [File](/docs/api-reference/files) to a [vector
-                store](/docs/api-reference/vector-stores/object).
+            Create a vector store file by attaching a [File](/docs/api-reference/files) to a [vector
+            store](/docs/api-reference/vector-stores/object).
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.GetVectorStoreFile(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a vector store file.
+            Retrieves a vector store file.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.DeleteVectorStoreFile(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Delete a vector store file. This will remove the file from the vector store but the file itself will not be
-                deleted. To delete the file, use the [delete file](/docs/api-reference/files/delete) endpoint.
+            Delete a vector store file. This will remove the file from the vector store but the file itself will not be
+            deleted. To delete the file, use the [delete file](/docs/api-reference/files/delete) endpoint.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.CreateVectorStoreFileBatch(System.String,OpenAI.ObjectModels.RequestModels.CreateVectorStoreFileBatchRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a vector store file batch.
+            Create a vector store file batch.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.GetVectorStoreFileBatch(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a vector store file batch.
+            Retrieves a vector store file batch.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.CancelVectorStoreFileBatch(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Cancel a vector store file batch. This attempts to cancel the processing of files in this batch as soon as
-                possible.
+            Cancel a vector store file batch. This attempts to cancel the processing of files in this batch as soon as
+            possible.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStoreFiles.ListFilesInVectorStoreBatch(System.String,System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of vector store files in a batch.
+            Returns a list of vector store files in a batch.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStores.ListVectorStores(OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of vector stores.
+            Returns a list of vector stores.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStores.CreateVectorStore(OpenAI.ObjectModels.RequestModels.CreateVectorStoreRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a vector store.
+            Create a vector store.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStores.RetrieveVectorStore(System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a vector store.
+            Retrieves a vector store.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStores.ModifyVectorStore(System.String,OpenAI.ObjectModels.RequestModels.UpdateVectorStoreRequest,System.Threading.CancellationToken)">
             <summary>
-                Modifies a vector store.
+            Modifies a vector store.
             </summary>
         </member>
         <member name="M:OpenAI.Interfaces.IVectorStores.DeleteVectorStore(System.String,System.Threading.CancellationToken)">
             <summary>
-                Delete a vector store.
+            Delete a vector store.
             </summary>
         </member>
         <member name="T:OpenAI.Managers.OpenAiService">
             <summary>
-                Beta service for OpenAI.
+            Beta service for OpenAI.
             </summary>
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.AssistantCreate(OpenAI.ObjectModels.RequestModels.AssistantCreateRequest,System.String,System.Threading.CancellationToken)">
@@ -1220,7 +1247,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.CreateMessage(System.String,OpenAI.ObjectModels.RequestModels.MessageCreateRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a message.
+            Create a message.
             </summary>
             <param name="threadId"></param>
             <param name="request"></param>
@@ -1230,7 +1257,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.ListMessages(System.String,OpenAI.ObjectModels.RequestModels.PaginationRequest,System.Threading.CancellationToken)">
             <summary>
-                Returns a list of messages for a given thread.
+            Returns a list of messages for a given thread.
             </summary>
             <param name="threadId"></param>
             <param name="request"></param>
@@ -1249,7 +1276,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.RunCreate(System.String,OpenAI.ObjectModels.RequestModels.RunCreateRequest,System.String,System.Threading.CancellationToken)">
             <summary>
-                Create a run.
+            Create a run.
             </summary>
             <param name="threadId"></param>
             <param name="request"></param>
@@ -1263,7 +1290,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.RunRetrieve(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a run.
+            Retrieves a run.
             </summary>
             <param name="threadId"></param>
             <param name="runId"></param>
@@ -1273,7 +1300,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.RunCancel(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-                Cancels a run that is in_progress.
+            Cancels a run that is in_progress.
             </summary>
             <param name="threadId"></param>
             <param name="runId"></param>
@@ -1283,12 +1310,12 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.RunSubmitToolOutputs(System.String,System.String,OpenAI.ObjectModels.RequestModels.SubmitToolOutputsToRunRequest,System.Threading.CancellationToken)">
             <summary>
-                Submit tool outputs to run
-                <para>
-                    When a run has the status: "requires_action" and required_action.type is submit_tool_outputs,
-                    this endpoint can be used to submit the outputs from the tool calls once they're all completed.
-                    All outputs must be submitted in a single request.
-                </para>
+            Submit tool outputs to run
+            <para>
+                When a run has the status: "requires_action" and required_action.type is submit_tool_outputs,
+                this endpoint can be used to submit the outputs from the tool calls once they're all completed.
+                All outputs must be submitted in a single request.
+            </para>
             </summary>
             <param name="threadId"></param>
             <param name="runId"></param>
@@ -1311,7 +1338,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.Dispose">
             <summary>
-                Method to dispose the HttpContext if created internally.
+            Method to dispose the HttpContext if created internally.
             </summary>
         </member>
         <member name="P:OpenAI.Managers.OpenAiService.Files">
@@ -1322,19 +1349,19 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.SetDefaultModelId(System.String)">
             <summary>
-                Sets default Model Id
+            Sets default Model Id
             </summary>
             <param name="modelId"></param>
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.GetDefaultModelId">
             <summary>
-                Get default Model Id
+            Get default Model Id
             </summary>
             <returns></returns>
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.ThreadCreate(OpenAI.ObjectModels.RequestModels.ThreadCreateRequest,System.Threading.CancellationToken)">
             <summary>
-                Create a thread.
+            Create a thread.
             </summary>
             <param name="request"></param>
             <param name="cancellationToken"></param>
@@ -1343,7 +1370,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.ThreadRetrieve(System.String,System.Threading.CancellationToken)">
             <summary>
-                Retrieves a thread.
+            Retrieves a thread.
             </summary>
             <param name="threadId"></param>
             <param name="cancellationToken"></param>
@@ -1352,7 +1379,7 @@
         </member>
         <member name="M:OpenAI.Managers.OpenAiService.ThreadDelete(System.String,System.Threading.CancellationToken)">
             <summary>
-                Delete a thread.
+            Delete a thread.
             </summary>
             <param name="threadId"></param>
             <param name="cancellationToken"></param>
@@ -1394,89 +1421,89 @@
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4">
             <summary>
-                More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat. Will be updated with
-                our latest model iteration.
-                8,192 tokens	Up to Sep 2021
+            More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat. Will be updated with
+            our latest model iteration.
+            8,192 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_32k">
             <summary>
-                Same capabilities as the base gpt-4 mode but with 4x the context length. Will be updated with our latest model
-                iteration.
-                32,768 tokens	Up to Sep 2021
+            Same capabilities as the base gpt-4 mode but with 4x the context length. Will be updated with our latest model
+            iteration.
+            32,768 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_0314">
             <summary>
-                Snapshot of gpt-4 from March 14th 2023. Unlike gpt-4, this model will not receive updates, and will only be
-                supported for a three-month period ending on June 14th 2023.
-                8,192 tokens	Up to Sep 2021
+            Snapshot of gpt-4 from March 14th 2023. Unlike gpt-4, this model will not receive updates, and will only be
+            supported for a three-month period ending on June 14th 2023.
+            8,192 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_32k_0314">
             <summary>
-                Snapshot of gpt-4-32 from March 14th 2023. Unlike gpt-4-32k, this model will not receive updates, and will only be
-                supported for a three-month period ending on June 14th 2023.
-                32,768 tokens	Up to Sep 2021
+            Snapshot of gpt-4-32 from March 14th 2023. Unlike gpt-4-32k, this model will not receive updates, and will only be
+            supported for a three-month period ending on June 14th 2023.
+            32,768 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_0613">
             <summary>
-                Snapshot of gpt-4 from June 13th 2023 with function calling data. Unlike gpt-4, this model will not receive
-                updates,
-                and will be deprecated 3 months after a new version is released.
-                8,192 tokens	Up to Sep 2021
+            Snapshot of gpt-4 from June 13th 2023 with function calling data. Unlike gpt-4, this model will not receive
+            updates,
+            and will be deprecated 3 months after a new version is released.
+            8,192 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_32k_0613">
             <summary>
-                Snapshot of gpt-4-32 from June 13th 2023. Unlike gpt-4-32k, this model will not receive updates,
-                and will be deprecated 3 months after a new version is released.
-                32,768 tokens	Up to Sep 2021
+            Snapshot of gpt-4-32 from June 13th 2023. Unlike gpt-4-32k, this model will not receive updates,
+            and will be deprecated 3 months after a new version is released.
+            32,768 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_1106_preview">
             <summary>
-                The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function
-                calling, and more.
-                Returns a maximum of 4,096 output tokens. This preview model is not yet suited for production traffic.
-                128,000 tokens	Up to Apr 2023
+            The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function
+            calling, and more.
+            Returns a maximum of 4,096 output tokens. This preview model is not yet suited for production traffic.
+            128,000 tokens	Up to Apr 2023
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_vision_preview">
             <summary>
-                Ability to understand images, in addition to all other GPT-4 Turbo capabilties.
-                Returns a maximum of 4,096 output tokens. This is a preview model version and not suited yet for production
-                traffic.
-                128,000 tokens	Up to Apr 2023
+            Ability to understand images, in addition to all other GPT-4 Turbo capabilties.
+            Returns a maximum of 4,096 output tokens. This is a preview model version and not suited yet for production
+            traffic.
+            128,000 tokens	Up to Apr 2023
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_turbo">
             <summary>
-                The latest GPT-4 Turbo model with vision capabilities. Vision requests can now use JSON mode and function calling.
-                Currently points to gpt-4-turbo-2024-04-09 as of 04/09/2024.
-                128,000 tokens	Up to Dec 2023
+            The latest GPT-4 Turbo model with vision capabilities. Vision requests can now use JSON mode and function calling.
+            Currently points to gpt-4-turbo-2024-04-09 as of 04/09/2024.
+            128,000 tokens	Up to Dec 2023
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4_turbo_2024_04_09">
             <summary>
-                GPT-4 Turbo with Vision model. Vision requests can now use JSON mode and function calling.
-                `gpt-4-turbo` currently points to this version.
-                128,000 tokens	Up to Dec 2023
+            GPT-4 Turbo with Vision model. Vision requests can now use JSON mode and function calling.
+            `gpt-4-turbo` currently points to this version.
+            128,000 tokens	Up to Dec 2023
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4o">
             <summary>
-                Our most advanced, multimodal flagship model that’s cheaper and faster than GPT-4 Turbo.
-                Currently points to gpt-4o-2024-05-13.
-                128,000 tokens	Up to Oct 2023
+            Our most advanced, multimodal flagship model that’s cheaper and faster than GPT-4 Turbo.
+            Currently points to gpt-4o-2024-05-13.
+            128,000 tokens	Up to Oct 2023
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4o_2024_05_13">
             <summary>
-                Our most advanced, multimodal flagship model that’s cheaper and faster than GPT-4 Turbo.
-                Currently points to gpt-4o-2024-05-13.
-                128,000 tokens	Up to Oct 2023
+            Our most advanced, multimodal flagship model that’s cheaper and faster than GPT-4 Turbo.
+            Currently points to gpt-4o-2024-05-13.
+            128,000 tokens	Up to Oct 2023
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_4o_mini">
@@ -1497,93 +1524,93 @@
         </member>
         <member name="P:OpenAI.ObjectModels.Models.ChatGpt3_5Turbo">
             <summary>
-                Most capable GPT-3.5 model and optimized for chat at 1/10th the cost of text-davinci-003. Will be updated with our
-                latest model iteration.
-                4,096 tokens	Up to Sep 2021
+            Most capable GPT-3.5 model and optimized for chat at 1/10th the cost of text-davinci-003. Will be updated with our
+            latest model iteration.
+            4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo">
             <summary>
-                Most capable GPT-3.5 model and optimized for chat at 1/10th the cost of text-davinci-003. Will be updated with our
-                latest model iteration.
-                4,096 tokens	Up to Sep 2021
+            Most capable GPT-3.5 model and optimized for chat at 1/10th the cost of text-davinci-003. Will be updated with our
+            latest model iteration.
+            4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k">
             <summary>
-                Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context.
-                16,384 tokens	Up to Sep 2021
+            Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context.
+            16,384 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.ChatGpt3_5Turbo0301">
             <summary>
-                Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
-                only be supported for a three-month period ending on June 1st 2023.
-                4,096 tokens	Up to Sep 2021
+            Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
+            only be supported for a three-month period ending on June 1st 2023.
+            4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_0301">
             <summary>
-                Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
-                only be supported for a three-month period ending on June 1st 2023.
-                4,096 tokens	Up to Sep 2021
+            Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will
+            only be supported for a three-month period ending on June 1st 2023.
+            4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_0613">
             <summary>
-                Snapshot of gpt-3.5-turbo from June 13th 2023 with function calling data. Unlike gpt-3.5-turbo,
-                this model will not receive updates, and will be deprecated 3 months after a new version is released.
-                4,096 tokens	Up to Sep 2021
+            Snapshot of gpt-3.5-turbo from June 13th 2023 with function calling data. Unlike gpt-3.5-turbo,
+            this model will not receive updates, and will be deprecated 3 months after a new version is released.
+            4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_1106">
             <summary>
-                The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel
-                function calling, and more.
-                16,384 tokens	Up to Sep 2021
+            The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel
+            function calling, and more.
+            16,384 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k_0613">
             <summary>
-                Snapshot of gpt-3.5-turbo from June 13th 2023 with function calling data. Unlike gpt-3.5-turbo,
-                this model will not receive updates, and will be deprecated 3 months after a new version is released.
-                4,096 tokens	Up to Sep 2021
+            Snapshot of gpt-3.5-turbo from June 13th 2023 with function calling data. Unlike gpt-3.5-turbo,
+            this model will not receive updates, and will be deprecated 3 months after a new version is released.
+            4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_Instruct">
             <summary>
-                Similar capabilities as text-davinci-003 but compatible with legacy Completions endpoint and not Chat Completions.
-                4,096 tokens	Up to Sep 2021
+            Similar capabilities as text-davinci-003 but compatible with legacy Completions endpoint and not Chat Completions.
+            4,096 tokens	Up to Sep 2021
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Dall_e_2">
             <summary>
-                The previous DALL·E model released in Nov 2022. The 2nd iteration of DALL·E with more realistic, accurate, and 4x
-                greater resolution images than the original model.
+            The previous DALL·E model released in Nov 2022. The 2nd iteration of DALL·E with more realistic, accurate, and 4x
+            greater resolution images than the original model.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Dall_e_3">
             <summary>
-                The latest DALL·E model released in Nov 2023.
+            The latest DALL·E model released in Nov 2023.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Tts_1">
             <summary>
-                TTS is an AI model that converts text to natural sounding spoken text.
-                tts-1 is optimized for real time text to speech use cases.
-                Released in Nov 2023.
+            TTS is an AI model that converts text to natural sounding spoken text.
+            tts-1 is optimized for real time text to speech use cases.
+            Released in Nov 2023.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.Models.Tts_1_hd">
             <summary>
-                TTS is an AI model that converts text to natural sounding spoken text.
-                tts-1-hd is optimized for quality
-                Released in Nov 2023.
+            TTS is an AI model that converts text to natural sounding spoken text.
+            tts-1-hd is optimized for quality
+            Released in Nov 2023.
             </summary>
         </member>
         <member name="M:OpenAI.ObjectModels.Models.ModelNameBuilder(OpenAI.ObjectModels.Models.BaseModel,System.Nullable{OpenAI.ObjectModels.Models.Subject},System.String)">
             <summary>
-                This method does not guarantee returned model exists.
+            This method does not guarantee returned model exists.
             </summary>
             <param name="subject"></param>
             <param name="version"></param>
@@ -1592,155 +1619,155 @@
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.Name">
             <summary>
-                The name of the assistant. The maximum length is 256 characters.
+            The name of the assistant. The maximum length is 256 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.Description">
             <summary>
-                The description of the assistant. The maximum length is 512 characters.
+            The description of the assistant. The maximum length is 512 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.Instructions">
             <summary>
-                The system instructions that the assistant uses. The maximum length is 256,000 characters.
+            The system instructions that the assistant uses. The maximum length is 256,000 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.Tools">
             <summary>
-                A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types
-                `code_interpreter`, `file_search`, or `function`.
+            A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types
+            `code_interpreter`, `file_search`, or `function`.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.ToolResources">
             <summary>
-                A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For
-                example, the code_interpreter tool requires a list of file IDs, while the file_search tool requires a list of
-                vector store IDs.
+            A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For
+            example, the code_interpreter tool requires a list of file IDs, while the file_search tool requires a list of
+            vector store IDs.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.TopP">
             <summary>
-                An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
-                tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
-                considered.
-                We generally recommend altering this or temperature but not both.
+            An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
+            tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
+            considered.
+            We generally recommend altering this or temperature but not both.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.ResponseFormat">
             <summary>
-                Specifies the format that the model must output. Compatible with
-                <a href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</a>,
-                <a href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</a>, and all GPT-3.5 Turbo
-                models since gpt-3.5-turbo-1106.
-                Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which guarantees the message the model generates is
-                valid JSON. <br />
-                <b>Important: </b>when using JSON mode, you must also instruct the model to produce JSON yourself via a system or
-                user message.Without this, the model may generate an unending stream of whitespace until the generation reaches the
-                token limit, resulting in a long-running and seemingly "stuck" request.Also note that the message content may be
-                partially cut off if <c>finish_reason= "length"</c>, which indicates the generation exceeded <c>max_tokens</c> or
-                the
-                conversation exceeded the max context length.
+            Specifies the format that the model must output. Compatible with
+            <a href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</a>,
+            <a href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</a>, and all GPT-3.5 Turbo
+            models since gpt-3.5-turbo-1106.
+            Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which guarantees the message the model generates is
+            valid JSON. <br />
+            <b>Important: </b>when using JSON mode, you must also instruct the model to produce JSON yourself via a system or
+            user message.Without this, the model may generate an unending stream of whitespace until the generation reaches the
+            token limit, resulting in a long-running and seemingly "stuck" request.Also note that the message content may be
+            partially cut off if <c>finish_reason= "length"</c>, which indicates the generation exceeded <c>max_tokens</c> or
+            the
+            conversation exceeded the max context length.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.Model">
             <summary>
-                ID of the model to use. You can use the
-                <a href="https://platform.openai.com/docs/api-reference/models/list">List models</a> API to see all of your
-                available models, or see our <a href="https://platform.openai.com/docs/models/overview">Model overview</a> for
-                descriptions of them.
+            ID of the model to use. You can use the
+            <a href="https://platform.openai.com/docs/api-reference/models/list">List models</a> API to see all of your
+            available models, or see our <a href="https://platform.openai.com/docs/models/overview">Model overview</a> for
+            descriptions of them.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantCreateRequest.Temperature">
             <summary>
-                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
-                lower values like 0.2 will make it more focused and deterministic.
+            What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
+            lower values like 0.2 will make it more focused and deterministic.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantFileCreateRequest.FileId">
             <summary>
-                A File ID (with purpose="assistants") that the assistant should use. Useful for tools like retrieval and
-                code_interpreter that can access files.
+            A File ID (with purpose="assistants") that the assistant should use. Useful for tools like retrieval and
+            code_interpreter that can access files.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.Name">
             <summary>
-                The name of the assistant. The maximum length is 256
+            The name of the assistant. The maximum length is 256
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.Description">
             <summary>
-                The description of the assistant. The maximum length is 512 characters.
+            The description of the assistant. The maximum length is 512 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.Instructions">
             <summary>
-                The system instructions that the assistant uses. The maximum length is 32768 characters.
+            The system instructions that the assistant uses. The maximum length is 32768 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.Tools">
             <summary>
-                A list of tools enabled on the assistant.
+            A list of tools enabled on the assistant.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.ToolResources">
             <summary>
-                A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For
-                example, the code_interpreter tool requires a list of file IDs, while the file_search tool requires a list of
-                vector store IDs.
+            A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For
+            example, the code_interpreter tool requires a list of file IDs, while the file_search tool requires a list of
+            vector store IDs.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.TopP">
             <summary>
-                An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
-                tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
-                considered.
-                We generally recommend altering this or temperature but not both.
+            An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
+            tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
+            considered.
+            We generally recommend altering this or temperature but not both.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.ResponseFormat">
             <summary>
-                Specifies the format that the model must output. Compatible with
-                <a href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</a>,
-                <a href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</a>, and all GPT-3.5 Turbo
-                models since gpt-3.5-turbo-1106.
-                Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which guarantees the message the model generates is
-                valid JSON. <br />
-                <b>Important: </b>when using JSON mode, you must also instruct the model to produce JSON yourself via a system or
-                user message.Without this, the model may generate an unending stream of whitespace until the generation reaches the
-                token limit, resulting in a long-running and seemingly "stuck" request.Also note that the message content may be
-                partially cut off if <c>finish_reason= "length"</c>, which indicates the generation exceeded <c>max_tokens</c> or
-                the
-                conversation exceeded the max context length.
+            Specifies the format that the model must output. Compatible with
+            <a href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</a>,
+            <a href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</a>, and all GPT-3.5 Turbo
+            models since gpt-3.5-turbo-1106.
+            Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which guarantees the message the model generates is
+            valid JSON. <br />
+            <b>Important: </b>when using JSON mode, you must also instruct the model to produce JSON yourself via a system or
+            user message.Without this, the model may generate an unending stream of whitespace until the generation reaches the
+            token limit, resulting in a long-running and seemingly "stuck" request.Also note that the message content may be
+            partially cut off if <c>finish_reason= "length"</c>, which indicates the generation exceeded <c>max_tokens</c> or
+            the
+            conversation exceeded the max context length.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object.
+            Set of 16 key-value pairs that can be attached to an object.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.Model">
             <summary>
-                ID of the model to use
+            ID of the model to use
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.AssistantModifyRequest.Temperature">
             <summary>
-                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
-                lower values like 0.2 will make it more focused and deterministic.
+            What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
+            lower values like 0.2 will make it more focused and deterministic.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.RequestModels.ChatMessage">
             <summary>
-                The contents of the message.
-                Messages must be an array of message objects, where each object has a role (either “system”, “user”, or
-                “assistant”) and content (the content of the message) and an optional name
+            The contents of the message.
+            Messages must be an array of message objects, where each object has a role (either “system”, “user”, or
+            “assistant”) and content (the content of the message) and an optional name
             </summary>
         </member>
         <member name="M:OpenAI.ObjectModels.RequestModels.ChatMessage.#ctor(System.String,System.String,System.String,System.Collections.Generic.IList{OpenAI.ObjectModels.RequestModels.ToolCall},System.String)">
@@ -1749,8 +1776,8 @@
             <param name="role">The role of the author of this message. One of system, user, or assistant.</param>
             <param name="content">The contents of the message.</param>
             <param name="name">
-                The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum
-                length of 64 characters.
+            The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum
+            length of 64 characters.
             </param>
             <param name="toolCallId">The tool function call id generated by the model</param>
             <param name="toolCalls">The tool calls generated by the model.</param>
@@ -1761,896 +1788,906 @@
             <param name="role">The role of the author of this message. One of system, user, or assistant.</param>
             <param name="contents">The list of the content messages.</param>
             <param name="name">
-                The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum
-                length of 64 characters.
+            The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum
+            length of 64 characters.
             </param>
             <param name="toolCallId">The tool function call id generated by the model</param>
             <param name="toolCalls">The tool calls generated by the model.</param>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ChatMessage.Role">
             <summary>
-                The role of the author of this message. One of system, user, or assistant.
+            The role of the author of this message. One of system, user, or assistant.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ChatMessage.ContentCalculated">
             <summary>
-                The contents of the message.
+            The contents of the message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ChatMessage.Name">
             <summary>
-                The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum length of 64
-                characters.
+            The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum length of 64
+            characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ChatMessage.ToolCallId">
             <summary>
-                Required for tool role messages.
-                Tool call that this message is responding to.
+            Required for tool role messages.
+            Tool call that this message is responding to.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ChatMessage.FunctionCall">
             <summary>
-                Deprecated and replaced by tool_calls. The name and arguments of a function that should be called, as generated by
-                the model.
+            Deprecated and replaced by tool_calls. The name and arguments of a function that should be called, as generated by
+            the model.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ChatMessage.ToolCalls">
             <summary>
-                The tool calls generated by the model, such as function calls.
+            The tool calls generated by the model, such as function calls.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.Instructions">
             <summary>
-                Override the default system message of the assistant. This is useful for modifying the behavior on a per-run basis.
+            Override the default system message of the assistant. This is useful for modifying the behavior on a per-run basis.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.Tools">
             <summary>
-                Override the tools the assistant can use for this run. This is useful for modifying the behavior on a per-run
-                basis.
+            Override the tools the assistant can use for this run. This is useful for modifying the behavior on a per-run
+            basis.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.ToolResources">
             <summary>
-                A set of resources that are used by the assistant&apos;s tools. The resources are specific to the type of tool. For
-                example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of
-                vector store IDs.
+            A set of resources that are used by the assistant&apos;s tools. The resources are specific to the type of tool. For
+            example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of
+            vector store IDs.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.Temperature">
             <summary>
-                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
-                lower values like 0.2 will make it more focused and deterministic.
+            What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
+            lower values like 0.2 will make it more focused and deterministic.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.TopP">
             <summary>
-                An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
-                tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
-                considered.
-                We generally recommend altering this or temperature but not both.
+            An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
+            tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
+            considered.
+            We generally recommend altering this or temperature but not both.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.Stream">
             <summary>
-                If `true`, returns a stream of events that happen during the Run as server-sent events, terminating when the Run
-                enters a terminal state with a `data: [DONE]` message.
+            If `true`, returns a stream of events that happen during the Run as server-sent events, terminating when the Run
+            enters a terminal state with a `data: [DONE]` message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.MaxPromptTokens">
             <summary>
-                The maximum number of prompt tokens that may be used over the course of the run. The run will try to
-                use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of
-                prompt tokens specified, the run will end with status `incomplete`. See `incomplete_details` for more info.
+            The maximum number of prompt tokens that may be used over the course of the run. The run will try to
+            use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of
+            prompt tokens specified, the run will end with status `incomplete`. See `incomplete_details` for more info.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.MaxCompletionTokens">
             <summary>
-                The maximum number of completion tokens that may be used over the course of the run. The run will 
-                try to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
-                the number of completion tokens specified, the run will end with status `incomplete`. See `incomplete_details` for
-                more info.
+            The maximum number of completion tokens that may be used over the course of the run. The run will 
+            try to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
+            the number of completion tokens specified, the run will end with status `incomplete`. See `incomplete_details` for
+            more info.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.TruncationStrategy">
             <summary>
-                Controls for how a thread will be truncated prior to the run. Use this to control the intial context window of the
-                run.
+            Controls for how a thread will be truncated prior to the run. Use this to control the intial context window of the
+            run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.ToolChoice">
             <summary>
-                Controls which (if any) tool is called by the model.
-                `none` means the model will not call any tools and instead generates a message.
-                `auto` is the default value and means the model can pick between generating a message or calling a tool.
-                Specifying a particular tool like `{&quot;type&quot;: &quot;file_search&quot;}` or `{&quot;type&quot;: &quot;
-                function&quot;, &quot;function&quot;: {&quot;name&quot;: &quot;my_function&quot;}}` forces the model to call that
-                tool.
+            Controls which (if any) tool is called by the model.
+            `none` means the model will not call any tools and instead generates a message.
+            `auto` is the default value and means the model can pick between generating a message or calling a tool.
+            Specifying a particular tool like `{&quot;type&quot;: &quot;file_search&quot;}` or `{&quot;type&quot;: &quot;
+            function&quot;, &quot;function&quot;: {&quot;name&quot;: &quot;my_function&quot;}}` forces the model to call that
+            tool.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.ResponseFormat">
             <summary>
-                Specifies the format that the model must output. Compatible with [GPT-4 Turbo](/docs/models/gpt-4-and-gpt-4-turbo)
-                and all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
-                Setting to `{ &quot;type&quot;: &quot;json_object&quot; }` enables JSON mode, which guarantees the message the
-                model generates is valid JSON.
-                **Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or
-                user message. Without this, the model may generate an unending stream of whitespace until the generation reaches
-                the token limit, resulting in a long-running and seemingly &quot;stuck&quot; request. Also note that the message
-                content may be partially cut off if `finish_reason=&quot;length&quot;`, which indicates the generation exceeded
-                `max_tokens` or the conversation exceeded the max context length.
+            Specifies the format that the model must output. Compatible with [GPT-4 Turbo](/docs/models/gpt-4-and-gpt-4-turbo)
+            and all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
+            Setting to `{ &quot;type&quot;: &quot;json_object&quot; }` enables JSON mode, which guarantees the message the
+            model generates is valid JSON.
+            **Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or
+            user message. Without this, the model may generate an unending stream of whitespace until the generation reaches
+            the token limit, resulting in a long-running and seemingly &quot;stuck&quot; request. Also note that the message
+            content may be partially cut off if `finish_reason=&quot;length&quot;`, which indicates the generation exceeded
+            `max_tokens` or the conversation exceeded the max context length.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.AssistantId">
             <summary>
-                The ID of the [assistant](/docs/api-reference/assistants) to use to execute this run.
+            The ID of the [assistant](/docs/api-reference/assistants) to use to execute this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateThreadAndRunRequest.Model">
             <summary>
-                The ID of the [Model](/docs/api-reference/models) to be used to execute this run. If a value is provided here, it
-                will override the model associated with the assistant. If not, the model associated with the assistant will be
-                used.
+            The ID of the [Model](/docs/api-reference/models) to be used to execute this run. If a value is provided here, it
+            will override the model associated with the assistant. If not, the model associated with the assistant will be
+            used.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FileSearch.VectorStoreIds">
             <summary>
-                The vector store attached to this assistant. There can be a maximum of 1 vector store attached to the assistant.
+            The vector store attached to this assistant. There can be a maximum of 1 vector store attached to the assistant.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FileSearch.VectorStores">
             <summary>
-                A helper to create a vector store with file_ids and attach it to this assistant. There can be a maximum of 1 vector
-                store attached to the assistant.
+            A helper to create a vector store with file_ids and attach it to this assistant. There can be a maximum of 1 vector
+            store attached to the assistant.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.VectorStores.FileIds">
             <summary>
-                A list of file IDs to add to the vector store. There can be a maximum of 10000 files in a vector store.
+            A list of file IDs to add to the vector store. There can be a maximum of 10000 files in a vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.VectorStores.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to a vector store. This can be useful for storing additional
-                information about the vector store in a structured format. Keys can be a maximum of 64 characters long and values
-                can be a maxium of 512 characters long.
+            Set of 16 key-value pairs that can be attached to a vector store. This can be useful for storing additional
+            information about the vector store in a structured format. Keys can be a maximum of 64 characters long and values
+            can be a maxium of 512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CodeInterpreter.FileIds">
             <summary>
-                A list of file IDs made available to the code_interpreter tool. There can be a maximum of 20 files associated with
-                the tool.
+            A list of file IDs made available to the code_interpreter tool. There can be a maximum of 20 files associated with
+            the tool.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolsItem.Type">
             <summary>
-                The type of the tool. Currently, only `function` is supported.
+            The type of the tool. Currently, only `function` is supported.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.Function.Name">
             <summary>
-                The name of the function.
+            The name of the function.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.Function.Arguments">
             <summary>
-                The arguments passed to the function.
+            The arguments passed to the function.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.Function.Output">
             <summary>
-                The output of the function. This will be `null` if the outputs have not been
-                [submitted](/docs/api-reference/runs/submitToolOutputs) yet.
+            The output of the function. This will be `null` if the outputs have not been
+            [submitted](/docs/api-reference/runs/submitToolOutputs) yet.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateVectorStoreFileBatchRequest.FileIds">
             <summary>
-                A list of [File](/docs/api-reference/files) IDs that the vector store should use. Useful for tools like
-                `file_search` that can access files.
+            A list of [File](/docs/api-reference/files) IDs that the vector store should use. Useful for tools like
+            `file_search` that can access files.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateVectorStoreFileRequest.FileId">
             <summary>
-                A [File](/docs/api-reference/files) ID that the vector store should use. Useful for tools like `file_search` that
-                can access files.
+            A [File](/docs/api-reference/files) ID that the vector store should use. Useful for tools like `file_search` that
+            can access files.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateVectorStoreRequest.FileIds">
             <summary>
-                A list of [File](/docs/api-reference/files) IDs that the vector store should use. Useful for tools like
-                `file_search` that can access files.
+            A list of [File](/docs/api-reference/files) IDs that the vector store should use. Useful for tools like
+            `file_search` that can access files.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateVectorStoreRequest.Name">
             <summary>
-                The name of the vector store.
+            The name of the vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateVectorStoreRequest.ExpiresAfter">
             <summary>
-                The expiration policy for a vector store.
+            The expiration policy for a vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.CreateVectorStoreRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.RequestModels.FunctionCall">
             <summary>
-                Describes a function call returned from GPT.
-                A function call contains a function name, and a dictionary
-                mapping function argument names to their values.
+            Describes a function call returned from GPT.
+            A function call contains a function name, and a dictionary
+            mapping function argument names to their values.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FunctionCall.Name">
             <summary>
-                Function name
+            Function name
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FunctionCall.Arguments">
             <summary>
-                Function arguments, returned as a JSON-encoded dictionary mapping
-                argument names to argument values.
+            Function arguments, returned as a JSON-encoded dictionary mapping
+            argument names to argument values.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.RequestModels.FunctionDefinition">
             <summary>
-                Definition of a valid function call.
+            Definition of a valid function call.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FunctionDefinition.Name">
             <summary>
-                The name of the function to be called. Must be a-z, A-Z, 0-9,
-                or contain underscores and dashes, with a maximum length of 64.
+            The name of the function to be called. Must be a-z, A-Z, 0-9,
+            or contain underscores and dashes, with a maximum length of 64.
+            This is stored in as part of the assistant definition in the OpenAI API.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FunctionDefinition.Description">
             <summary>
-                A description of what the function does, used by the model to choose when and how to call the function.
+            A description of what the function does, used by the model to choose when and how to call the function.
+            This is stored in as part of the assistant definition in the OpenAI API.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FunctionDefinition.Parameters">
             <summary>
-                Optional. The parameters the functions accepts, described as a JSON Schema object.
-                See the <a href="https://platform.openai.com/docs/guides/gpt/function-calling">guide</a> for examples,
-                and the <a href="https://json-schema.org/understanding-json-schema/">JSON Schema reference</a> for
-                documentation about the format.
+            Optional. The parameters the functions accepts, described as a JSON Schema object.
+            See the <a href="https://platform.openai.com/docs/guides/gpt/function-calling">guide</a> for examples,
+            and the <a href="https://json-schema.org/understanding-json-schema/">JSON Schema reference</a> for
+            documentation about the format.
+            This is stored in as part of the assistant definition in the OpenAI API.
+            </summary>
+        </member>
+        <member name="P:OpenAI.ObjectModels.RequestModels.FunctionDefinition.ResponseSchemas">
+            <summary>
+            Populated during runtime based on the openapi spec.
+            This is an extension provided by AntRunner and is not part of the OpenAI API.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.FunctionDefinition.ContentType">
             <summary>
             Optional, applies to POST etc...
+            This is an extension provided by AntRunner and is not part of the OpenAI API.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.RequestModels.MessageContent">
             <summary>
-                The content of a message.
+            The content of a message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.MessageContent.Type">
             <summary>
-                The value of Type property must be one of "text", "image_url"
-                note: Currently openAI doesn't support images in the first system message.
+            The value of Type property must be one of "text", "image_url"
+            note: Currently openAI doesn't support images in the first system message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.MessageContent.Text">
             <summary>
-                If the value of Type property is "text" then Text property must contain the message content text
+            If the value of Type property is "text" then Text property must contain the message content text
             </summary>
         </member>
         <member name="M:OpenAI.ObjectModels.RequestModels.MessageContent.TextContent(System.String)">
             <summary>
-                Static helper method to create MessageContent Text
-                <param name="text">The text content</param>
+            Static helper method to create MessageContent Text
+            <param name="text">The text content</param>
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.MessageCreateRequest.Role">
             <summary>
-                The role of the entity that is creating the message.
-                Currently only user is supported.
+            The role of the entity that is creating the message.
+            Currently only user is supported.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.MessageCreateRequest.Content">
             <summary>
-                The content of the message.
+            The content of the message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.MessageCreateRequest.Attachments">
             <summary>
-                A list of files attached to the message, and the tools they should be added to.
+            A list of files attached to the message, and the tools they should be added to.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.MessageCreateRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object.
-                This can be useful for storing additional information about the object in a structured format.
-                Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
+            Set of 16 key-value pairs that can be attached to an object.
+            This can be useful for storing additional information about the object in a structured format.
+            Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.Attachment.FileId">
             <summary>
-                The ID of the file to attach.
-                <a href="https://platform.openai.com/docs/assistants/tools/file-search/supported-files">
-                    See list of supported file
-                    extensions
-                </a>
-                .
+            The ID of the file to attach.
+            <a href="https://platform.openai.com/docs/assistants/tools/file-search/supported-files">
+                See list of supported file
+                extensions
+            </a>
+            .
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.Attachment.Tools">
             <summary>
-                The tools to add this file to.
+            The tools to add this file to.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ModifyMessageRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ModifyThreadRequest.ToolResources">
             <summary>
-                A set of resources that are made available to the assistant's tools in this thread. The resources are specific to
-                the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool
-                requires a list of vector store IDs.
+            A set of resources that are made available to the assistant's tools in this thread. The resources are specific to
+            the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool
+            requires a list of vector store IDs.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ModifyThreadRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.VectorStoreFileListRequest.Filter">
             <summary>
-                Filter by file status. One of in_progress, completed, failed, cancelled.
+            Filter by file status. One of in_progress, completed, failed, cancelled.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.PaginationRequest.Limit">
             <summary>
-                A limit on the number of objects to be returned.
-                Limit can range between 1 and 100, and the default is 20.
+            A limit on the number of objects to be returned.
+            Limit can range between 1 and 100, and the default is 20.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.PaginationRequest.Order">
             <summary>
-                Sort order by the created_at timestamp of the objects.
-                "asc" for ascending order and "desc" for descending order.
+            Sort order by the created_at timestamp of the objects.
+            "asc" for ascending order and "desc" for descending order.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.PaginationRequest.After">
             <summary>
-                A cursor for use in pagination. after is an object ID that defines your place in the list.
-                For instance, if you make a list request and receive 100 objects, ending with obj_foo,
-                your subsequent call can include after=obj_foo in order to fetch the next page of the list.
+            A cursor for use in pagination. after is an object ID that defines your place in the list.
+            For instance, if you make a list request and receive 100 objects, ending with obj_foo,
+            your subsequent call can include after=obj_foo in order to fetch the next page of the list.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.PaginationRequest.Before">
             <summary>
-                A cursor for use in pagination. before is an object ID that defines your place in the list.
-                For instance, if you make a list request and receive 100 objects, ending with obj_foo, your
-                subsequent call can include before=obj_foo in order to fetch the previous page of the list.
+            A cursor for use in pagination. before is an object ID that defines your place in the list.
+            For instance, if you make a list request and receive 100 objects, ending with obj_foo, your
+            subsequent call can include before=obj_foo in order to fetch the previous page of the list.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.RequestModels.ResponseFormat">
             <summary>
-                An object specifying the format that the model must output.
-                Used to enable JSON mode.
+            An object specifying the format that the model must output.
+            Used to enable JSON mode.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ResponseFormat.Type">
             <summary>
-                Setting to json_object enables JSON mode.
-                This guarantees that the message the model generates is valid JSON.
-                Note that the message content may be partial if finish_reason="length",
-                which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
+            Setting to json_object enables JSON mode.
+            This guarantees that the message the model generates is valid JSON.
+            Note that the message content may be partial if finish_reason="length",
+            which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.Instructions">
             <summary>
-                Override the default system message of the assistant. This is useful for modifying the behavior on a per-run basis.
+            Override the default system message of the assistant. This is useful for modifying the behavior on a per-run basis.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.AdditionalInstructions">
             <summary>
-                Appends additional instructions at the end of the instructions for the run. This is useful for modifying the
-                behavior on a per-run basis without overriding other instructions.
+            Appends additional instructions at the end of the instructions for the run. This is useful for modifying the
+            behavior on a per-run basis without overriding other instructions.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.AdditionalMessages">
             <summary>
-                Adds additional messages to the thread before creating the run.
+            Adds additional messages to the thread before creating the run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.Tools">
             <summary>
-                Override the tools the assistant can use for this run. This is useful for modifying the behavior on a per-run
-                basis.
+            Override the tools the assistant can use for this run. This is useful for modifying the behavior on a per-run
+            basis.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.TopP">
             <summary>
-                An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
-                tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
-                considered.
-                We generally recommend altering this or temperature but not both.
+            An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
+            tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
+            considered.
+            We generally recommend altering this or temperature but not both.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.Stream">
             <summary>
-                If `true`, returns a stream of events that happen during the Run as server-sent events, terminating when the Run
-                enters a terminal state with a `data: [DONE]` message.
+            If `true`, returns a stream of events that happen during the Run as server-sent events, terminating when the Run
+            enters a terminal state with a `data: [DONE]` message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.MaxPromptTokens">
             <summary>
-                The maximum number of prompt tokens that may be used over the course of the run. The run will make try to
-                use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of
-                prompt tokens specified, the run will end with status `incomplete`. See `incomplete_details` for more info.
+            The maximum number of prompt tokens that may be used over the course of the run. The run will make try to
+            use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of
+            prompt tokens specified, the run will end with status `incomplete`. See `incomplete_details` for more info.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.MaxCompletionTokens">
             <summary>
-                The maximum number of completion tokens that may be used over the course of the run. The run will 
-                try to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
-                the number of completion tokens specified, the run will end with status `incomplete`. See `incomplete_details` for
-                more info.
+            The maximum number of completion tokens that may be used over the course of the run. The run will 
+            try to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds
+            the number of completion tokens specified, the run will end with status `incomplete`. See `incomplete_details` for
+            more info.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.TruncationStrategy">
             <summary>
-                Controls how a thread will be truncated prior to the run. Use this to control the initial context window of the
-                run.
+            Controls how a thread will be truncated prior to the run. Use this to control the initial context window of the
+            run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.ToolChoice">
             <summary>
-                Controls which (if any) tool is called by the model.
+            Controls which (if any) tool is called by the model.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.ResponseFormat">
             <summary>
-                Specifies the format that the model must output. Compatible with
-                <see href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</see>,
-                <see href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</see>, and all GPT-3.5 Turbo
-                models since `gpt-3.5-turbo-1106`.
+            Specifies the format that the model must output. Compatible with
+            <see href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</see>,
+            <see href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</see>, and all GPT-3.5 Turbo
+            models since `gpt-3.5-turbo-1106`.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.AssistantId">
             <summary>
-                The ID of the <see href="https://platform.openai.com/docs/api-reference/assistants">assistant</see> to use to
-                execute this run.
+            The ID of the <see href="https://platform.openai.com/docs/api-reference/assistants">assistant</see> to use to
+            execute this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.Model">
             <summary>
-                The ID of the <see href="https://platform.openai.com/docs/api-reference/models">Model</see> to be used to execute
-                this run. If a value is provided here, it will override the model associated with the assistant. If not, the model
-                associated with the assistant will be used.
+            The ID of the <see href="https://platform.openai.com/docs/api-reference/models">Model</see> to be used to execute
+            this run. If a value is provided here, it will override the model associated with the assistant. If not, the model
+            associated with the assistant will be used.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunCreateRequest.Temperature">
             <summary>
-                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
-                lower values like 0.2 will make it more focused and deterministic.
+            What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
+            lower values like 0.2 will make it more focused and deterministic.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.RunModifyRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object.
+            Set of 16 key-value pairs that can be attached to an object.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.SubmitToolOutputsToRunRequest.ToolOutputs">
             <summary>
-                A list of tools for which the outputs are being submitted.
+            A list of tools for which the outputs are being submitted.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.SubmitToolOutputsToRunRequest.Stream">
             <summary>
-                If true, returns a stream of events that happen during the Run as server-sent events, terminating when the Run
-                enters a terminal state with a data: [DONE] message.
+            If true, returns a stream of events that happen during the Run as server-sent events, terminating when the Run
+            enters a terminal state with a data: [DONE] message.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.RequestModels.ToolOutput">
             <summary>
-                A list of tools for which the outputs are being submitted.
+            A list of tools for which the outputs are being submitted.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolOutput.ToolCallId">
             <summary>
-                The ID of the tool call in the required_action object
-                within the run object the output is being submitted for.
+            The ID of the tool call in the required_action object
+            within the run object the output is being submitted for.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolOutput.Output">
             <summary>
-                The output of the tool call to be submitted to continue the run.
+            The output of the tool call to be submitted to continue the run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ThreadCreateRequest.Messages">
             <summary>
-                A list of messages to start the thread with.
+            A list of messages to start the thread with.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ThreadCreateRequest.ToolResources">
             <summary>
-                A set of resources that are made available to the assistant's tools in this thread. The resources are specific to
-                the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool
-                requires a list of vector store IDs.
+            A set of resources that are made available to the assistant's tools in this thread. The resources are specific to
+            the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool
+            requires a list of vector store IDs.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ThreadCreateRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object.
-                This can be useful for storing additional information about the object in a structured format.
-                Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
+            Set of 16 key-value pairs that can be attached to an object.
+            This can be useful for storing additional information about the object in a structured format.
+            Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolCall.Index">
             <summary>
-                The Index of the tool call.
+            The Index of the tool call.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolCall.Id">
             <summary>
-                The ID of the tool call.
+            The ID of the tool call.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolCall.Type">
             <summary>
-                The type of the tool. Currently, only function is supported.
+            The type of the tool. Currently, only function is supported.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolCall.FunctionCall">
             <summary>
-                The function that the model called.
+            The function that the model called.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolChoice.Type">
             <summary>
-                "none" is the default when no functions are present.  <br />
-                "auto" is the default if functions are present.  <br />
-                "function" has to be assigned if user Function is not null<br />
-                <br />
-                Check <see cref="T:OpenAI.ObjectModels.StaticValues.CompletionStatics.ToolChoiceType" /> for possible values.
+            "none" is the default when no functions are present.  <br />
+            "auto" is the default if functions are present.  <br />
+            "function" has to be assigned if user Function is not null<br />
+            <br />
+            Check <see cref="T:OpenAI.ObjectModels.StaticValues.CompletionStatics.ToolChoiceType" /> for possible values.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.RequestModels.ToolDefinition">
             <summary>
-                Definition of a valid tool.
+            Definition of a valid tool.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolDefinition.Type">
             <summary>
-                Required. The type of the tool. Currently, only function is supported.
+            Required. The type of the tool. Currently, only function is supported.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.ToolDefinition.Function">
             <summary>
-                A list of functions the model may generate JSON inputs for.
+            A list of functions the model may generate JSON inputs for.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.UpdateVectorStoreRequest.Name">
             <summary>
-                The name of the vector store.
+            The name of the vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.UpdateVectorStoreRequest.ExpiresAfter">
             <summary>
-                The expiration policy for a vector store.
+            The expiration policy for a vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.RequestModels.UpdateVectorStoreRequest.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.ResponseModels.FileResponseModels.FileContentResponse`1">
             <summary>
-                File content response
+            File content response
             </summary>
             <typeparam name="T"></typeparam>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.FileResponseModels.FileContentResponse`1.Content">
             <summary>
-                Content of your file
+            Content of your file
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.FileResponseModels.FileContentResponse`1.Successful">
             <summary>
-                return false if there is an error
+            return false if there is an error
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.FileResponseModels.FileContentResponse`1.Error">
             <summary>
-                Error
+            Error
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.AssistantId">
             <summary>
-                The ID of the [assistant](/docs/api-reference/assistants) associated with the run step.
+            The ID of the [assistant](/docs/api-reference/assistants) associated with the run step.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.ThreadId">
             <summary>
-                The ID of the [thread](/docs/api-reference/threads) that was run.
+            The ID of the [thread](/docs/api-reference/threads) that was run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.RunId">
             <summary>
-                The ID of the [run](/docs/api-reference/runs) that this run step is a part of.
+            The ID of the [run](/docs/api-reference/runs) that this run step is a part of.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.Type">
             <summary>
-                The type of run step, which can be either `message_creation` or `tool_calls`.
+            The type of run step, which can be either `message_creation` or `tool_calls`.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.Status">
             <summary>
-                The status of the run step, which can be either `in_progress`, `cancelled`, `failed`, `completed`, `expired`, or
-                'incomplete'.
+            The status of the run step, which can be either `in_progress`, `cancelled`, `failed`, `completed`, `expired`, or
+            'incomplete'.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.LastError">
             <summary>
-                The last error associated with this run step. Will be `null` if there are no errors.
+            The last error associated with this run step. Will be `null` if there are no errors.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.ExpiredAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run step expired. A step is considered expired if the parent run is
-                expired.
+            The Unix timestamp (in seconds) for when the run step expired. A step is considered expired if the parent run is
+            expired.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.CancelledAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run step was cancelled.
+            The Unix timestamp (in seconds) for when the run step was cancelled.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.FailedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run step failed.
+            The Unix timestamp (in seconds) for when the run step failed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.CompletedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run step completed.
+            The Unix timestamp (in seconds) for when the run step completed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.Usage">
             <summary>
-                Usage statistics related to the run step. This value will be `null` while the run step&apos;s status is
-                `in_progress`.
+            Usage statistics related to the run step. This value will be `null` while the run step&apos;s status is
+            `in_progress`.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run step was created.
+            The Unix timestamp (in seconds) for when the run step was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.RunStepResponse.Id">
             <summary>
-                The identifier of the run step, which can be referenced in API endpoints.
+            The identifier of the run step, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.ExpiresAfter.Anchor">
             <summary>
-                Anchor timestamp after which the expiration policy applies. Supported anchors: `last_active_at`.
+            Anchor timestamp after which the expiration policy applies. Supported anchors: `last_active_at`.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.ExpiresAfter.Days">
             <summary>
-                The number of days after the anchor time that the vector store will expire.
+            The number of days after the anchor time that the vector store will expire.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.FileCounts.InProgress">
             <summary>
-                The number of files that are currently being processed.
+            The number of files that are currently being processed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.FileCounts.Completed">
             <summary>
-                The number of files that have been processed.
+            The number of files that have been processed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.FileCounts.Failed">
             <summary>
-                The number of files that have failed to process.
+            The number of files that have failed to process.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.FileCounts.Cancelled">
             <summary>
-                The number of files that where cancelled.
+            The number of files that where cancelled.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.FileCounts.Total">
             <summary>
-                The total number of files.
+            The total number of files.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileBatchObject.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileBatchObject.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the vector store files batch was created.
+            The Unix timestamp (in seconds) for when the vector store files batch was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileBatchObject.VectorStoreId">
             <summary>
-                The ID of the [vector store](/docs/api-reference/vector-stores/object) that the [File](/docs/api-reference/files)
-                is attached to.
+            The ID of the [vector store](/docs/api-reference/vector-stores/object) that the [File](/docs/api-reference/files)
+            is attached to.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileBatchObject.Status">
             <summary>
-                The status of the vector store files batch, which can be either `in_progress`, `completed`, `cancelled` or
-                `failed`.
+            The status of the vector store files batch, which can be either `in_progress`, `completed`, `cancelled` or
+            `failed`.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileObject.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileObject.UsageBytes">
             <summary>
-                The total vector store usage in bytes. Note that this may be different from the original file size.
+            The total vector store usage in bytes. Note that this may be different from the original file size.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileObject.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the vector store file was created.
+            The Unix timestamp (in seconds) for when the vector store file was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileObject.VectorStoreId">
             <summary>
-                The ID of the [vector store](/docs/api-reference/vector-stores/object) that the [File](/docs/api-reference/files)
-                is attached to.
+            The ID of the [vector store](/docs/api-reference/vector-stores/object) that the [File](/docs/api-reference/files)
+            is attached to.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileObject.Status">
             <summary>
-                The status of the vector store file, which can be either `in_progress`, `completed`, `cancelled`, or `failed`. The
-                status `completed` indicates that the vector store file is ready for use.
+            The status of the vector store file, which can be either `in_progress`, `completed`, `cancelled`, or `failed`. The
+            status `completed` indicates that the vector store file is ready for use.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreFileObject.LastError">
             <summary>
-                The last error associated with this vector store file. Will be `null` if there are no errors.
+            The last error associated with this vector store file. Will be `null` if there are no errors.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the vector store was created.
+            The Unix timestamp (in seconds) for when the vector store was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.Name">
             <summary>
-                The name of the vector store.
+            The name of the vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.UsageBytes">
             <summary>
-                The total number of bytes used by the files in the vector store.
+            The total number of bytes used by the files in the vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.Status">
             <summary>
-                The status of the vector store, which can be either `expired`, `in_progress`, or `completed`. A status of
-                `completed` indicates that the vector store is ready for use.
+            The status of the vector store, which can be either `expired`, `in_progress`, or `completed`. A status of
+            `completed` indicates that the vector store is ready for use.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.ExpiresAfter">
             <summary>
-                The expiration policy for a vector store.
+            The expiration policy for a vector store.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.ExpiresAt">
             <summary>
-                The Unix timestamp (in seconds) for when the vector store will expire.
+            The Unix timestamp (in seconds) for when the vector store will expire.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.LastActiveAt">
             <summary>
-                The Unix timestamp (in seconds) for when the vector store was last active.
+            The Unix timestamp (in seconds) for when the vector store was last active.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels.VectorStoreObjectResponse.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantFileResponse.AssistantId">
             <summary>
-                The ID
+            The ID
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantFileResponse.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the assistant file was created.
+            The Unix timestamp (in seconds) for when the assistant file was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantFileResponse.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Name">
             <summary>
-                The name of the assistant. The maximum length is 256 characters.
+            The name of the assistant. The maximum length is 256 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Description">
             <summary>
-                The description of the assistant. The maximum length is 512 characters.
+            The description of the assistant. The maximum length is 512 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Instructions">
             <summary>
-                The system instructions that the assistant uses.
-                The maximum length is 32768 characters.
+            The system instructions that the assistant uses.
+            The maximum length is 32768 characters.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.FileIds">
             <summary>
-                A list of file IDs attached to this assistant.
-                There can be a maximum of 20 files attached to the assistant.
-                Files are ordered by their creation date in ascending order.
+            A list of file IDs attached to this assistant.
+            There can be a maximum of 20 files attached to the assistant.
+            Files are ordered by their creation date in ascending order.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the assistant was created.
+            The Unix timestamp (in seconds) for when the assistant was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Tools">
             <summary>
-                A list of tools enabled on the assistant.
+            A list of tools enabled on the assistant.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.ToolResources">
@@ -2660,131 +2697,131 @@
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.TopP">
             <summary>
-                An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
-                tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
-                considered.
-                We generally recommend altering this or temperature but not both.
+            An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
+            tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are
+            considered.
+            We generally recommend altering this or temperature but not both.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.ResponseFormat">
             <summary>
-                Specifies the format that the model must output. Compatible with
-                <a href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</a>,
-                <a href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</a>, and all GPT-3.5 Turbo
-                models since gpt-3.5-turbo-1106.
-                Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which guarantees the message the model generates is
-                valid JSON. <br />
-                <b>Important: </b>when using JSON mode, you must also instruct the model to produce JSON yourself via a system or
-                user message.Without this, the model may generate an unending stream of whitespace until the generation reaches the
-                token limit, resulting in a long-running and seemingly "stuck" request.Also note that the message content may be
-                partially cut off if <c>finish_reason= "length"</c>, which indicates the generation exceeded <c>max_tokens</c> or
-                the
-                conversation exceeded the max context length.
+            Specifies the format that the model must output. Compatible with
+            <a href="https://platform.openai.com/docs/models/gpt-4o">GPT-4o</a>,
+            <a href="https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4">GPT-4 Turbo</a>, and all GPT-3.5 Turbo
+            models since gpt-3.5-turbo-1106.
+            Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which guarantees the message the model generates is
+            valid JSON. <br />
+            <b>Important: </b>when using JSON mode, you must also instruct the model to produce JSON yourself via a system or
+            user message.Without this, the model may generate an unending stream of whitespace until the generation reaches the
+            token limit, resulting in a long-running and seemingly "stuck" request.Also note that the message content may be
+            partially cut off if <c>finish_reason= "length"</c>, which indicates the generation exceeded <c>max_tokens</c> or
+            the
+            conversation exceeded the max context length.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-                about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-                512 characters long.
+            Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
+            about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
+            512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Model">
             <summary>
-                ID of the model to use. You can use the
-                <a href="https://platform.openai.com/docs/api-reference/models/list">List models</a> API to see all of your
-                available models, or see our <a href="https://platform.openai.com/docs/models/overview">Model overview</a> for
-                descriptions of them.
+            ID of the model to use. You can use the
+            <a href="https://platform.openai.com/docs/api-reference/models/list">List models</a> API to see all of your
+            available models, or see our <a href="https://platform.openai.com/docs/models/overview">Model overview</a> for
+            descriptions of them.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.AssistantResponse.Temperature">
             <summary>
-                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
-                lower values like 0.2 will make it more focused and deterministic.
+            What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
+            lower values like 0.2 will make it more focused and deterministic.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.DeletionStatusResponse.IsDeleted">
             <summary>
-                Deletion state
+            Deletion state
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.DeletionStatusResponse.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.SharedModels.PropertyDefinition">
             <summary>
-                Function parameter is a JSON Schema object.
-                https://json-schema.org/understanding-json-schema/reference/object.html
+            Function parameter is a JSON Schema object.
+            https://json-schema.org/understanding-json-schema/reference/object.html
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.PropertyDefinition.Type">
             <summary>
-                Required. Function parameter object type. Default value is "object".
+            Required. Function parameter object type. Default value is "object".
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.PropertyDefinition.Description">
             <summary>
-                Optional. Argument description.
+            Optional. Argument description.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.PropertyDefinition.Example">
             <summary>
-                Optional. Example.
+            Optional. Example.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.PropertyDefinition.Enum">
             <summary>
-                Optional. List of allowed values for this argument.
+            Optional. List of allowed values for this argument.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.PropertyDefinition.Default">
             <summary>
-                Optional. Argument description.
+            Optional. Argument description.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.PropertyDefinition.Parameters">
             <summary>
-                Optional. The parameters the functions accepts, described as a JSON Schema object.
-                See the <a href="https://platform.openai.com/docs/guides/gpt/function-calling">guide</a> for examples,
-                and the <a href="https://json-schema.org/understanding-json-schema/">JSON Schema reference</a> for
-                documentation about the format.
+            Optional. The parameters the functions accepts, described as a JSON Schema object.
+            See the <a href="https://platform.openai.com/docs/guides/gpt/function-calling">guide</a> for examples,
+            and the <a href="https://json-schema.org/understanding-json-schema/">JSON Schema reference</a> for
+            documentation about the format.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.PropertyDefinition.Items">
             <summary>
-                If type is "array", this specifies the element type for all items in the array.
-                If type is not "array", this should be null.
-                For more details, see https://json-schema.org/understanding-json-schema/reference/array.html
+            If type is "array", this specifies the element type for all items in the array.
+            If type is not "array", this should be null.
+            For more details, see https://json-schema.org/understanding-json-schema/reference/array.html
             </summary>
         </member>
         <member name="M:OpenAI.ObjectModels.SharedModels.PropertyDefinition.ConvertTypeToString(OpenAI.ObjectModels.SharedModels.PropertyDefinition.FunctionObjectTypes)">
             <summary>
-                Converts a FunctionObjectTypes enumeration value to its corresponding string representation.
+            Converts a FunctionObjectTypes enumeration value to its corresponding string representation.
             </summary>
             <param name="type">The type to convert</param>
             <returns>The string representation of the given type</returns>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.ParametersDefinition.Type">
             <summary>
-                Required. Function parameter object type. Default value is "object".
+            Required. Function parameter object type. Default value is "object".
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.ParametersDefinition.Properties">
             <summary>
-                Optional. List of "function arguments", as a dictionary that maps from argument name
-                to an object that describes the type, maybe possible enum values, and so on.
+            Optional. List of "function arguments", as a dictionary that maps from argument name
+            to an object that describes the type, maybe possible enum values, and so on.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.ParametersDefinition.Required">
             <summary>
-                Optional. List of "function arguments" which are required.
+            Optional. List of "function arguments" which are required.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.SharedModels.MessageAnnotation">
             <summary>
-                File citation |File path
+            File citation |File path
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageAnnotation.Type">
@@ -2794,7 +2831,7 @@
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageAnnotation.Text">
             <summary>
-                The text in the message content that needs to be replaced.
+            The text in the message content that needs to be replaced.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.FileCitation.FileId">
@@ -2819,443 +2856,443 @@
         </member>
         <member name="T:OpenAI.ObjectModels.SharedModels.MessageResponse">
             <summary>
-                Represents a message within a thread.
+            Represents a message within a thread.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.ThreadId">
             <summary>
-                The thread ID that this message belongs to.
+            The thread ID that this message belongs to.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.Role">
             <summary>
-                The entity that produced the message. One of user or assistant.
+            The entity that produced the message. One of user or assistant.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.Content">
             <summary>
-                The content of the message in array of text and/or images.
+            The content of the message in array of text and/or images.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.Status">
             <summary>
-                The status of the message, which can be either in_progress, incomplete, or completed.
+            The status of the message, which can be either in_progress, incomplete, or completed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.IncompleteDetails">
             <summary>
-                On an incomplete message, details about why the message is incomplete.
+            On an incomplete message, details about why the message is incomplete.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.CompletedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run was completed.
+            The Unix timestamp (in seconds) for when the run was completed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.IncompleteAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run was completed.
+            The Unix timestamp (in seconds) for when the run was completed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.RunId">
             <summary>
-                The ID of the run associated with the creation of this message. Value is null when messages are created manually
-                using the create message or create thread endpoints.
+            The ID of the run associated with the creation of this message. Value is null when messages are created manually
+            using the create message or create thread endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.Attachments">
             <summary>
-                A list of file IDs that the assistant should use.
-                Useful for tools like retrieval and code_interpreter that can access files.
-                A maximum of 10 files can be attached to a message.
+            A list of file IDs that the assistant should use.
+            Useful for tools like retrieval and code_interpreter that can access files.
+            A maximum of 10 files can be attached to a message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.AssistantId">
             <summary>
-                If applicable, the ID of the assistant that authored this message.
+            If applicable, the ID of the assistant that authored this message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the message was created.
+            The Unix timestamp (in seconds) for when the message was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object.
+            Set of 16 key-value pairs that can be attached to an object.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.SharedModels.MessageResponse.MessageContentResponse">
             <summary>
-                The content of the message:  text and/or images.
+            The content of the message:  text and/or images.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.MessageContentResponse.Type">
             <summary>
-                text and/or images. image_file text
+            text and/or images. image_file text
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageResponse.MessageContentResponse.Text">
             <summary>
-                The text content that is part of a message.
+            The text content that is part of a message.
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.SharedModels.MessageText">
             <summary>
-                The text content that is part of a message.
+            The text content that is part of a message.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageText.Value">
             <summary>
-                The data that makes up the text.
+            The data that makes up the text.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.MessageText.Annotations">
             <summary>
-                annotations
+            annotations
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.SharedModels.RequiredAction">
             <summary>
-                Details on the action required to continue the run.
+            Details on the action required to continue the run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RequiredAction.Type">
             <summary>
-                For now, this is always submit_tool_outputs.
+            For now, this is always submit_tool_outputs.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RequiredAction.SubmitToolOutputs">
             <summary>
-                Details on the tool outputs needed for this run to continue.
+            Details on the tool outputs needed for this run to continue.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.SubmitToolOutputs.ToolCalls">
             <summary>
-                A list of the relevant tool calls.
+            A list of the relevant tool calls.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.ThreadId">
             <summary>
-                The ID of the thread that was executed on as a part of this run.
+            The ID of the thread that was executed on as a part of this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.AssistantId">
             <summary>
-                The ID of the assistant used for execution of this run.
+            The ID of the assistant used for execution of this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Status">
             <summary>
-                The status of the run, which can be either queued, in_progress, requires_action, cancelling, cancelled, failed,
-                completed, or expired.
+            The status of the run, which can be either queued, in_progress, requires_action, cancelling, cancelled, failed,
+            completed, or expired.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.RequiredAction">
             <summary>
-                Details on the action required to continue the run.
-                Will be null if no action is required.
+            Details on the action required to continue the run.
+            Will be null if no action is required.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.LastError">
             <summary>
-                The last error associated with this run. Will be null if there are no errors.
+            The last error associated with this run. Will be null if there are no errors.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.IncompleteDetails">
             <summary>
-                Details on why the run is incomplete. Will be null if the run is not incomplete.
+            Details on why the run is incomplete. Will be null if the run is not incomplete.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.ExpiresAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run will expire.
+            The Unix timestamp (in seconds) for when the run will expire.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.StartedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run was started.
+            The Unix timestamp (in seconds) for when the run was started.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.CancelledAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run was cancelled.
+            The Unix timestamp (in seconds) for when the run was cancelled.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.FailedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run failed.
+            The Unix timestamp (in seconds) for when the run failed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.CompletedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run was completed.
+            The Unix timestamp (in seconds) for when the run was completed.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Instructions">
             <summary>
-                The instructions that the assistant used for this run.
+            The instructions that the assistant used for this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Tools">
             <summary>
-                The list of tools that the assistant used for this run.
+            The list of tools that the assistant used for this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Usage">
             <summary>
-                Usage statistics related to the run. This value will be null if the run is not in a terminal state (i.e.
-                in_progress, queued, etc.).
+            Usage statistics related to the run. This value will be null if the run is not in a terminal state (i.e.
+            in_progress, queued, etc.).
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Temperature">
             <summary>
-                The sampling temperature used for this run. If not set, defaults to 1.
+            The sampling temperature used for this run. If not set, defaults to 1.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.MaxPromptTokens">
             <summary>
-                The maximum number of prompt tokens specified to have been used over the course of the run.
+            The maximum number of prompt tokens specified to have been used over the course of the run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.MaxCompletionTokens">
             <summary>
-                The maximum number of completion tokens specified to have been used over the course of the run.
+            The maximum number of completion tokens specified to have been used over the course of the run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.TruncationStrategy">
             <summary>
-                The truncation strategy to use for the thread. The default is auto.
+            The truncation strategy to use for the thread. The default is auto.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.ToolChoice">
             <summary>
-                Controls which (if any) tool is called by the model. none means the model will not call any tools and instead
-                generates a message.
-                auto is the default value and means the model can pick between generating a message or calling a tool.
-                Specifying a particular tool like {"type": "TOOL_TYPE"} or {"type": "function", "function": {"name":
-                "my_function"}} forces the model to call that tool.
+            Controls which (if any) tool is called by the model. none means the model will not call any tools and instead
+            generates a message.
+            auto is the default value and means the model can pick between generating a message or calling a tool.
+            Specifying a particular tool like {"type": "TOOL_TYPE"} or {"type": "function", "function": {"name":
+            "my_function"}} forces the model to call that tool.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.ResponseFormat">
             <summary>
-                Specifies the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer
-                than gpt-3.5-turbo-1106.
+            Specifies the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer
+            than gpt-3.5-turbo-1106.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the run was created.
+            The Unix timestamp (in seconds) for when the run was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.FileIds">
             <summary>
-                The list of File IDs the assistant used for this run.
+            The list of File IDs the assistant used for this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object.
-                This can be useful for storing additional information about the object in a structured format.
-                Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
+            Set of 16 key-value pairs that can be attached to an object.
+            This can be useful for storing additional information about the object in a structured format.
+            Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.RunResponse.Model">
             <summary>
-                The model that the assistant used for this run.
+            The model that the assistant used for this run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.IncompleteDetails.Reason">
             <summary>
-                The reason why the run is incomplete.
-                This will point to which specific token limit was reached over the course of the run.
+            The reason why the run is incomplete.
+            This will point to which specific token limit was reached over the course of the run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.SharedImageRequestBaseModel.N">
             <summary>
-                The number of images to generate. Must be between 1 and 10.
-                For dall-e-3 model, only n=1 is supported.
+            The number of images to generate. Must be between 1 and 10.
+            For dall-e-3 model, only n=1 is supported.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.SharedImageRequestBaseModel.Size">
             <summary>
-                The size of the generated images.
-                Must be one of 256x256, 512x512, or 1024x1024 for dall-e-2.
-                Must be one of 1024x1024, 1792x1024, or 1024x1792 for dall-e-3 models.
-                <br /><br />Check <see cref="T:OpenAI.ObjectModels.StaticValues.ImageStatics.Size" /> for possible values
+            The size of the generated images.
+            Must be one of 256x256, 512x512, or 1024x1024 for dall-e-2.
+            Must be one of 1024x1024, 1792x1024, or 1024x1792 for dall-e-3 models.
+            <br /><br />Check <see cref="T:OpenAI.ObjectModels.StaticValues.ImageStatics.Size" /> for possible values
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.SharedImageRequestBaseModel.ResponseFormat">
             <summary>
-                The format in which the generated images are returned. Must be one of url or b64_json
+            The format in which the generated images are returned. Must be one of url or b64_json
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.SharedImageRequestBaseModel.User">
             <summary>
-                A unique identifier representing your end-user, which will help OpenAI to monitor and detect abuse.
-                <a href="https://platform.openai.com/docs/usage-policies/end-user-ids">Learn more</a>.
+            A unique identifier representing your end-user, which will help OpenAI to monitor and detect abuse.
+            <a href="https://platform.openai.com/docs/usage-policies/end-user-ids">Learn more</a>.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.SharedImageRequestBaseModel.Model">
             <summary>
-                The model to use for image generation. Must be one of dall-e-2 or dall-e-3
-                For ImageEditCreateRequest and for ImageVariationCreateRequest only dall-e-2 modell is supported at this time.
+            The model to use for image generation. Must be one of dall-e-2 or dall-e-3
+            For ImageEditCreateRequest and for ImageVariationCreateRequest only dall-e-2 modell is supported at this time.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.ThreadResponse.ToolResources">
             <summary>
-                A set of resources that are made available to the assistant's tools in this thread. The resources are specific to
-                the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool
-                requires a list of vector store IDs.
+            A set of resources that are made available to the assistant's tools in this thread. The resources are specific to
+            the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool
+            requires a list of vector store IDs.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.ThreadResponse.CreatedAt">
             <summary>
-                The Unix timestamp (in seconds) for when the assistant was created.
+            The Unix timestamp (in seconds) for when the assistant was created.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.ThreadResponse.Id">
             <summary>
-                The identifier, which can be referenced in API endpoints.
+            The identifier, which can be referenced in API endpoints.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.ThreadResponse.Metadata">
             <summary>
-                Set of 16 key-value pairs that can be attached to an object.
-                This can be useful for storing additional information about the object in a structured format.
-                Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
+            Set of 16 key-value pairs that can be attached to an object.
+            This can be useful for storing additional information about the object in a structured format.
+            Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.TruncationStrategy.Type">
             <summary>
-                The truncation strategy to use for the thread.
-                The default is "auto". If set to "last_messages", the thread will be truncated to the n most recent messages in the
-                thread.
-                When set to "auto", messages in the middle of the thread will be dropped to fit the context length of the model,
-                max_prompt_tokens.
+            The truncation strategy to use for the thread.
+            The default is "auto". If set to "last_messages", the thread will be truncated to the n most recent messages in the
+            thread.
+            When set to "auto", messages in the middle of the thread will be dropped to fit the context length of the model,
+            max_prompt_tokens.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.SharedModels.TruncationStrategy.LastMessages">
             <summary>
-                The number of most recent messages from the thread when constructing the context for the run.
+            The number of most recent messages from the thread when constructing the context for the run.
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.StaticValues.ImageStatics.Size.Size1792x1024">
             <summary>
-                Only dall-e-3 model
+            Only dall-e-3 model
             </summary>
         </member>
         <member name="P:OpenAI.ObjectModels.StaticValues.ImageStatics.Size.Size1024x1792">
             <summary>
-                Only dall-e-3 model
+            Only dall-e-3 model
             </summary>
         </member>
         <member name="T:OpenAI.ObjectModels.UploadFilePurposes">
             <summary>
-                The intended purpose of the uploaded file.
-                Use "assistants" for Assistants and Message files, "vision" for Assistants image file inputs, "batch" for Batch
-                API, and "fine-tune" for Fine-tuning.
-                <a href="https://platform.openai.com/docs/api-reference/files/create#files-create-purpose">Upload File Purposes</a>
-                <a href="https://platform.openai.com/docs/api-reference/files/object#files/object-purpose">
-                    Upload File Purpose
-                    Responses
-                </a>
+            The intended purpose of the uploaded file.
+            Use "assistants" for Assistants and Message files, "vision" for Assistants image file inputs, "batch" for Batch
+            API, and "fine-tune" for Fine-tuning.
+            <a href="https://platform.openai.com/docs/api-reference/files/create#files-create-purpose">Upload File Purposes</a>
+            <a href="https://platform.openai.com/docs/api-reference/files/object#files/object-purpose">
+                Upload File Purpose
+                Responses
+            </a>
             </summary>
         </member>
         <member name="T:OpenAI.ProviderType">
             <summary>
-                Provider Type
+            Provider Type
             </summary>
         </member>
         <member name="F:OpenAI.ProviderType.OpenAi">
             <summary>
-                OpenAi Provider
+            OpenAi Provider
             </summary>
         </member>
         <member name="F:OpenAI.ProviderType.Azure">
             <summary>
-                Azure Provider
+            Azure Provider
             </summary>
         </member>
         <member name="F:OpenAI.OpenAiOptions.SettingKey">
             <summary>
-                Setting key for Json Setting Bindings
+            Setting key for Json Setting Bindings
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.ProviderType">
             <summary>
-                Get Provider Type
+            Get Provider Type
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.Assistants">
             <summary>
-                Calls to the Assistants API require that you pass a beta HTTP header.
-                This is handled automatically if you’re using OpenAI’s official Python or Node.js SDKs.
-                <a href="https://platform.openai.com/docs/assistants/overview">assistants overview</a> page.
+            Calls to the Assistants API require that you pass a beta HTTP header.
+            This is handled automatically if you’re using OpenAI’s official Python or Node.js SDKs.
+            <a href="https://platform.openai.com/docs/assistants/overview">assistants overview</a> page.
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.Organization">
             <summary>
-                For users who belong to multiple organizations, you can pass a header to specify which organization is used for an
-                API request. Usage from these API requests will count against the specified organization's subscription quota.
-                Organization IDs can be found on your
-                <a href="https://platform.openai.com/account/org-settings">Organization settings</a> page.
+            For users who belong to multiple organizations, you can pass a header to specify which organization is used for an
+            API request. Usage from these API requests will count against the specified organization's subscription quota.
+            Organization IDs can be found on your
+            <a href="https://platform.openai.com/account/org-settings">Organization settings</a> page.
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.ApiKey">
             <summary>
-                The OpenAI API uses API keys for authentication. Visit your
-                <a href="https://platform.openai.com/account/api-keys">API Keys page</a> to retrieve the API key you'll use in
-                your requests.
-                Remember that your API key is a secret! Do not share it with others or expose it in any client-side code(browsers,
-                apps). Production requests must be routed through your own backend server where your API key can be securely loaded
-                from an environment variable or key management service.
+            The OpenAI API uses API keys for authentication. Visit your
+            <a href="https://platform.openai.com/account/api-keys">API Keys page</a> to retrieve the API key you'll use in
+            your requests.
+            Remember that your API key is a secret! Do not share it with others or expose it in any client-side code(browsers,
+            apps). Production requests must be routed through your own backend server where your API key can be securely loaded
+            from an environment variable or key management service.
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.ApiVersion">
             <summary>
-                Default Api Version
+            Default Api Version
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.BaseDomain">
             <summary>
-                Base Domain
+            Base Domain
             </summary>
             <exception cref="T:System.ArgumentOutOfRangeException"></exception>
         </member>
         <member name="P:OpenAI.OpenAiOptions.DeploymentId">
             <summary>
-                Azure Deployment Id
+            Azure Deployment Id
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.ResourceName">
             <summary>
-                Azure Resource Name
+            Azure Resource Name
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.DefaultEngineId">
             <summary>
-                Default model id. If you are working with only one model, this will save you from few line extra code.
+            Default model id. If you are working with only one model, this will save you from few line extra code.
             </summary>
         </member>
         <member name="P:OpenAI.OpenAiOptions.DefaultModelId">
             <summary>
-                Default model id. If you are working with only one model, this will save you from few line extra code.
+            Default model id. If you are working with only one model, this will save you from few line extra code.
             </summary>
         </member>
         <member name="M:OpenAI.OpenAiOptions.CreateAzureSettings(System.String,System.String,System.String,System.String)">
             <summary>
-                Create an instance of this class with the necessary information to connect to the azure open AI api
+            Create an instance of this class with the necessary information to connect to the azure open AI api
             </summary>
             <param name="resourceName">Resource Name of your Azure OpenAI resource</param>
             <param name="deploymentId">The id of your deployment of OpenAI</param>
@@ -3265,7 +3302,7 @@
         </member>
         <member name="M:OpenAI.OpenAiOptions.CreateAzureSettingsWithBaseDomain(System.String,System.String,System.String,System.String)">
             <summary>
-                Create an instance of this class with the necessary information to connect to the azure open AI api
+            Create an instance of this class with the necessary information to connect to the azure open AI api
             </summary>
             <param name="deploymentId">The id of your deployment of OpenAI</param>
             <param name="baseDomain">Base Domain of your Azure OpenAI service</param>
@@ -3275,23 +3312,23 @@
         </member>
         <member name="M:OpenAI.OpenAiOptions.Validate">
             <summary>
-                Validate Settings
+            Validate Settings
             </summary>
             <exception cref="T:System.ArgumentNullException"></exception>
         </member>
         <member name="T:OpenAI.Tokenizer.GPT3.TokenizerGpt3Settings">
             <summary>
-                GPT3 Settings.
+            GPT3 Settings.
             </summary>
         </member>
         <member name="T:OpenAI.Tokenizer.GPT3.TokenizerGpt3">
             <summary>
-                GPT3 Tokenizer.
+            GPT3 Tokenizer.
             </summary>
         </member>
         <member name="M:OpenAI.Tokenizer.GPT3.TokenizerGpt3.Encode(System.String,System.Boolean)">
             <summary>
-                Encode This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
+            Encode This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
             </summary>
             <param name="text"></param>
             <param name="cleanUpCreol">set it true to get rid of CR</param>
@@ -3299,7 +3336,7 @@
         </member>
         <member name="M:OpenAI.Tokenizer.GPT3.TokenizerGpt3.TokenCount(System.String,System.Boolean)">
             <summary>
-                Get token count. This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
+            Get token count. This method use LF style EOL, if you use CR LF style EOL you need to set cleanUpWindowsEOL to true
             </summary>
             <param name="text"></param>
             <param name="cleanUpCreol">set it true to get rid of CR</param>

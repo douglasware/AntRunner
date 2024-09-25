@@ -1,4 +1,5 @@
 ﻿using OpenAI.ObjectModels.SharedModels;
+using System;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
@@ -105,7 +106,7 @@ namespace AntRunnerLib
                 }
                 else if (run.Status == "failed")
                 {
-                    throw new Exception($"Run failed: {run.LastError}");
+                    throw new Exception($"Run failed: {run.LastError?.Message}");
                 }
                 else if (run.Status == "incomplete")
                 {
@@ -115,11 +116,19 @@ namespace AntRunnerLib
                         LastMessage = $"Run is incomplete because of {run.IncompleteDetails?.Reason}"
                     };
                 }
-                else
+                else if(run.Status == "in_progress" || run.Status == "queued")
                 {
                     // Wait for a short period before checking the run status again
                     Trace.TraceInformation("RunAssistant waiting 1 second");
                     await Task.Delay(1000);
+                }
+                else
+                {
+                    return new ThreadRunOutput()
+                    {
+                        Status = run.Status,
+                        LastMessage = $"Run is cancelling or cancelled"
+                    };
                 }
             } while (!completed);
 
