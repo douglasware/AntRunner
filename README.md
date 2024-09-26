@@ -17,6 +17,9 @@ A full set of .NET tools for creating and using Open AI and Azure Open AI Assist
 ## Notebooks
 [Get started with the sample notebooks](./Notebooks)
 
+## .NET API Docs
+[API docs are here](https://www.elumenotion.com/api/AntRunnerLib.html)!
+
 ## Example
 ```csharp
 var assistantRunOptions = new AssistantRunOptions() {
