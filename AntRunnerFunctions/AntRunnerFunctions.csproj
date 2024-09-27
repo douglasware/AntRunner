@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AntRunnerLib\AntRunnerLib.csproj" />
+    <ProjectReference Include="..\HtmlAgilityPackExtensions\HtmlAgilityPackExtensions.csproj" />
     <ProjectReference Include="..\TestAssistant\TestAssistant.csproj" />
   </ItemGroup>
   <ItemGroup>
