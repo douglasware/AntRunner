@@ -27,3 +27,8 @@ curl -X POST http://localhost:7116/api/RunAssistant -H "Content-Type: applicatio
 
 
 curl -X POST http://localhost:7116/api/RunAssistant -H "Content-Type: application/json" -d "{\"AssistantName\":\"Blob Pirate\",\"Instructions\":\"What are the original names of the files are available in you code interpreter environment? Examine their contents and tell me what type of data each file contains and then rename them both to include a proper file extension. Finally, import the python file and use its function to list the novels in the data file. Do not rewrite the function from the source file, import it only and execute it!\",\"ThreadId\":\"12345\"}"
+
+curl -X POST http://localhost:7071/api/RunAssistantAsync -H "Content-Type: application/json" -d "{\"AssistantName\":\"WebSearchAgentAnt\",\"Instructions\":\"Explain how the quote 'one ant is no ants' applies to the actor model of computing.\", \"UseConversationEvaluator\":true}"
+
+$o = Invoke-Assistant -AssistantName "WebSearchAgentAnt" -Instructions "Explain how the quote 'one ant is no ants' applies to the actor model of computing. If possible tell me who said it" -UseConversationEvaluator $false
+

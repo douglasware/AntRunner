@@ -19,8 +19,6 @@ namespace WebSearchFunctions
 
         public async static Task<string> Search(string query)
         {
-            Environment.SetEnvironmentVariable("SEARCH_API_KEY", "c2a2d83097054852a4db140c8c637092");
-
             var domainAuth = JsonSerializer.Deserialize<DomainAuth>(_searchAuth);
             var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(_searchApi);
             var spec = validationResult.Spec;
