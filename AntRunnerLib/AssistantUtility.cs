@@ -231,32 +231,11 @@ namespace AntRunnerLib
             var openApiSchemaFiles = await GetFilesInOpenApiFolder(assistantName);
             if (openApiSchemaFiles == null || !openApiSchemaFiles.Any()) return;
 
-            foreach (var openApiSchemaFile in openApiSchemaFiles)
+            var toolDefinitions = await OpenApiHelper.GetToolDefinitionsFromFiles(openApiSchemaFiles);
+
+            foreach (var toolDefinition in toolDefinitions)
             {
-                var schema = await GetFile(openApiSchemaFile);
-                if (schema == null)
-                {
-                    Trace.TraceWarning("openApiSchemaFile {openApiSchemaFile} is null. Ignoring", openApiSchemaFile);
-                    continue;
-                }
-                var json = Encoding.Default.GetString(schema);
-                var openApiHelper = new OpenApiHelper();
-
-                var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(json);
-                var spec = validationResult.Spec;
-
-                if (!validationResult.Status || spec == null)
-                {
-                    Trace.TraceWarning("Json is not a valid openapi spec {json}. Ignoring", json);
-                    continue;
-                }
-
-                var toolDefinitions = openApiHelper.GetToolDefinitions(spec);
-
-                foreach (var toolDefinition in toolDefinitions)
-                {
-                    options.Tools!.Add(toolDefinition);
-                }
+                options.Tools!.Add(toolDefinition);
             }
         }
     }

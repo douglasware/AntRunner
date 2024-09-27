@@ -43,7 +43,7 @@
         /// </summary>
         /// <param name="assistantName">The name of the assistant.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the list of files in the OpenAPI folder.</returns>
-        public static async Task<IEnumerable<string>?> GetFilesInOpenApiFolder(string assistantName)
+        public static async Task<List<string>?> GetFilesInOpenApiFolder(string assistantName)
         {
             return FileStorage.GetFilesInOpenApiFolder(assistantName) ?? await BlobStorage.GetFilesInOpenApiFolder(assistantName);
         }
@@ -64,7 +64,7 @@
         /// <param name="assistantName">The name of the assistant.</param>
         /// <param name="vectorStoreName">The name of the vector store.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the list of files in the vector store folder.</returns>
-        public static async Task<IEnumerable<string>?> GetFilesInVectorStoreFolder(string assistantName, string vectorStoreName)
+        public static async Task<List<string>?> GetFilesInVectorStoreFolder(string assistantName, string vectorStoreName)
         {
             return FileStorage.GetFilesInVectorStoreFolder(assistantName, vectorStoreName) ?? await BlobStorage.GetFilesInVectorStoreFolder(assistantName, vectorStoreName);
         }
@@ -74,7 +74,7 @@
         /// </summary>
         /// <param name="assistantName">The name of the assistant.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the list of files in the code interpreter folder.</returns>
-        public static async Task<IEnumerable<string>?> GetFilesInCodeInterpreterFolder(string assistantName)
+        public static async Task<List<string>?> GetFilesInCodeInterpreterFolder(string assistantName)
         {
             return FileStorage.GetFilesInCodeInterpreterFolder(assistantName) ?? await BlobStorage.GetFilesInCodeInterpreterFolder(assistantName);
         }

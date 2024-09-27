@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestAssistant", "TestAssist
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntRunnerPowershell", "AntRunnerPowershell\AntRunnerPowershell.csproj", "{E15D263D-B7A8-439B-9C14-A09D628ADB73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HtmlAgilityPackExtensions", "HtmlAgilityPackExtensions\HtmlAgilityPackExtensions.csproj", "{37290C5E-305A-42A8-854C-5597EC53FE28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HtmlAgilityPackExtensions", "HtmlAgilityPackExtensions\HtmlAgilityPackExtensions.csproj", "{37290C5E-305A-42A8-854C-5597EC53FE28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSearchFunctions", "WebSearchFunctions\WebSearchFunctions.csproj", "{67F4D0E1-CFB9-4FB4-92F2-E0D8BF086DDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{37290C5E-305A-42A8-854C-5597EC53FE28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37290C5E-305A-42A8-854C-5597EC53FE28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37290C5E-305A-42A8-854C-5597EC53FE28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67F4D0E1-CFB9-4FB4-92F2-E0D8BF086DDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67F4D0E1-CFB9-4FB4-92F2-E0D8BF086DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67F4D0E1-CFB9-4FB4-92F2-E0D8BF086DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67F4D0E1-CFB9-4FB4-92F2-E0D8BF086DDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

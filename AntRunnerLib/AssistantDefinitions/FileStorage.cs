@@ -37,13 +37,13 @@ namespace AntRunnerLib.AssistantDefinitions
             }
         }
 
-        private static IEnumerable<string>? EnumerateFilesInFolder(string folderPath)
+        private static List<string>? EnumerateFilesInFolder(string folderPath)
         {
             try
             {
                 if (Directory.Exists(folderPath))
                 {
-                    return Directory.EnumerateFiles(folderPath);
+                    return Directory.EnumerateFiles(folderPath).ToList();
                 }
                 return null;
             }
@@ -80,19 +80,19 @@ namespace AntRunnerLib.AssistantDefinitions
             return null;
         }
 
-        internal static IEnumerable<string>? GetFilesInOpenApiFolder(string assistantName)
+        internal static List<string>? GetFilesInOpenApiFolder(string assistantName)
         {
             var folderPath = GetFolderPath(assistantName, "OpenAPI");
-            return EnumerateFilesInFolder(folderPath)?.Where(o => !o.Contains("auth.json", StringComparison.OrdinalIgnoreCase));
+            return EnumerateFilesInFolder(folderPath)?.Where(o => !o.Contains("auth.json", StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        internal static IEnumerable<string>? GetFilesInCodeInterpreterFolder(string assistantName)
+        internal static List<string>? GetFilesInCodeInterpreterFolder(string assistantName)
         {
             var folderPath = GetFolderPath(assistantName, "CodeInterpreter");
             return EnumerateFilesInFolder(folderPath);
         }
 
-        internal static IEnumerable<string>? GetFilesInVectorStoreFolder(string assistantName, string vectorStoreName)
+        internal static List<string>? GetFilesInVectorStoreFolder(string assistantName, string vectorStoreName)
         {
             var folderPath = GetFolderPath(assistantName, $"VectorStores\\{vectorStoreName}");
             return EnumerateFilesInFolder(folderPath);

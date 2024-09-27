@@ -4,9 +4,9 @@ using OpenAI.ObjectModels.RequestModels;
 using OpenAI.ObjectModels.ResponseModels;
 using OpenAI.ObjectModels.SharedModels;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using static System.Diagnostics.Trace;
 using static AntRunnerLib.ClientUtility;
 
 namespace AntRunnerLib
@@ -47,7 +47,7 @@ namespace AntRunnerLib
                 }
 
                 var fileIds = await Files.UploadFiles(filePaths, azureOpenAiConfig);
-                if(fileIds.Count != filePaths.Count)
+                if (fileIds.Count != filePaths.Count)
                 {
                     throw new Exception($"Mismatch in counts {fileIds.Count} != {filePaths.Count}. Not all files were uploaded successfully");
                 }
@@ -153,7 +153,7 @@ namespace AntRunnerLib
             // Log a warning if the number of user messages and thread runs differ.
             if (userMessages.Count() != threadRuns.Count())
             {
-                Trace.TraceWarning($"User messages and thread run counts differ: {userMessages.Count()} != {threadRuns.Count()}");
+                TraceWarning($"User messages and thread run counts differ: {userMessages.Count()} != {threadRuns.Count()}");
             }
 
             var annotations = new List<MessageAnnotation>();
@@ -258,7 +258,6 @@ namespace AntRunnerLib
 
             if (!RequestBuilderCache.TryGetValue(assistantId, out var builders)) throw new Exception($"No request builders found for {assistantName}: {assistantId}");
 
-            var requiredToolcalls = new Dictionary<string, ToolCall>();
             var submitToolOutputsToRunRequest = new SubmitToolOutputsToRunRequest();
 
             var toolCallTasks = new List<Task<ToolOutput>>();
@@ -268,32 +267,29 @@ namespace AntRunnerLib
             {
                 if (requiredOutput.FunctionCall == null) continue;
 
-                requiredToolcalls[requiredOutput.FunctionCall.Name!] = requiredOutput;
-
                 if (builders.ContainsKey(requiredOutput.FunctionCall.Name!))
                 {
                     // Create a new builder instance for each tool call to avoid shared state.
                     var builder = builders[requiredOutput.FunctionCall.Name!].Clone();
                     builder.Params = requiredOutput.FunctionCall.ParseArguments();
 
-                    Trace.TraceInformation($"{assistantName} using {builder.Operation} with {requiredOutput.FunctionCall.Arguments}");
+                    TraceInformation($"{assistantName} using {builder.Operation} with {requiredOutput.FunctionCall.Arguments}");
 
                     // Create a task to execute the tool call asynchronously.
                     var task = Task.Run(async () =>
                     {
-                        var output = string.Empty;
+                        string output;
                         if (builder.ActionType == ActionType.WebApi)
                         {
                             // Execute the request and collect the response.
                             var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken);
                             var responseContent = await response.Content.ReadAsStringAsync();
 
-                            if (builder.ResponseSchemas != null && builder.ResponseSchemas.ContainsKey("200"))
+                            if (builder.ResponseSchemas.TryGetValue("200", out var schemaJson))
                             {
                                 try
                                 {
                                     var contentJson = JsonDocument.Parse(responseContent).RootElement;
-                                    var schemaJson = builder.ResponseSchemas["200"];
 
                                     var filteredJson = FilterJsonBySchema(contentJson, schemaJson);
                                     output = filteredJson.GetRawText();
@@ -366,29 +362,28 @@ namespace AntRunnerLib
                     var schema = await AssistantDefinitionFiles.GetFile(openApiSchemaFile);
                     if (schema == null)
                     {
-                        Trace.TraceWarning("openApiSchemaFile {openApiSchemaFile} is null. Ignoring", openApiSchemaFile);
+                        TraceWarning("openApiSchemaFile {openApiSchemaFile} is null. Ignoring", openApiSchemaFile);
                         continue;
                     }
 
                     var json = Encoding.Default.GetString(schema);
-                    var openApiHelper = new OpenApiHelper();
 
                     // Validate and parse the OpenAPI specification from the JSON string.
-                    var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(json);
+                    var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(json);
                     var spec = validationResult.Spec;
 
                     // Check if the validation was successful and if the specification is not null.
                     if (!validationResult.Status || spec == null)
                     {
-                        Trace.TraceWarning("Json is not a valid OpenAPI spec {json}. Ignoring", json);
+                        TraceWarning("Json is not a valid OpenAPI spec {json}. Ignoring", json);
                         continue;
                     }
 
                     // Extract tool definitions from the OpenAPI specification.
-                    var toolDefinitions = openApiHelper.GetToolDefinitions(spec);
+                    var toolDefinitions = OpenApiHelper.GetToolDefinitions(spec);
 
                     // Get request builders for the extracted tool definitions and assistant name.
-                    var requestBuilders = await openApiHelper.GetRequestBuilders(spec, toolDefinitions, assistantName);
+                    var requestBuilders = await OpenApiHelper.GetRequestBuilders(spec, toolDefinitions, assistantName);
 
                     // Add the request builders to the assistant request builders dictionary.
                     foreach (var tool in requestBuilders.Keys)
