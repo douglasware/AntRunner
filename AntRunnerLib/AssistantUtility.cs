@@ -1,4 +1,4 @@
-﻿using FunctionCalling;
+﻿using Functions;
 using OpenAI.ObjectModels.RequestModels;
 using OpenAI.ObjectModels.ResponseModels;
 using OpenAI.ObjectModels.SharedModels;
@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using AntRunnerLib.Functions;
 using static AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles;
 using static AntRunnerLib.ClientUtility;
 
@@ -231,7 +232,7 @@ namespace AntRunnerLib
             var openApiSchemaFiles = await GetFilesInOpenApiFolder(assistantName);
             if (openApiSchemaFiles == null || !openApiSchemaFiles.Any()) return;
 
-            var toolDefinitions = await OpenApiHelper.GetToolDefinitionsFromFiles(openApiSchemaFiles);
+            var toolDefinitions = await OpenApiHelper.GetToolDefinitionsFromOpenApiSchemaFiles(openApiSchemaFiles);
 
             foreach (var toolDefinition in toolDefinitions)
             {

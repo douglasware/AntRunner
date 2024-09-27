@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
-using FunctionCalling;
+using AntRunnerLib.Functions;
+using Functions;
 using OpenAI.ObjectModels.RequestModels;
 
 namespace AntRunnerLib.Tests
@@ -95,8 +96,8 @@ namespace AntRunnerLib.Tests
             var spec = validationResult.Spec;
 
             // Act
-            var toolDefinitions = OpenApiHelper.GetToolDefinitions(spec!);
-            var requestBuilders = await OpenApiHelper.GetRequestBuilders(spec!, toolDefinitions);
+            var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec!);
+            var requestBuilders = await ToolCallers.GetToolCallers(spec!, toolDefinitions);
 
             // Assert
             Assert.AreEqual(1, toolDefinitions.Count);
@@ -133,8 +134,8 @@ namespace AntRunnerLib.Tests
             var spec = validationResult.Spec;
 
             // Act
-            var toolDefinitions = OpenApiHelper.GetToolDefinitions(spec!);
-            var requestBuilders = await OpenApiHelper.GetRequestBuilders(spec!, toolDefinitions);
+            var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec!);
+            var requestBuilders = await ToolCallers.GetToolCallers(spec!, toolDefinitions);
 
             // Assert
             Assert.AreEqual(0, toolDefinitions.Count);
@@ -166,8 +167,8 @@ namespace AntRunnerLib.Tests
                 Assert.Fail("Spec was null after validation.");
             }
 
-            var toolDefinitions = OpenApiHelper.GetToolDefinitions(spec);
-            var requestBuilders = await OpenApiHelper.GetRequestBuilders(spec, toolDefinitions, "Blob Pirate");
+            var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec);
+            var requestBuilders = await ToolCallers.GetToolCallers(spec, toolDefinitions, "Blob Pirate");
 
             // Assert
             Assert.IsTrue(toolDefinitions.Count > 0);

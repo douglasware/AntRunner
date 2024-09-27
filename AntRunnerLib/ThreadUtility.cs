@@ -1,11 +1,12 @@
 ﻿using AntRunnerLib.AssistantDefinitions;
-using FunctionCalling;
+using Functions;
 using OpenAI.ObjectModels.RequestModels;
 using OpenAI.ObjectModels.ResponseModels;
 using OpenAI.ObjectModels.SharedModels;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
+using AntRunnerLib.Functions;
 using static System.Diagnostics.Trace;
 using static AntRunnerLib.ClientUtility;
 
@@ -238,7 +239,7 @@ namespace AntRunnerLib
             _ = await client.ThreadDelete(threadId);
         }
 
-        private static readonly ConcurrentDictionary<string, Dictionary<string, ActionRequestBuilder>> RequestBuilderCache = new();
+        private static readonly ConcurrentDictionary<string, Dictionary<string, ToolCallers>> RequestBuilderCache = new();
 
         /// <summary>
         /// Performs the required actions for the given run.
@@ -349,9 +350,9 @@ namespace AntRunnerLib
         private static async Task EnsureRequestBuilderCache(string assistantName, string assistantId)
         {
             // Check if the request builder cache already contains the assistant ID.
-            if (!RequestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ActionRequestBuilder>? actionRequestBuilders))
+            if (!RequestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ToolCallers>? actionRequestBuilders))
             {
-                var assistantRequestBuilders = new Dictionary<string, ActionRequestBuilder>();
+                var assistantRequestBuilders = new Dictionary<string, ToolCallers>();
 
                 // Retrieve the OpenAPI schema files from the assistant definition folder.
                 var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenApiFolder(assistantName);
@@ -380,10 +381,10 @@ namespace AntRunnerLib
                     }
 
                     // Extract tool definitions from the OpenAPI specification.
-                    var toolDefinitions = OpenApiHelper.GetToolDefinitions(spec);
+                    var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec);
 
                     // Get request builders for the extracted tool definitions and assistant name.
-                    var requestBuilders = await OpenApiHelper.GetRequestBuilders(spec, toolDefinitions, assistantName);
+                    var requestBuilders = await ToolCallers.GetToolCallers(spec, toolDefinitions, assistantName);
 
                     // Add the request builders to the assistant request builders dictionary.
                     foreach (var tool in requestBuilders.Keys)

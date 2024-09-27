@@ -1,17 +1,16 @@
-﻿using AntRunnerLib.AssistantDefinitions;
-using AntRunnerLib.Functions;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.SharedModels;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Functions;
+using OpenAI.ObjectModels.RequestModels;
+using OpenAI.ObjectModels.SharedModels;
 using YamlDotNet.Serialization;
 using static AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles;
 
-namespace FunctionCalling
+namespace AntRunnerLib.Functions
 {
     /// <summary>
-    /// Provides helper methods for validating and parsing OpenAPI specifications.
+    /// Provides helper methods for validating, parsing and using OpenAPI specifications
     /// </summary>
     public class OpenApiHelper
     {
@@ -68,7 +67,7 @@ namespace FunctionCalling
         /// </summary>
         /// <param name="openapiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
         /// <returns>A list of <see cref="ToolDefinition"/> objects extracted from the OpenAPI spec.</returns>
-        public static List<ToolDefinition> GetToolDefinitions(JsonDocument openapiSpec)
+        public static List<ToolDefinition> GetToolDefinitionsFromSchema(JsonDocument openapiSpec)
         {
             var toolDefinitions = new List<ToolDefinition>();
             var root = openapiSpec.RootElement;
@@ -303,86 +302,11 @@ namespace FunctionCalling
         }
 
         /// <summary>
-        /// Generates request builders based on the OpenAPI specification.
-        /// </summary>
-        /// <param name="openapiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
-        /// <param name="toolDefinitions">The list of tool definitions extracted from the OpenAPI spec.</param>
-        /// <param name="assistantName">The assistant</param>
-        /// <returns>A dictionary of <see cref="ActionRequestBuilder"/> objects with operation IDs as keys.</returns>
-        public static async Task<Dictionary<string, ActionRequestBuilder>> GetRequestBuilders(JsonDocument openapiSpec, List<ToolDefinition> toolDefinitions, string? assistantName = null)
-        {
-            var requestBuilders = new Dictionary<string, ActionRequestBuilder>();
-            var root = openapiSpec.RootElement;
-            var baseUrl = root.GetProperty("servers")[0].GetProperty("url").GetString()
-                          ?? throw new InvalidOperationException("Base URL not found");
-
-            var host = (new Uri(baseUrl)).Host;
-            var oAuth = false;
-
-            Dictionary<string, string> authHeaders = new();
-            if (assistantName != null)
-            {
-                var authJson = await AssistantDefinitionFiles.GetActionAuth(assistantName);
-                if (authJson != null)
-                {
-                    var domainAuth = JsonSerializer.Deserialize<DomainAuth>(authJson);
-
-                    if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out var actionAuthConfig))
-                    {
-                        if (actionAuthConfig.AuthType == AuthType.service_http && actionAuthConfig.HeaderKey != null && actionAuthConfig.HeaderValueEnvironmentVariable != null && Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable) != null)
-                        {
-                            authHeaders[actionAuthConfig.HeaderKey] = Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable)!;
-                        }
-                        else if (actionAuthConfig.AuthType == AuthType.azure_oauth)
-                        {
-                            oAuth = true;
-                        }
-                    }
-                }
-            }
-
-            foreach (var pathProperty in root.GetProperty("paths").EnumerateObject())
-            {
-                foreach (var methodProperty in pathProperty.Value.EnumerateObject())
-                {
-                    var operationObj = methodProperty.Value;
-                    var operationId = operationObj.TryGetProperty("operationId", out var opId)
-                        ? opId.GetString()
-                        : $"{methodProperty.Name}_{pathProperty.Name}";
-
-                    var toolDefinition = toolDefinitions.FirstOrDefault(o => o.Function?.AsObject?.Name == operationId);
-                    var responseSchemas = toolDefinition?.Function?.AsObject?.ResponseSchemas;
-
-                    var actionRequest = new ActionRequestBuilder(
-                        baseUrl,
-                        pathProperty.Name,
-                        methodProperty.Name,
-                        operationId!,
-                        false,
-                        toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
-                        responseSchemas!,
-                        authHeaders,
-                        oAuth
-                    );
-
-                    if (responseSchemas != null && responseSchemas.TryGetValue("200", out var schema))
-                    {
-                        actionRequest.ResponseSchemas["200"] = schema;
-                    }
-
-                    requestBuilders[operationId!] = actionRequest;
-                }
-            }
-
-            return requestBuilders;
-        }
-
-        /// <summary>
         /// Asynchronously retrieves tool definitions from a collection of OpenAPI schema files.
         /// </summary>
         /// <param name="openApiSchemaFiles">A collection of file paths to OpenAPI schema files.</param>
         /// <returns>A task representing the asynchronous operation. The task result contains a list of <see cref="ToolDefinition"/> objects.</returns>
-        public static async Task<List<ToolDefinition>> GetToolDefinitionsFromFiles(IEnumerable<string> openApiSchemaFiles)
+        public static async Task<List<ToolDefinition>> GetToolDefinitionsFromOpenApiSchemaFiles(IEnumerable<string> openApiSchemaFiles)
         {
             var toolDefinitions = new List<ToolDefinition>();
 
@@ -420,7 +344,7 @@ namespace FunctionCalling
                 return new List<ToolDefinition>();
             }
 
-            return GetToolDefinitions(spec);
+            return GetToolDefinitionsFromSchema(spec);
         }
     }
 }

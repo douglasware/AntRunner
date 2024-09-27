@@ -179,24 +179,13 @@
                               "url": {
                                 "type": "string"
                               },
-                              "displayUrl": {
-                                "type": "string"
-                              },
-                              "snippet": {
-                                "type": "string"
-                              },
                               "cachedPageUrl": {
-                                "type": "string"
-                              },
-                              "thumbnailUrl": {
                                 "type": "string"
                               }
                             },
                             "required": [
                               "name",
                               "url",
-                              "displayUrl",
-                              "snippet",
                               "cachedPageUrl"
                             ]
                           }
