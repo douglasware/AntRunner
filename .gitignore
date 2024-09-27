@@ -399,4 +399,4 @@ FodyWeavers.xsd
 /AntRunnerPowershell/SetEnvAndLoadModule.ps1
 /AntRunnerPowershell/LocalTests.ps1
 /AntRunnerPowershell/Downloads/*
-Notebooks/Mine.ipynb
+/Notebooks/Mine.ipynb
