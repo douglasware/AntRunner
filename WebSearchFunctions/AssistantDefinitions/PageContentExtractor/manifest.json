@@ -1,0 +1,13 @@
+{
+  "name": "PageContentExtractor",
+  "description": "Looks for facts and extracts them if found",
+  "instructions": "",
+  "tools": [
+  ],
+  "tool_resources": {},
+  "top_p": 0.95,
+  "response_format": "auto",
+  "metadata": {
+  },
+  "temperature": 0.7
+}

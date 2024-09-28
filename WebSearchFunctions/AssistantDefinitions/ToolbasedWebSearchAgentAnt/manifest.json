@@ -1,0 +1,15 @@
+{
+  "name": "ToolbasedWebSearchAgentAnt",
+  "description": "We find answers to your questions and satisfy your requests",
+  "instructions": "",
+  "tools": [
+    { "type": "code_interpreter" }
+  ],
+  "model": "gpt-4o-global",
+  "tool_resources": {},
+  "top_p": 0.95,
+  "response_format": "auto",
+  "metadata": {
+  },
+  "temperature": 0.7
+}

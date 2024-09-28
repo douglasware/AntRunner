@@ -18,7 +18,9 @@ namespace AntRunnerLib
     public static class AssistantUtility
     {
         // The ConcurrentDictionary to act as our in-memory cache
-        private static readonly ConcurrentDictionary<string, AssistantCreateRequest?> Cache = new();
+        private static readonly ConcurrentDictionary<string, AssistantCreateRequest?> AssistantDefinitionCache = new();
+        private static readonly ConcurrentDictionary<string, (List<AssistantResponse> Assistants, DateTime Timestamp)> AssistantCache = new();
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Looks for an assistant and returns an ID if found, otherwise null
@@ -29,37 +31,45 @@ namespace AntRunnerLib
         /// <returns></returns>
         public static async Task<string?> GetAssistantId(string assistantResourceName, AzureOpenAiConfig? azureOpenAiConfig, bool autoCreate)
         {
-            // I am on the fence about this design, but the intention is to allow invocation of an assitant if it exists in the endpoint
-            // even if the definition is not stored anywhere used by the orchestrator
             var assistantDefinition = await GetAssistantCreateRequest(assistantResourceName);
             var assistantName = assistantDefinition?.Name ?? assistantResourceName;
 
             var client = GetOpenAiClient(azureOpenAiConfig);
 
-            var allAssistants = new List<AssistantResponse>();
-            var hasMore = true;
-            var lastId = string.Empty;
-            while (hasMore)
-            {
-                var result = await client.AssistantList(new() { After = lastId, Limit = 5 });
-                if (result.Successful)
-                {
-                    if (result.Data != null)
-                    {
-                        allAssistants.AddRange(result.Data);
-                    }
+            var cacheKey = "allAssistants";
+            var cachedData = AssistantCache.GetValueOrDefault(cacheKey);
+            var allAssistants = cachedData.Assistants;
+            var cacheTimestamp = cachedData.Timestamp;
 
-                    hasMore = result.HasMore;
-                    lastId = result.LastId;
-                }
-                else
+            if (DateTime.UtcNow - cacheTimestamp > CacheDuration)
+            {
+                allAssistants = new List<AssistantResponse>();
+                var hasMore = true;
+                var lastId = string.Empty;
+                while (hasMore)
                 {
-                    throw new Exception($"Failed to get assistantsList - {result.Error?.Code}: {result.Error?.Message}");
+                    var result = await client.AssistantList(new() { After = lastId, Limit = 25 });
+                    if (result.Successful)
+                    {
+                        if (result.Data != null)
+                        {
+                            allAssistants.AddRange(result.Data);
+                        }
+
+                        hasMore = result.HasMore;
+                        lastId = result.LastId;
+                    }
+                    else
+                    {
+                        throw new Exception($"Failed to get assistantsList - {result.Error?.Code}: {result.Error?.Message}");
+                    }
                 }
+
+                AssistantCache[cacheKey] = (allAssistants, DateTime.UtcNow);
             }
 
             var assistant = allAssistants.FirstOrDefault(o => o.Name == assistantName);
-            if(assistantDefinition != null && assistant == null)
+            if (assistantDefinition != null && assistant == null)
             {
                 assistantDefinition.Model ??= azureOpenAiConfig?.DeploymentId ?? string.Empty;
             }
@@ -67,8 +77,8 @@ namespace AntRunnerLib
             {
                 throw new InvalidOperationException($"Assistant {assistantName} does not exist and no definition was found");
             }
-            
-            if(assistant == null && autoCreate) return await Create(assistantDefinition!, azureOpenAiConfig);
+
+            if (assistant == null && autoCreate) return await Create(assistantDefinition!, azureOpenAiConfig);
 
             return assistant?.Id;
         }
@@ -166,7 +176,7 @@ namespace AntRunnerLib
         public static async Task<AssistantCreateRequest?> GetAssistantCreateRequest(string assistantName)
         {
             // Attempt to retrieve the assistant options from the cache.
-            if (!Cache.TryGetValue(assistantName, out var cachedOptions))
+            if (!AssistantDefinitionCache.TryGetValue(assistantName, out var cachedOptions))
             {
                 // If not in cache, load it from resources or blob storage
                 var json = await GetManifest(assistantName);
@@ -187,7 +197,7 @@ namespace AntRunnerLib
                     await AddFunctionTools(assistantName, options);
                     // Add to cache or update the existing cached value. 
                     // This method will add the value if the key isn't present, or update it if it is present.
-                    Cache.AddOrUpdate(assistantName, options, (key, oldValue) => options);
+                    AssistantDefinitionCache.AddOrUpdate(assistantName, options, (key, oldValue) => options);
                 }
 
                 return options;

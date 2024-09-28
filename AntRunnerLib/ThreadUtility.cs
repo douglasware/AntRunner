@@ -37,6 +37,7 @@ namespace AntRunnerLib
             {
                 AssistantId = assistantId,
                 Thread = threadOptions,
+                MaxCompletionTokens = 4096
             };
 
             if (assistantRunOptions.Files is { Count: > 0 })

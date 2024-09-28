@@ -7,14 +7,14 @@
   "servers": [
     {
       "url": "tool://localhost",
-      "description": "Create markdown from a Url"
+      "description": "Find facts on the web"
     }
   ],
   "paths": {
-    "AntRunnerLib.AssistantRunner.RunThread": {
+    "WebSearchFunctions.SearchTool.Search": {
       "post": {
-        "operationId": "ExtractContentFromUrl",
-        "summary": "Reads a web page and returns markdown of the content",
+        "operationId": "FindAnswers",
+        "summary": "Searches the web and returns relevant content",
         "requestBody": {
           "required": true,
           "content": {
@@ -22,17 +22,17 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "assistantName": {
+                  "searchQuery": {
                     "type": "string",
-                    "description": "Required. Must be WebPageAgentAnt",
+                    "description": "Required. Search terms for web search",
                     "default": "WebPageAgentAnt"
                   },
-                  "instructions": {
+                  "userRequest": {
                     "type": "string",
-                    "description": "Required. A url to a page and a question or statement that the assitant will use to extract relevant content. Example 'what is the timeout of the foo operation? http://www.example.com/doc'"
+                    "description": "Required. The user's question or request rewritten for context and clarity"
                   }
                 },
-                "required": [ "assistantName", "instructions" ]
+                "required": [ "searchQuery", "userRequest" ]
               }
             }
           }
