@@ -1,9 +1,6 @@
 ﻿using AntRunnerLib.AssistantDefinitions;
-using OpenAI.Interfaces;
 using OpenAI.ObjectModels;
-using OpenAI.ObjectModels.RequestModels;
 using OpenAI.ObjectModels.ResponseModels.FileResponseModels;
-using static AntRunnerLib.ClientUtility;
 
 namespace AntRunnerLib
 {

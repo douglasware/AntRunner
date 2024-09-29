@@ -1,6 +1,4 @@
-﻿using OpenAI.Interfaces;
-
-namespace OpenAI.Managers;
+﻿namespace OpenAI.Managers;
 
 /// <summary>
 /// Beta service for OpenAI.

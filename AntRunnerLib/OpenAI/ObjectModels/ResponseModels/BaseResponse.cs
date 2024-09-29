@@ -1,7 +1,5 @@
 ﻿using System.Collections;
 using System.Net;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OpenAI.ObjectModels.ResponseModels;
 

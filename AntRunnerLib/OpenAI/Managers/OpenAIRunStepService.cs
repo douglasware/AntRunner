@@ -1,9 +1,4 @@
-﻿using OpenAI.Extensions;
-using OpenAI.Interfaces;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
-
-namespace OpenAI.Managers;
+﻿namespace OpenAI.Managers;
 
 public partial class OpenAiService : IRunStepService
 {

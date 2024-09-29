@@ -1,7 +1,4 @@
-﻿using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace AntRunnerLib
+﻿namespace AntRunnerLib
 {
     /// <summary>
     /// State for use by the AssistantRunner orchestration

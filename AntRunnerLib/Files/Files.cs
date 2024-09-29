@@ -1,7 +1,5 @@
 ﻿using AntRunnerLib.AssistantDefinitions;
-using OpenAI.Interfaces;
 using OpenAI.ObjectModels;
-using static AntRunnerLib.ClientUtility;
 
 namespace AntRunnerLib
 {

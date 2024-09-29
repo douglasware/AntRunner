@@ -5,9 +5,9 @@
   "tools": [
   ],
   "tool_resources": {},
-  "top_p": 0.95,
+  "top_p": 0.6,
   "response_format": "auto",
   "metadata": {
   },
-  "temperature": 0.7
+  "temperature": 0.5
 }

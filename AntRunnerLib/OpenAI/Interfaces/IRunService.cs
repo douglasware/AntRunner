@@ -1,7 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
-using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Interfaces;
 

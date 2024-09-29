@@ -1,7 +1,4 @@
-﻿using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.Interfaces;
+﻿namespace OpenAI.Interfaces;
 
 public interface IThreadService
 {

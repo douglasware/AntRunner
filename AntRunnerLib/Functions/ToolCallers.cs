@@ -1,9 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using AntRunnerLib.AssistantDefinitions;
 using Microsoft.Extensions.DependencyInjection;
-using OpenAI.ObjectModels.RequestModels;
 
 namespace AntRunnerLib.Functions
 {
@@ -37,7 +35,7 @@ namespace AntRunnerLib.Functions
         /// <param name="toolDefinitions">The list of tool definitions extracted from the OpenAPI spec.</param>
         /// <param name="domainAuth"></param>
         /// <returns>A dictionary of <see cref="ToolCallers"/> objects with operation IDs as keys.</returns>
-        public static async Task<Dictionary<string, ToolCallers>> GetToolCallers(JsonDocument openapiSpec, List<ToolDefinition> toolDefinitions, DomainAuth? domainAuth)
+        public static Dictionary<string, ToolCallers> GetToolCallers(JsonDocument openapiSpec, List<ToolDefinition> toolDefinitions, DomainAuth? domainAuth)
         {
             var root = openapiSpec.RootElement;
             var baseUrl = root.GetProperty("servers")[0].GetProperty("url").GetString()
@@ -87,7 +85,7 @@ namespace AntRunnerLib.Functions
 
                     if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out _))
                     {
-                        return await GetToolCallers(openapiSpec, toolDefinitions, domainAuth);
+                        return GetToolCallers(openapiSpec, toolDefinitions, domainAuth);
                     }
                 }
             }

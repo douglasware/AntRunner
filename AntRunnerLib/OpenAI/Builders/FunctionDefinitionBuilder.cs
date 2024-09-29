@@ -1,7 +1,4 @@
-﻿using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.Builders;
+﻿namespace OpenAI.Builders;
 
 /// <summary>
 /// FunctionDefinitionBuilder is used to build and validate a FunctionDefinition object.

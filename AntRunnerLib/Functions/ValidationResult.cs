@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Functions
+﻿namespace Functions
 {
     /// <summary>
     /// Represents the result of OpenAPI spec validation.

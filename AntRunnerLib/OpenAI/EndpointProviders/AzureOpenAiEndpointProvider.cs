@@ -1,5 +1,4 @@
 using System.Net;
-using OpenAI.ObjectModels.RequestModels;
 
 namespace OpenAI.EndpointProviders;
 

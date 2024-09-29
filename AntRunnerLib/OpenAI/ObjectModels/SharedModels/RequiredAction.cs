@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.RequestModels;
-
-namespace OpenAI.ObjectModels.SharedModels;
+﻿namespace OpenAI.ObjectModels.SharedModels;
 
 /// <summary>
 /// Details on the action required to continue the run.

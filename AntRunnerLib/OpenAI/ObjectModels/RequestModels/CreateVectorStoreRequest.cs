@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels;
+﻿using OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels;
 
 namespace OpenAI.ObjectModels.RequestModels;
 

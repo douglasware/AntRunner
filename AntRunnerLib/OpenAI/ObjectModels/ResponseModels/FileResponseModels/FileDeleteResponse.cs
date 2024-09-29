@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.ObjectModels.ResponseModels.FileResponseModels;
+﻿namespace OpenAI.ObjectModels.ResponseModels.FileResponseModels;
 
 public record FileDeleteResponse : BaseResponse, IOpenAiModels.IId
 {

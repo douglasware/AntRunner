@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace OpenAI.ObjectModels.ResponseModels;
+﻿namespace OpenAI.ObjectModels.ResponseModels;
 
 public record UsageResponse
 {

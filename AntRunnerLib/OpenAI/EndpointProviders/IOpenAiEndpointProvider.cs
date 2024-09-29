@@ -1,6 +1,4 @@
-﻿using OpenAI.ObjectModels.RequestModels;
-
-namespace OpenAI.EndpointProviders;
+﻿namespace OpenAI.EndpointProviders;
 
 internal interface IOpenAiEndpointProvider
 {

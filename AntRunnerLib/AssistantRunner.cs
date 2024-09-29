@@ -1,9 +1,4 @@
-﻿using OpenAI.ObjectModels.SharedModels;
-using System;
-using System.Diagnostics;
-using System.Text.Json.Serialization;
-
-namespace AntRunnerLib
+﻿namespace AntRunnerLib
 {
     /// <summary>
     /// Responsible for running assistant threads through interaction with various utilities.
