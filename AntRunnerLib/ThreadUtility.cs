@@ -68,6 +68,11 @@ namespace AntRunnerLib
             // Create a new thread and run it with the given assistant ID and thread options.
             var run = await client.Runs.CreateThreadAndRun(createThreadAndRunRequest);
 
+            if(run.Error != null)
+            {
+                throw new Exception($"Error creating run! {run.Error.Message}");
+            }
+
             // Return the thread ID and the newly created thread run ID.
             return new() { ThreadId = run.ThreadId, ThreadRunId = run.Id };
         }
@@ -270,7 +275,8 @@ namespace AntRunnerLib
                     var builder = builders[requiredOutput.FunctionCall.Name!].Clone();
                     builder.Params = requiredOutput.FunctionCall.ParseArguments();
 
-                    TraceInformation($"{assistantName} using {builder.Operation} with {requiredOutput.FunctionCall.Arguments}");
+                    TraceInformation(
+                        $"{nameof(PerformRunRequiredActions)} : {assistantName} : {currentRun.ThreadId} : {currentRun.Id} : Using {builder.Operation} with {requiredOutput.FunctionCall.Arguments}");
 
                     // Create a task to execute the tool call asynchronously.
                     var task = Task.Run(async () =>

@@ -144,7 +144,7 @@ namespace HtmlAgility
         public static async Task<string> ConvertUrlToMarkdownAsync(string url)
         {
             string? htmlContent;
-            int timeoutInSeconds = 5; // Set your desired timeout here
+            int timeoutInSeconds = 10; // Set your desired timeout here
 
             using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds)))
             {

@@ -22,7 +22,7 @@
             {
                 throw new ArgumentNullException(nameof(assistantId));
             }
-            Trace.TraceInformation($"RunAssistant got assistant: {assistantId}");
+            // TraceInformation($"{nameof(RunThread)}: Got {assistantRunOptions!.AssistantName}: {assistantId}");
 
             // Create a new thread and run it using the assistant ID and run options
             var ids = await ThreadUtility.CreateThreadAndRun(assistantId, assistantRunOptions, config);
@@ -33,7 +33,11 @@
                 throw new Exception($"CreateThreadAndRun failed: {ids.ThreadId} {ids.ThreadRunId}");
             }
 
-            ThreadRunOutput? runResults = null;
+            var started = DateTime.UtcNow;
+            TraceInformation(
+                $"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {ids.ThreadId} : {ids.ThreadRunId} : Started {started:yyyy-MM-dd HH:mm:ss}");
+
+            ThreadRunOutput ? runResults = null;
             bool completed = false;
             do
             {
@@ -95,8 +99,7 @@
                             }
                         }
                     }
-
-                    Trace.TraceInformation($"Dialog: {runResults.Dialog}");
+                    //TraceInformation($"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {run.Id}: {runResults.Dialog}");
                     completed = true;
                 }
                 else if (run.Status == "failed")
@@ -114,7 +117,7 @@
                 else if(run.Status == "in_progress" || run.Status == "queued")
                 {
                     // Wait for a short period before checking the run status again
-                    Trace.TraceInformation("RunAssistant waiting 1 second");
+                    // TraceInformation($"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {run.Id}: Waiting 1 second");
                     await Task.Delay(1000);
                 }
                 else
@@ -126,7 +129,10 @@
                     };
                 }
             } while (!completed);
-
+            
+            TraceInformation(
+                $"{nameof(RunThread)} : {assistantRunOptions!.AssistantName} : {ids.ThreadId} : {ids.ThreadRunId} : Run Completed {(DateTime.UtcNow - started).TotalMilliseconds}");
+            
             // Delete the thread after completion
             await ThreadUtility.DeleteThread(ids.ThreadId, config);
 
@@ -145,7 +151,7 @@
         /// <returns>The LastMessage from the thread run</returns>
         public static async Task<string> RunThread(string assistantName, string instructions, string? evaluator = "")
         {
-            Trace.TraceInformation($"Running {assistantName}: {instructions}");
+            TraceInformation($"Running {assistantName}"); //: {instructions}");
             var config = AzureOpenAiConfigFactory.Get();
             var assistantRunOptions = new AssistantRunOptions()
             {

@@ -9,3 +9,4 @@ global using OpenAI.ObjectModels.RequestModels;
 global using OpenAI.ObjectModels.ResponseModels;
 global using OpenAI.ObjectModels.SharedModels;
 global using static AntRunnerLib.ClientUtility;
+global using static System.Diagnostics.Trace;
