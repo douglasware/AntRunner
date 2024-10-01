@@ -400,3 +400,5 @@ FodyWeavers.xsd
 /AntRunnerPowershell/LocalTests.ps1
 /AntRunnerPowershell/Downloads/*
 /Notebooks/Mine.ipynb
+/RefactorTests/Program.cs
+/RefactorTests/RefactorTests.csproj
