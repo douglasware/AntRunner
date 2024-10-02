@@ -24,8 +24,7 @@
                 "properties": {
                   "searchQuery": {
                     "type": "string",
-                    "description": "Required. Search terms for web search",
-                    "default": "WebPageAgentAnt"
+                    "description": "Required. Search terms for web search"
                   },
                   "userRequest": {
                     "type": "string",

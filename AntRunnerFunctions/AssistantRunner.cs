@@ -58,7 +58,7 @@ namespace AntRunnerFunctions
                     
                     runResults.Usage = state.RootRun.Usage;
                     
-                    if (state.AssistantRunOptions.UseConversationEvaluator)
+                    if (!string.IsNullOrEmpty(state.AssistantRunOptions.Evaluator))
                     {
                         int turnCounter = 0;
 
@@ -68,9 +68,8 @@ namespace AntRunnerFunctions
                             turnCounter++;
                             var evaluatorOptions = new AssistantRunOptions()
                             {
-                                AssistantName = "ConversationUserProxy",
+                                AssistantName = state.AssistantRunOptions.Evaluator,
                                 Instructions = runResults.Dialog,
-                                UseConversationEvaluator = false
                             };
                             var evaluatorOutput = (await context.CallSubOrchestratorAsync<ThreadRunOutput>(nameof(AssistantsRunnerOrchestrator), evaluatorOptions, RetryPolicy.Get())).LastMessage;
                             if (!evaluatorOutput.Contains("End Conversation", StringComparison.OrdinalIgnoreCase))
@@ -161,6 +160,11 @@ namespace AntRunnerFunctions
                 }
 
             } while (state.RootRun.Status != "completed");
+
+            if (!string.IsNullOrEmpty(state.AssistantRunOptions.PostProcessor))
+            {
+
+            }
 
             await context.CallActivityAsync(nameof(Cleanup), state, RetryPolicy.Get());
 

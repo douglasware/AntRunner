@@ -3,6 +3,7 @@ using AntRunnerLib.Functions;
 using System.Text.Json;
 using AntRunnerLib;
 using HtmlAgility;
+using System.Text.RegularExpressions;
 
 namespace WebSearchFunctions
 {
@@ -56,13 +57,19 @@ namespace WebSearchFunctions
                     {
                         var name = page.GetProperty("name").GetString();
                         var url = page.GetProperty("url").GetString();
+                        var cachedPageUrl = url;
 
-                        // Ignore pages without a url and cachedPageUrl.
-                        if (url != null && page.TryGetProperty("cachedPageUrl", out JsonElement cachedPageUrl))
+                        if (page.TryGetProperty("cachedPageUrl", out JsonElement cachedPageUrlElement))
                         {
+                            cachedPageUrl = cachedPageUrlElement.GetString();
+                        }
+
+                        if (url != null)
+                        {
+                            // Made this change because the web search inexplicably sometimes returns full results with no cached page URL in any of the items
                             searchResults.Add(new()
                             {
-                                CachedPageUrl = cachedPageUrl.GetString() ?? url,
+                                CachedPageUrl = !string.IsNullOrWhiteSpace(cachedPageUrl) ? cachedPageUrl : url,
                                 PageTitle = name!,
                                 Url = url
                             });
@@ -74,11 +81,12 @@ namespace WebSearchFunctions
                     // ignored
                 }
             }
-           
+
             var tasks = searchResults.Select(async searchResult =>
             {
                 try
                 {
+                    Trace.TraceInformation($"{nameof(Search)}|Scraping markdown from {searchResult.CachedPageUrl}");
                     var markdown = await HtmlAgilityPackExtensions.ConvertUrlToMarkdownAsync(searchResult.CachedPageUrl);
                     if (markdown.Trim().Split(' ').Length > 10)
                     {
@@ -93,13 +101,12 @@ namespace WebSearchFunctions
             }).ToList();
 
             await Task.WhenAll(tasks);
-            
+
             var random = new Random();
 
+            //Filter out results without markdown
             var markdownResults = searchResults
                 .Where(result => !string.IsNullOrEmpty(result.PageMarkdown))
-                .OrderBy(_ => random.Next())
-                .Take(10)
                 .ToList();
 
             var selectedFacts = new List<PageContent>();
@@ -107,30 +114,115 @@ namespace WebSearchFunctions
             int batches = 2;
             int batchSize = 5;
             var start = DateTime.Now;
-            
+
             for (int loop = 0; loop < batches; loop++)
             {
                 var pagesToEvaluate = markdownResults.Skip(loop * batchSize).Take(batchSize).ToList();
 
                 var evaluationTasks = pagesToEvaluate.Select(async page =>
                 {
-                    var extractedContent = await AssistantRunner.RunThread("PageContentExtractor", $"Question:{userRequest}\n```Content:{page.PageMarkdown}");
+                    var extractContentThreadRunOutput = await AssistantRunner.RunThread(new AssistantRunOptions()
+                    {
+                        AssistantName = "PageContentExtractor",
+                        Instructions = $"Question:{userRequest}\n```Content:{page.PageMarkdown}"
+                    }, AzureOpenAiConfigFactory.Get());
+
+                    if (extractContentThreadRunOutput == null) return;
+
+                    var extractedContent = SearchPostProcessor(extractContentThreadRunOutput).LastMessage;
+
                     if (!extractedContent.ToLowerInvariant().Contains("not found") && extractedContent.Split(' ').Length > 10)
                     {
                         page.Extract = extractedContent;
                         selectedFacts.Add(page);
                     }
+                    else
+                    {
+                        Trace.TraceInformation(extractedContent);
+                    }
                 }).ToList();
 
                 await Task.WhenAll(evaluationTasks);
-                Trace.TraceInformation($"Batch elapsed time {(DateTime.Now - start).TotalMilliseconds}");
+                Trace.TraceInformation($"{nameof(Search)}|Batch elapsed time {(DateTime.Now - start).TotalMilliseconds}");
             }
+
+            // Shuffle the selected facts and take 5
+            selectedFacts = selectedFacts.OrderBy(_ => random.Next()).Take(5).ToList();
 
             var output = string.Join("\n\n", selectedFacts.Select(fact => $"# [{fact.PageTitle}]({fact.Url})\n\n{fact.Extract}"));
 
-            Trace.TraceInformation($"Total elapsed time {(DateTime.Now - start).TotalMilliseconds}");
+            Trace.TraceInformation($"{nameof(Search)}|Total elapsed time {(DateTime.Now - start).TotalMilliseconds}");
 
             return output;
+        }
+
+        public static ThreadRunOutput SearchPostProcessor(ThreadRunOutput threadRunOutput)
+        {
+            var dialogWithoutLastMessage = threadRunOutput.Dialog.Replace(threadRunOutput.LastMessage, "");
+
+            var urlsToValidate = ExtractWebAddresses(threadRunOutput.LastMessage);
+            foreach (var urlToValidate in urlsToValidate)
+            {
+                if (!dialogWithoutLastMessage.Contains(urlToValidate))
+                {
+                    var linkText = ExtractLinkText(threadRunOutput.LastMessage, urlToValidate);
+                    if (!string.IsNullOrEmpty(linkText))
+                    {
+                        var correctUrl = FindUrlByLinkText(dialogWithoutLastMessage, linkText);
+                        if (!string.IsNullOrEmpty(correctUrl) && !urlToValidate.Contains(correctUrl))
+                        {
+                            Trace.TraceInformation($"{nameof(SearchPostProcessor)}|{urlToValidate} is a hallucination. Changing to {correctUrl} based on Dialog");
+                            threadRunOutput.LastMessage = threadRunOutput.LastMessage.Replace(urlToValidate, correctUrl);
+                        }
+                    }
+                    else
+                    {
+                        Trace.TraceWarning($"{nameof(SearchPostProcessor)}|{urlToValidate} is a hallucination and unable to fix");
+
+                        // Hack to try... 
+                        threadRunOutput.LastMessage = "not found";
+                        break;
+                    }
+                }
+            }
+            return threadRunOutput;
+        }
+
+        private static List<string> ExtractWebAddresses(string input)
+        {
+            var urls = new List<string>();
+            var regex = new Regex(@"\[(.*?)\]\((.*?)\)");
+            var matches = regex.Matches(input);
+            foreach (Match match in matches)
+            {
+                if (match.Groups.Count > 2)
+                {
+                    urls.Add(match.Groups[2].Value);
+                }
+            }
+            return urls;
+        }
+
+        private static string ExtractLinkText(string input, string url)
+        {
+            var regex = new Regex(@"\[(.*?)\]\(" + Regex.Escape(url) + @"\)");
+            var match = regex.Match(input);
+            if (match.Success && match.Groups.Count > 1)
+            {
+                return match.Groups[1].Value;
+            }
+            return "";
+        }
+
+        private static string FindUrlByLinkText(string input, string linkText)
+        {
+            var regex = new Regex(@"\[" + Regex.Escape(linkText) + @"\]\((.*?)\)");
+            var match = regex.Match(input);
+            if (match.Success && match.Groups.Count > 1)
+            {
+                return match.Groups[1].Value;
+            }
+            return "";
         }
     }
 }

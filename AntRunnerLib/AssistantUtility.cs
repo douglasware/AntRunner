@@ -13,7 +13,7 @@ namespace AntRunnerLib
     {
         // The ConcurrentDictionary to act as our in-memory cache
         private static readonly ConcurrentDictionary<string, AssistantCreateRequest?> AssistantDefinitionCache = new();
-        private static readonly ConcurrentDictionary<string, (List<AssistantResponse> Assistants, DateTime Timestamp)> AssistantCache = new();
+        private static readonly ConcurrentBag<(List<AssistantResponse> Assistants, DateTime Timestamp)> AssistantCache = new();
         private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
 
         /// <summary>
@@ -30,10 +30,14 @@ namespace AntRunnerLib
 
             var client = GetOpenAiClient(azureOpenAiConfig);
 
-            var cacheKey = "allAssistants";
-            var cachedData = AssistantCache.GetValueOrDefault(cacheKey);
-            var allAssistants = cachedData.Assistants;
-            var cacheTimestamp = cachedData.Timestamp;
+            var cacheTimestamp = DateTime.MinValue;
+            var allAssistants = new List<AssistantResponse>();
+
+            if (AssistantCache.TryPeek(out var cachedData))
+            {
+                allAssistants = cachedData.Assistants;
+                cacheTimestamp = cachedData.Timestamp;
+            }
 
             if (DateTime.UtcNow - cacheTimestamp > CacheDuration)
             {
@@ -59,7 +63,9 @@ namespace AntRunnerLib
                     }
                 }
 
-                AssistantCache[cacheKey] = (allAssistants, DateTime.UtcNow);
+                // Clear the bag and add the new cached data
+                while (AssistantCache.TryTake(out _)) ;
+                AssistantCache.Add((allAssistants, DateTime.UtcNow));
             }
 
             var assistant = allAssistants.FirstOrDefault(o => o.Name == assistantName);
@@ -153,6 +159,8 @@ namespace AntRunnerLib
                 {
                     throw new Exception(newAssistant.Error.Message);
                 }
+                
+                AssistantCache.Clear();
 
                 return newAssistant.Id!;
             }

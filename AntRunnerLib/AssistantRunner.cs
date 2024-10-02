@@ -24,6 +24,13 @@
             }
             // TraceInformation($"{nameof(RunThread)}: Got {assistantRunOptions!.AssistantName}: {assistantId}");
 
+            // 256000 is the maximum instruction length allowed by the API
+            if (assistantRunOptions.Instructions.Length >= 256000)
+            {
+                TraceWarning("Instructions are too long, truncating");
+                assistantRunOptions.Instructions = assistantRunOptions.Instructions.Substring(0, 255999);
+            }
+
             // Create a new thread and run it using the assistant ID and run options
             var ids = await ThreadUtility.CreateThreadAndRun(assistantId, assistantRunOptions, config);
 
@@ -37,7 +44,7 @@
             TraceInformation(
                 $"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {ids.ThreadId} : {ids.ThreadRunId} : Started {started:yyyy-MM-dd HH:mm:ss}");
 
-            ThreadRunOutput ? runResults = null;
+            ThreadRunOutput? runResults = null;
             bool completed = false;
             do
             {
@@ -55,7 +62,7 @@
                     runResults = await ThreadUtility.GetThreadOutput(ids.ThreadId, config);
                     runResults.Usage = run.Usage;
                     // Optionally use a conversation evaluator if specified in the run options
-                    if (assistantRunOptions.UseConversationEvaluator)
+                    if (!string.IsNullOrEmpty(assistantRunOptions.Evaluator))
                     {
                         int turnCounter = 0;
 
@@ -65,9 +72,8 @@
                             turnCounter++;
                             var evaluatorOptions = new AssistantRunOptions()
                             {
-                                AssistantName = "ConversationUserProxy",
-                                Instructions = runResults.Dialog,
-                                UseConversationEvaluator = false
+                                AssistantName = assistantRunOptions.Evaluator,
+                                Instructions = runResults.Dialog
                             };
 
                             // Recursively run the conversation evaluator
@@ -114,7 +120,7 @@
                         LastMessage = $"Run is incomplete because of {run.IncompleteDetails?.Reason}"
                     };
                 }
-                else if(run.Status == "in_progress" || run.Status == "queued")
+                else if (run.Status == "in_progress" || run.Status == "queued")
                 {
                     // Wait for a short period before checking the run status again
                     // TraceInformation($"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {run.Id}: Waiting 1 second");
@@ -129,10 +135,18 @@
                     };
                 }
             } while (!completed);
-            
+
+            if (!string.IsNullOrEmpty(assistantRunOptions.PostProcessor))
+            {
+                runResults = await ThreadUtility.RunPostProcessor(assistantRunOptions.PostProcessor, runResults);
+            }
+
+            TraceInformation(
+                $"Usage:{runResults.Usage?.PromptTokens}:{runResults.Usage?.CompletionTokens}:{runResults.Usage?.TotalTokens}");
+
             TraceInformation(
                 $"{nameof(RunThread)} : {assistantRunOptions!.AssistantName} : {ids.ThreadId} : {ids.ThreadRunId} : Run Completed {(DateTime.UtcNow - started).TotalMilliseconds}");
-            
+
             // Delete the thread after completion
             await ThreadUtility.DeleteThread(ids.ThreadId, config);
 
@@ -157,7 +171,7 @@
             {
                 AssistantName = assistantName,
                 Instructions = instructions,
-                UseConversationEvaluator = evaluator != "" // TODO, specific evaluator as input instead of current canned one-size-fits-all
+                Evaluator = evaluator
             };
 
             // The primary purpose of this method is to provide a simplified way to run an assistant thread to allow the use of a thread run as a tool call via local functions.
@@ -165,8 +179,6 @@
             var output = await RunThread(assistantRunOptions, config!, false);
             if (output != null)
             {
-                Trace.TraceInformation(
-                    $"Usage:{output.Usage?.PromptTokens}:{output.Usage?.CompletionTokens}:{output.Usage?.TotalTokens}");
                 return output.LastMessage;
             }
 

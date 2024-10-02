@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using AntRunnerLib.Functions;
 using static System.Diagnostics.Trace;
+using System.Reflection;
 
 namespace AntRunnerLib
 {
@@ -434,6 +435,82 @@ namespace AntRunnerLib
 
             var jsonString = JsonSerializer.Serialize(filteredContent);
             return JsonDocument.Parse(jsonString).RootElement;
+        }
+
+        /// <summary>
+        /// Uses reflection to execute a post-processor function.
+        /// </summary>
+        /// <param name="postProcessor">The full name of the static method</param>
+        /// <param name="runResults">The result to process</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static async Task<ThreadRunOutput?> RunPostProcessor(string postProcessor, ThreadRunOutput? runResults)
+        {
+            if (string.IsNullOrEmpty(postProcessor))
+            {
+                throw new ArgumentException("PostProcessor cannot be null or empty", nameof(postProcessor));
+            }
+
+            if (runResults == null)
+            {
+                throw new ArgumentNullException(nameof(runResults));
+            }
+
+            // Split the postProcessor string to get the type and method names
+            int lastDotIndex = postProcessor.LastIndexOf('.');
+            if (lastDotIndex == -1)
+            {
+                throw new ArgumentException("Invalid PostProcessor format. Expected format: Namespace.Type.MethodName", nameof(postProcessor));
+            }
+
+            string typeName = postProcessor.Substring(0, lastDotIndex);
+            string methodName = postProcessor.Substring(lastDotIndex + 1);
+
+            // Get the containing type from the loaded assemblies
+            var type = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.FullName == typeName);
+
+            if (type == null)
+            {
+                throw new TypeLoadException($"Unable to load type '{typeName}'");
+            }
+
+            // Get the method
+            MethodInfo? methodInfo = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public);
+            if (methodInfo == null)
+            {
+                throw new MissingMethodException($"Method '{methodName}' not found in type '{typeName}'");
+            }
+
+            // Ensure the method signature is correct
+            var parameters = methodInfo.GetParameters();
+            if (parameters.Length != 1 || parameters[0].ParameterType != typeof(ThreadRunOutput))
+            {
+                throw new InvalidOperationException($"Method '{methodName}' does not match the required signature: public static Task<ThreadRunOutput> {methodName}(ThreadRunOutput threadRunOutput) or public static ThreadRunOutput {methodName}(ThreadRunOutput threadRunOutput)");
+            }
+
+            // Invoke the method
+            object? result;
+            if (methodInfo.ReturnType == typeof(Task<ThreadRunOutput>))
+            {
+                result = await (Task<ThreadRunOutput?>)methodInfo.Invoke(null, new object[] { runResults })!;
+            }
+            else if (methodInfo.ReturnType == typeof(Task))
+            {
+                await (Task)methodInfo.Invoke(null, new object[] { runResults })!;
+                result = runResults;
+            }
+            else if (methodInfo.ReturnType == typeof(ThreadRunOutput))
+            {
+                result = methodInfo.Invoke(null, new object[] { runResults });
+            }
+            else
+            {
+                throw new InvalidOperationException($"Method '{methodName}' does not match the required return type: Task<ThreadRunOutput> or ThreadRunOutput");
+            }
+
+            return (ThreadRunOutput?)result;
         }
     }
 }

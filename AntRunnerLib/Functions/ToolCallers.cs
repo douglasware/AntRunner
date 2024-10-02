@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
 using AntRunnerLib.AssistantDefinitions;
+using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AntRunnerLib.Functions
@@ -281,6 +282,8 @@ namespace AntRunnerLib.Functions
                 request.Content = new StringContent(json, Encoding.UTF8, ContentType);
             }
 
+            TraceInformation($"{nameof(ExecuteWebApiAsync)}:{request.RequestUri!.Host}");
+
             // Execute the request based on the specified HTTP method
             switch (Method.ToUpperInvariant())
             {
@@ -360,6 +363,8 @@ namespace AntRunnerLib.Functions
             }
 
             if (method == null) throw new InvalidOperationException($"No matching method found for {methodName} with the provided parameters");
+
+            TraceInformation($"{nameof(ExecuteLocalFunctionAsync)}:{methodName}");
 
             // Get the parameters for the method
             var methodParameters = method.GetParameters();
