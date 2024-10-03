@@ -1,7 +1,5 @@
 ﻿// Inspired from @author: Devis Lucato.
 
-using System.Text.Json;
-
 namespace OpenAI.Tokenizer.GPT3;
 
 /// <summary>

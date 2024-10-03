@@ -1,13 +1,10 @@
 ﻿using AntRunnerLib.AssistantDefinitions;
-using FunctionCalling;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
-using OpenAI.ObjectModels.SharedModels;
+using Functions;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
-using static AntRunnerLib.ClientUtility;
+using AntRunnerLib.Functions;
+using static System.Diagnostics.Trace;
+using System.Reflection;
 
 namespace AntRunnerLib
 {
@@ -36,6 +33,7 @@ namespace AntRunnerLib
             {
                 AssistantId = assistantId,
                 Thread = threadOptions,
+                MaxCompletionTokens = 4096
             };
 
             if (assistantRunOptions.Files is { Count: > 0 })
@@ -47,7 +45,7 @@ namespace AntRunnerLib
                 }
 
                 var fileIds = await Files.UploadFiles(filePaths, azureOpenAiConfig);
-                if(fileIds.Count != filePaths.Count)
+                if (fileIds.Count != filePaths.Count)
                 {
                     throw new Exception($"Mismatch in counts {fileIds.Count} != {filePaths.Count}. Not all files were uploaded successfully");
                 }
@@ -70,6 +68,11 @@ namespace AntRunnerLib
 
             // Create a new thread and run it with the given assistant ID and thread options.
             var run = await client.Runs.CreateThreadAndRun(createThreadAndRunRequest);
+
+            if(run.Error != null)
+            {
+                throw new Exception($"Error creating run! {run.Error.Message}");
+            }
 
             // Return the thread ID and the newly created thread run ID.
             return new() { ThreadId = run.ThreadId, ThreadRunId = run.Id };
@@ -153,7 +156,7 @@ namespace AntRunnerLib
             // Log a warning if the number of user messages and thread runs differ.
             if (userMessages.Count() != threadRuns.Count())
             {
-                Trace.TraceWarning($"User messages and thread run counts differ: {userMessages.Count()} != {threadRuns.Count()}");
+                TraceWarning($"User messages and thread run counts differ: {userMessages.Count()} != {threadRuns.Count()}");
             }
 
             var annotations = new List<MessageAnnotation>();
@@ -238,7 +241,7 @@ namespace AntRunnerLib
             _ = await client.ThreadDelete(threadId);
         }
 
-        private static readonly ConcurrentDictionary<string, Dictionary<string, ActionRequestBuilder>> RequestBuilderCache = new();
+        private static readonly ConcurrentDictionary<string, Dictionary<string, ToolCallers>> RequestBuilderCache = new();
 
         /// <summary>
         /// Performs the required actions for the given run.
@@ -258,7 +261,6 @@ namespace AntRunnerLib
 
             if (!RequestBuilderCache.TryGetValue(assistantId, out var builders)) throw new Exception($"No request builders found for {assistantName}: {assistantId}");
 
-            var requiredToolcalls = new Dictionary<string, ToolCall>();
             var submitToolOutputsToRunRequest = new SubmitToolOutputsToRunRequest();
 
             var toolCallTasks = new List<Task<ToolOutput>>();
@@ -268,32 +270,30 @@ namespace AntRunnerLib
             {
                 if (requiredOutput.FunctionCall == null) continue;
 
-                requiredToolcalls[requiredOutput.FunctionCall.Name!] = requiredOutput;
-
                 if (builders.ContainsKey(requiredOutput.FunctionCall.Name!))
                 {
                     // Create a new builder instance for each tool call to avoid shared state.
                     var builder = builders[requiredOutput.FunctionCall.Name!].Clone();
                     builder.Params = requiredOutput.FunctionCall.ParseArguments();
 
-                    Trace.TraceInformation($"{assistantName} using {builder.Operation} with {requiredOutput.FunctionCall.Arguments}");
+                    TraceInformation(
+                        $"{nameof(PerformRunRequiredActions)} : {assistantName} : {currentRun.ThreadId} : {currentRun.Id} : Using {builder.Operation} with {requiredOutput.FunctionCall.Arguments}");
 
                     // Create a task to execute the tool call asynchronously.
                     var task = Task.Run(async () =>
                     {
-                        var output = string.Empty;
+                        string output;
                         if (builder.ActionType == ActionType.WebApi)
                         {
                             // Execute the request and collect the response.
                             var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken);
                             var responseContent = await response.Content.ReadAsStringAsync();
 
-                            if (builder.ResponseSchemas != null && builder.ResponseSchemas.ContainsKey("200"))
+                            if (builder.ResponseSchemas.TryGetValue("200", out var schemaJson))
                             {
                                 try
                                 {
                                     var contentJson = JsonDocument.Parse(responseContent).RootElement;
-                                    var schemaJson = builder.ResponseSchemas["200"];
 
                                     var filteredJson = FilterJsonBySchema(contentJson, schemaJson);
                                     output = filteredJson.GetRawText();
@@ -353,9 +353,9 @@ namespace AntRunnerLib
         private static async Task EnsureRequestBuilderCache(string assistantName, string assistantId)
         {
             // Check if the request builder cache already contains the assistant ID.
-            if (!RequestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ActionRequestBuilder>? actionRequestBuilders))
+            if (!RequestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ToolCallers>? actionRequestBuilders))
             {
-                var assistantRequestBuilders = new Dictionary<string, ActionRequestBuilder>();
+                var assistantRequestBuilders = new Dictionary<string, ToolCallers>();
 
                 // Retrieve the OpenAPI schema files from the assistant definition folder.
                 var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenApiFolder(assistantName);
@@ -366,29 +366,28 @@ namespace AntRunnerLib
                     var schema = await AssistantDefinitionFiles.GetFile(openApiSchemaFile);
                     if (schema == null)
                     {
-                        Trace.TraceWarning("openApiSchemaFile {openApiSchemaFile} is null. Ignoring", openApiSchemaFile);
+                        TraceWarning("openApiSchemaFile {openApiSchemaFile} is null. Ignoring", openApiSchemaFile);
                         continue;
                     }
 
                     var json = Encoding.Default.GetString(schema);
-                    var openApiHelper = new OpenApiHelper();
 
                     // Validate and parse the OpenAPI specification from the JSON string.
-                    var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(json);
+                    var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(json);
                     var spec = validationResult.Spec;
 
                     // Check if the validation was successful and if the specification is not null.
                     if (!validationResult.Status || spec == null)
                     {
-                        Trace.TraceWarning("Json is not a valid OpenAPI spec {json}. Ignoring", json);
+                        TraceWarning("Json is not a valid OpenAPI spec {json}. Ignoring", json);
                         continue;
                     }
 
                     // Extract tool definitions from the OpenAPI specification.
-                    var toolDefinitions = openApiHelper.GetToolDefinitions(spec);
+                    var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec);
 
                     // Get request builders for the extracted tool definitions and assistant name.
-                    var requestBuilders = await openApiHelper.GetRequestBuilders(spec, toolDefinitions, assistantName);
+                    var requestBuilders = await ToolCallers.GetToolCallers(spec, toolDefinitions, assistantName);
 
                     // Add the request builders to the assistant request builders dictionary.
                     foreach (var tool in requestBuilders.Keys)
@@ -436,6 +435,82 @@ namespace AntRunnerLib
 
             var jsonString = JsonSerializer.Serialize(filteredContent);
             return JsonDocument.Parse(jsonString).RootElement;
+        }
+
+        /// <summary>
+        /// Uses reflection to execute a post-processor function.
+        /// </summary>
+        /// <param name="postProcessor">The full name of the static method</param>
+        /// <param name="runResults">The result to process</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static async Task<ThreadRunOutput?> RunPostProcessor(string postProcessor, ThreadRunOutput? runResults)
+        {
+            if (string.IsNullOrEmpty(postProcessor))
+            {
+                throw new ArgumentException("PostProcessor cannot be null or empty", nameof(postProcessor));
+            }
+
+            if (runResults == null)
+            {
+                throw new ArgumentNullException(nameof(runResults));
+            }
+
+            // Split the postProcessor string to get the type and method names
+            int lastDotIndex = postProcessor.LastIndexOf('.');
+            if (lastDotIndex == -1)
+            {
+                throw new ArgumentException("Invalid PostProcessor format. Expected format: Namespace.Type.MethodName", nameof(postProcessor));
+            }
+
+            string typeName = postProcessor.Substring(0, lastDotIndex);
+            string methodName = postProcessor.Substring(lastDotIndex + 1);
+
+            // Get the containing type from the loaded assemblies
+            var type = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.FullName == typeName);
+
+            if (type == null)
+            {
+                throw new TypeLoadException($"Unable to load type '{typeName}'");
+            }
+
+            // Get the method
+            MethodInfo? methodInfo = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public);
+            if (methodInfo == null)
+            {
+                throw new MissingMethodException($"Method '{methodName}' not found in type '{typeName}'");
+            }
+
+            // Ensure the method signature is correct
+            var parameters = methodInfo.GetParameters();
+            if (parameters.Length != 1 || parameters[0].ParameterType != typeof(ThreadRunOutput))
+            {
+                throw new InvalidOperationException($"Method '{methodName}' does not match the required signature: public static Task<ThreadRunOutput> {methodName}(ThreadRunOutput threadRunOutput) or public static ThreadRunOutput {methodName}(ThreadRunOutput threadRunOutput)");
+            }
+
+            // Invoke the method
+            object? result;
+            if (methodInfo.ReturnType == typeof(Task<ThreadRunOutput>))
+            {
+                result = await (Task<ThreadRunOutput?>)methodInfo.Invoke(null, new object[] { runResults })!;
+            }
+            else if (methodInfo.ReturnType == typeof(Task))
+            {
+                await (Task)methodInfo.Invoke(null, new object[] { runResults })!;
+                result = runResults;
+            }
+            else if (methodInfo.ReturnType == typeof(ThreadRunOutput))
+            {
+                result = methodInfo.Invoke(null, new object[] { runResults });
+            }
+            else
+            {
+                throw new InvalidOperationException($"Method '{methodName}' does not match the required return type: Task<ThreadRunOutput> or ThreadRunOutput");
+            }
+
+            return (ThreadRunOutput?)result;
         }
     }
 }

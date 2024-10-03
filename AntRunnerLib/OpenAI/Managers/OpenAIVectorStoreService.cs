@@ -1,8 +1,4 @@
-﻿using OpenAI.Extensions;
-using OpenAI.Interfaces;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels;
-using OpenAI.ObjectModels.SharedModels;
+﻿using OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels;
 
 namespace OpenAI.Managers;
 

@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.ResponseModels;
-
-namespace OpenAI.ObjectModels.SharedModels;
+﻿namespace OpenAI.ObjectModels.SharedModels;
 
 public record FileResponse : BaseResponse, IOpenAiModels.IId, IOpenAiModels.ICreatedAt
 {

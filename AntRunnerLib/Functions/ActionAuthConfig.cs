@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace AntRunnerLib.Functions
+﻿namespace AntRunnerLib.Functions
 {
     /// <summary>
     /// Enumeration representing different types of authentication methods.

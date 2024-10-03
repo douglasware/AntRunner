@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.ObjectModels.RequestModels;
+﻿namespace OpenAI.ObjectModels.RequestModels;
 
 /// <summary>
 /// Definition of a valid function call.

@@ -1,8 +1,4 @@
-﻿using OpenAI.ObjectModels.SharedModels;
-using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.ResponseModels;
-
-namespace AntRunnerLib
+﻿namespace AntRunnerLib
 {
     /// <summary>
     /// Represents the output of a thread run within the assistant orchestrator.

@@ -1,8 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
-
-namespace OpenAI.ObjectModels.SharedModels;
+﻿namespace OpenAI.ObjectModels.SharedModels;
 
 public record RunListResponse : DataWithPagingBaseResponse<List<RunResponse>>
 {

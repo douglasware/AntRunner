@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
-using FunctionCalling;
+using AntRunnerLib.Functions;
+using Functions;
 using OpenAI.ObjectModels.RequestModels;
 
 namespace AntRunnerLib.Tests
@@ -12,7 +13,6 @@ namespace AntRunnerLib.Tests
         public void ValidateAndParseOpenAPISpec_ValidJson_ShouldReturnTrue()
         {
             // Arrange
-            var openApiHelper = new OpenApiHelper();
             string validJson = @"
             {
                 ""openapi"": ""3.0.0"",
@@ -41,7 +41,7 @@ namespace AntRunnerLib.Tests
             }";
 
             // Act
-            var result = openApiHelper.ValidateAndParseOpenApiSpec(validJson);
+            var result = OpenApiHelper.ValidateAndParseOpenApiSpec(validJson);
 
             // Assert
             Assert.IsTrue(result.Status);
@@ -52,11 +52,10 @@ namespace AntRunnerLib.Tests
         public void ValidateAndParseOpenAPISpec_InvalidJson_ShouldReturnFalse()
         {
             // Arrange
-            var openApiHelper = new OpenApiHelper();
             string invalidJson = @"{""invalid"":}";
 
             // Act
-            var result = openApiHelper.ValidateAndParseOpenApiSpec(invalidJson);
+            var result = OpenApiHelper.ValidateAndParseOpenApiSpec(invalidJson);
 
             // Assert
             Assert.IsFalse(result.Status);
@@ -67,7 +66,6 @@ namespace AntRunnerLib.Tests
         public async Task OpenApiToFunction_ValidSpec_ShouldReturnToolDefinitions()
         {
             // Arrange
-            var openApiHelper = new OpenApiHelper();
             string validJson = @"
             {
                 ""openapi"": ""3.0.0"",
@@ -94,12 +92,12 @@ namespace AntRunnerLib.Tests
                     }
                 }
             }";
-            var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(validJson);
+            var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(validJson);
             var spec = validationResult.Spec;
 
             // Act
-            var toolDefinitions = openApiHelper.GetToolDefinitions(spec!);
-            var requestBuilders = await openApiHelper.GetRequestBuilders(spec!, toolDefinitions);
+            var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec!);
+            var requestBuilders = await ToolCallers.GetToolCallers(spec!, toolDefinitions);
 
             // Assert
             Assert.AreEqual(1, toolDefinitions.Count);
@@ -132,12 +130,12 @@ namespace AntRunnerLib.Tests
                 ],
                 ""paths"": {}
             }";
-            var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(validJson);
+            var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(validJson);
             var spec = validationResult.Spec;
 
             // Act
-            var toolDefinitions = openApiHelper.GetToolDefinitions(spec!);
-            var requestBuilders = await openApiHelper.GetRequestBuilders(spec!, toolDefinitions);
+            var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec!);
+            var requestBuilders = await ToolCallers.GetToolCallers(spec!, toolDefinitions);
 
             // Assert
             Assert.AreEqual(0, toolDefinitions.Count);
@@ -161,7 +159,7 @@ namespace AntRunnerLib.Tests
             string fileContent = ReadFileContent(filePath);
 
             // Act
-            var validationResult = openApiHelper.ValidateAndParseOpenApiSpec(fileContent);
+            var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(fileContent);
             var spec = validationResult.Spec;
 
             if (spec == null)
@@ -169,8 +167,8 @@ namespace AntRunnerLib.Tests
                 Assert.Fail("Spec was null after validation.");
             }
 
-            var toolDefinitions = openApiHelper.GetToolDefinitions(spec);
-            var requestBuilders = await openApiHelper.GetRequestBuilders(spec, toolDefinitions, "Blob Pirate");
+            var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec);
+            var requestBuilders = await ToolCallers.GetToolCallers(spec, toolDefinitions, "Blob Pirate");
 
             // Assert
             Assert.IsTrue(toolDefinitions.Count > 0);

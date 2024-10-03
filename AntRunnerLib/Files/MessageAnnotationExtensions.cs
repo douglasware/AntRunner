@@ -1,7 +1,4 @@
-﻿using OpenAI.ObjectModels.SharedModels;
-using static AntRunnerLib.ClientUtility;
-
-namespace AntRunnerLib
+﻿namespace AntRunnerLib
 {
     /// <summary>
     /// Provides extension methods for the MessageAnnotation class.

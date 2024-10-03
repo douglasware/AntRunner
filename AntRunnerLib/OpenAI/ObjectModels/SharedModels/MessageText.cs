@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace OpenAI.ObjectModels.SharedModels;
+﻿namespace OpenAI.ObjectModels.SharedModels;
 
 /// <summary>
 /// The text content that is part of a message.

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using OpenAI.Interfaces;
 using OpenAI.Managers;
 
 namespace OpenAI.Extensions;

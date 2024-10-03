@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.RequestModels;
-
-namespace OpenAI.ObjectModels;
+﻿namespace OpenAI.ObjectModels;
 
 [JsonConverter(typeof(MessageContentConverter))]
 public class MessageContentOneOfType

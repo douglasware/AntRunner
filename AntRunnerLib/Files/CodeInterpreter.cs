@@ -1,9 +1,6 @@
 ﻿using AntRunnerLib.AssistantDefinitions;
-using OpenAI.Interfaces;
 using OpenAI.ObjectModels;
-using OpenAI.ObjectModels.RequestModels;
 using OpenAI.ObjectModels.ResponseModels.FileResponseModels;
-using static AntRunnerLib.ClientUtility;
 
 namespace AntRunnerLib
 {
@@ -26,8 +23,7 @@ namespace AntRunnerLib
             // Check if any file paths were found
             if (filePaths != null)
             {
-                var enumerable = filePaths as string[] ?? filePaths.ToArray();
-                if (filePaths == null || !enumerable.Any())
+                if (filePaths == null || !filePaths.Any())
                 {
                     throw new Exception($"Error in CreateCodeInterpreterFiles. {assistant.Name!} no files found");
                 }
@@ -36,7 +32,7 @@ namespace AntRunnerLib
                 var client = GetOpenAiClient(azureOpenAiConfig);
 
                 List<string> files = [];
-                foreach (var filePath in enumerable)
+                foreach (var filePath in filePaths)
                 {
                     var fileName = Path.GetFileName(filePath);
                     var destinationFileName = fileName;

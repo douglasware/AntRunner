@@ -55,8 +55,10 @@ namespace AntRunnerFunctions
                 else if (state.RootRun.Status == "completed")
                 {
                     var runResults = await context.CallActivityAsync<ThreadRunOutput>(nameof(GetThreadOutput), state, RetryPolicy.Get());
-
-                    if (state.AssistantRunOptions.UseConversationEvaluator)
+                    
+                    runResults.Usage = state.RootRun.Usage;
+                    
+                    if (!string.IsNullOrEmpty(state.AssistantRunOptions.Evaluator))
                     {
                         int turnCounter = 0;
 
@@ -66,9 +68,8 @@ namespace AntRunnerFunctions
                             turnCounter++;
                             var evaluatorOptions = new AssistantRunOptions()
                             {
-                                AssistantName = "ConversationUserProxy",
+                                AssistantName = state.AssistantRunOptions.Evaluator,
                                 Instructions = runResults.Dialog,
-                                UseConversationEvaluator = false
                             };
                             var evaluatorOutput = (await context.CallSubOrchestratorAsync<ThreadRunOutput>(nameof(AssistantsRunnerOrchestrator), evaluatorOptions, RetryPolicy.Get())).LastMessage;
                             if (!evaluatorOutput.Contains("End Conversation", StringComparison.OrdinalIgnoreCase))
@@ -77,7 +78,6 @@ namespace AntRunnerFunctions
                                 var turnIds = await context.CallActivityAsync<ThreadRun>(nameof(UpdateThreadAndRun), state, RetryPolicy.Get());
                                 state.ThreadRunId = turnIds.ThreadRunId;
 
-                                bool complete = false;
                                 do
                                 {
                                     state.CurrentRun = await context.CallActivityAsync<RunResponse>(nameof(GetRun), state, RetryPolicy.Get());
@@ -85,12 +85,37 @@ namespace AntRunnerFunctions
                                     {
                                         await context.CallActivityAsync(nameof(PerformRunRequiredActions), state);
                                     }
-                                    else if (complete = state.CurrentRun.Status == "completed")
+                                    else if (state.CurrentRun.Status == "completed")
                                     {
                                         runResults = await context.CallActivityAsync<ThreadRunOutput>(nameof(GetThreadOutput), state, RetryPolicy.Get());
+                                        break;
                                     }
-                                } while (!complete);
-
+                                    else if (state.CurrentRun.Status == "failed")
+                                    {
+                                        throw new Exception($"Run failed: {state.RootRun.LastError?.Message}");
+                                    }
+                                    else if (state.CurrentRun.Status == "incomplete")
+                                    {
+                                        return new ThreadRunOutput()
+                                        {
+                                            Status = "incomplete",
+                                            LastMessage = $"Run is incomplete because of {state.RootRun.IncompleteDetails?.Reason}"
+                                        };
+                                    }
+                                    else if (state.CurrentRun.Status == "in_progress" || state.RootRun.Status == "queued")
+                                    {
+                                        var waitTime = TimeSpan.FromMilliseconds(1000);
+                                        await context.CreateTimer(context.CurrentUtcDateTime.Add(waitTime), CancellationToken.None);
+                                    }
+                                    else
+                                    {
+                                        return new ThreadRunOutput()
+                                        {
+                                            Status = state.CurrentRun.Status,
+                                            LastMessage = $"Run is cancelling or cancelled"
+                                        };
+                                    }
+                                } while (true);
                             }
                             else
                             {
@@ -108,13 +133,38 @@ namespace AntRunnerFunctions
                     }
 
                 }
-                else
+                else if (state.RootRun.Status == "failed")
+                {
+                    throw new Exception($"Run failed: {state.RootRun.LastError?.Message}");
+                }
+                else if (state.RootRun.Status == "incomplete")
+                {
+                    return new ThreadRunOutput()
+                    {
+                        Status = "incomplete",
+                        LastMessage = $"Run is incomplete because of {state.RootRun.IncompleteDetails?.Reason}"
+                    };
+                }
+                else if (state.RootRun.Status == "in_progress" || state.RootRun.Status == "queued")
                 {
                     var waitTime = TimeSpan.FromMilliseconds(1000);
                     await context.CreateTimer(context.CurrentUtcDateTime.Add(waitTime), CancellationToken.None);
                 }
+                else
+                {
+                    return new ThreadRunOutput()
+                    {
+                        Status = state.RootRun.Status,
+                        LastMessage = $"Run is cancelling or cancelled"
+                    };
+                }
 
             } while (state.RootRun.Status != "completed");
+
+            if (!string.IsNullOrEmpty(state.AssistantRunOptions.PostProcessor))
+            {
+
+            }
 
             await context.CallActivityAsync(nameof(Cleanup), state, RetryPolicy.Get());
 

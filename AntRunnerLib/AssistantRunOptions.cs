@@ -26,19 +26,28 @@ namespace AntRunnerLib
         public string? ThreadId { get; set; }
 
         /// <summary>
-        /// Future...
+        /// Files to upload to the assistant and attach to the message.
         /// </summary>
         public List<ResourceFile>? Files { get; set; }
 
         /// <summary>
-        /// Passed in from the starter. The web api gets the Authorization header value if it exists, otherwise null
+        /// Passed in from the starter. The web api gets the Authorization header value if it exists, otherwise null.
         /// </summary>
         public string? OauthUserAccessToken { get; set; }
 
         /// <summary>
-        /// If this is false, the orchestration will not use ConversationUserProxy
-        /// The suborchestration for ConversationUserProxy uses 'false'
+        /// The optional name of an assistant to use for evaluation of the run.
+        /// Note that the named assistant must be created ahead of time.
         /// </summary>
-        public bool UseConversationEvaluator { get; set; } = false;
+        public string? Evaluator { get; set; }
+
+        /// <summary>
+        /// Optional method to run after the assistant completes.
+        /// Must be a static method in a loaded assembly as follows:
+        /// public static async Task&lt;ThreadRunOutput&gt; PostProcessor(ThreadRunOutput threadRunOutput)
+        /// 
+        /// Example value: WebSearchFunctions.SearchTool.PostProcessor
+        /// </summary>
+        public string? PostProcessor { get; set; }
     }
 }

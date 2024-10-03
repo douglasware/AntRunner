@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.ObjectModels.RequestModels;
+﻿namespace OpenAI.ObjectModels.RequestModels;
 
 public class MessageCreateRequest : IOpenAiModels.IMetaData
 {

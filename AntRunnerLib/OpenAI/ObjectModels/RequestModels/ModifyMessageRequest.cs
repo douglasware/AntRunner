@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace OpenAI.ObjectModels.RequestModels;
+﻿namespace OpenAI.ObjectModels.RequestModels;
 
 public class ModifyMessageRequest
 {

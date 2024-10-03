@@ -1,6 +1,4 @@
-﻿using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.Extensions;
+﻿namespace OpenAI.Extensions;
 
 public static class ModelExtension
 {

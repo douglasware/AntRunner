@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-using OpenAI.ObjectModels.ResponseModels;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.Extensions;
+﻿namespace OpenAI.Extensions;
 
 public static class JsonToObjectRouterExtension
 {

@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels;
+﻿namespace OpenAI.ObjectModels.ResponseModels.VectorStoreResponseModels;
 
 public record FileCounts
 {

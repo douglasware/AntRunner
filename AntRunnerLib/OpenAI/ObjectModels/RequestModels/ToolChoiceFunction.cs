@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace OpenAI.ObjectModels.RequestModels;
+﻿namespace OpenAI.ObjectModels.RequestModels;
 
 public class ToolChoice
 {

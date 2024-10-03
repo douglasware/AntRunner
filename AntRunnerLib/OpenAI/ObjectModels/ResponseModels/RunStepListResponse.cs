@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using OpenAI.ObjectModels.SharedModels;
-
-namespace OpenAI.ObjectModels.ResponseModels;
+﻿namespace OpenAI.ObjectModels.ResponseModels;
 
 public record RunStepListResponse : DataWithPagingBaseResponse<List<RunStepResponse>>
 {

@@ -1,8 +1,5 @@
 ﻿using System.Net.Http.Json;
-using OpenAI.Extensions;
-using OpenAI.Interfaces;
 using OpenAI.ObjectModels.ResponseModels.FileResponseModels;
-using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
 

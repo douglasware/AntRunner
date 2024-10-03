@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenAI.EndpointProviders;
-using OpenAI.Interfaces;
 
 namespace OpenAI.Managers;
 

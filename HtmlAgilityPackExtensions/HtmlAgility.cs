@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using System.Net.Http;
 using System.Text;
 
 namespace HtmlAgility
@@ -145,16 +144,21 @@ namespace HtmlAgility
         public static async Task<string> ConvertUrlToMarkdownAsync(string url)
         {
             string? htmlContent;
-            try
+            int timeoutInSeconds = 10; // Set your desired timeout here
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds)))
             {
-                htmlContent = await _httpClient.GetStringAsync(url);
+                try
+                {
+                    htmlContent = await _httpClient.GetStringAsync(url, cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
             }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-            
-            HtmlDocument htmlDocument = new HtmlDocument();
+
+            var htmlDocument = new HtmlDocument();
             try
             {
                 htmlDocument.LoadHtml(htmlContent);
@@ -162,7 +166,7 @@ namespace HtmlAgility
             }
             catch (Exception ex)
             {
-                if(!string.IsNullOrWhiteSpace(htmlContent))
+                if (!string.IsNullOrWhiteSpace(htmlContent))
                 {
                     return htmlContent;
                 }

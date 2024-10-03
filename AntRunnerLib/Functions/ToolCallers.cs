@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
-using System.Text.Json;
+using AntRunnerLib.AssistantDefinitions;
+using Azure.Core;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace FunctionCalling
+namespace AntRunnerLib.Functions
 {
     /// <summary>
     /// WebApi indicates an external API call, while LocalFunction indicates a local function call based on a valid static method in a loaded assembly.
@@ -24,9 +25,113 @@ namespace FunctionCalling
     /// <summary>
     /// Represents an action request to make HTTP calls.
     /// </summary>
-    public class ActionRequestBuilder
+    public class ToolCallers
     {
         private static IHttpClientFactory? _httpClientFactory;
+
+        /// <summary>
+        /// Generates request builders based on the OpenAPI specification.
+        /// </summary>
+        /// <param name="openapiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
+        /// <param name="toolDefinitions">The list of tool definitions extracted from the OpenAPI spec.</param>
+        /// <param name="domainAuth"></param>
+        /// <returns>A dictionary of <see cref="ToolCallers"/> objects with operation IDs as keys.</returns>
+        public static Dictionary<string, ToolCallers> GetToolCallers(JsonDocument openapiSpec, List<ToolDefinition> toolDefinitions, DomainAuth? domainAuth)
+        {
+            var root = openapiSpec.RootElement;
+            var baseUrl = root.GetProperty("servers")[0].GetProperty("url").GetString()
+                          ?? throw new InvalidOperationException("Base URL not found");
+
+            var host = (new Uri(baseUrl)).Host;
+            var oAuth = false;
+
+            Dictionary<string, string> authHeaders = new();
+
+            if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out var actionAuthConfig))
+            {
+                if (actionAuthConfig.AuthType == AuthType.service_http && actionAuthConfig is { HeaderKey: not null, HeaderValueEnvironmentVariable: not null } && Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable) != null)
+                {
+                    authHeaders[actionAuthConfig.HeaderKey] = Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable)!;
+                }
+                else if (actionAuthConfig.AuthType == AuthType.azure_oauth)
+                {
+                    oAuth = true;
+                }
+            }
+
+            return GetToolCallers(toolDefinitions, root, baseUrl, authHeaders, oAuth);
+        }
+
+        /// <summary>
+        /// Generates request builders based on the OpenAPI specification.
+        /// </summary>
+        /// <param name="openapiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
+        /// <param name="toolDefinitions">The list of tool definitions extracted from the OpenAPI spec.</param>
+        /// <param name="assistantName">The assistant</param>
+        /// <returns>A dictionary of <see cref="ToolCallers"/> objects with operation IDs as keys.</returns>
+        public static async Task<Dictionary<string, ToolCallers>> GetToolCallers(JsonDocument openapiSpec, List<ToolDefinition> toolDefinitions, string? assistantName = null)
+        {
+            var root = openapiSpec.RootElement;
+            var baseUrl = root.GetProperty("servers")[0].GetProperty("url").GetString()
+                          ?? throw new InvalidOperationException("Base URL not found");
+
+            var host = (new Uri(baseUrl)).Host;
+
+            if (assistantName != null)
+            {
+                var authJson = await AssistantDefinitionFiles.GetActionAuth(assistantName);
+                if (authJson != null)
+                {
+                    var domainAuth = JsonSerializer.Deserialize<DomainAuth>(authJson);
+
+                    if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out _))
+                    {
+                        return GetToolCallers(openapiSpec, toolDefinitions, domainAuth);
+                    }
+                }
+            }
+
+            return GetToolCallers(toolDefinitions, root, baseUrl, new(), false);
+        }
+
+
+        private static Dictionary<string, ToolCallers> GetToolCallers(List<ToolDefinition> toolDefinitions, JsonElement root, string baseUrl, Dictionary<string, string> authHeaders, bool oAuth)
+        {
+            var toolCallers = new Dictionary<string, ToolCallers>();
+            foreach (var pathProperty in root.GetProperty("paths").EnumerateObject())
+            {
+                foreach (var methodProperty in pathProperty.Value.EnumerateObject())
+                {
+                    var operationObj = methodProperty.Value;
+                    var operationId = operationObj.TryGetProperty("operationId", out var opId)
+                        ? opId.GetString()
+                        : $"{methodProperty.Name}_{pathProperty.Name}";
+
+                    var toolDefinition = toolDefinitions.FirstOrDefault(o => o.Function?.AsObject?.Name == operationId);
+                    var responseSchemas = toolDefinition?.Function?.AsObject?.ResponseSchemas;
+
+                    var actionRequest = new ToolCallers(
+                        baseUrl,
+                        pathProperty.Name,
+                        methodProperty.Name,
+                        operationId!,
+                        false,
+                        toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
+                        responseSchemas!,
+                        authHeaders,
+                        oAuth
+                    );
+
+                    if (responseSchemas != null && responseSchemas.TryGetValue("200", out var schema))
+                    {
+                        actionRequest.ResponseSchemas["200"] = schema;
+                    }
+
+                    toolCallers[operationId!] = actionRequest;
+                }
+            }
+            return toolCallers;
+        }
 
         /// <summary>
         /// Gets the type of action to perform.
@@ -78,7 +183,7 @@ namespace FunctionCalling
         /// This dictionary holds the response schema for the `200` status code for each operation.
         /// The key is the operation ID, and the value is the JSON schema representing the successful response.
         /// </summary>
-        public Dictionary<string, JsonElement> ResponseSchemas { get; set; } = new ();
+        public Dictionary<string, JsonElement> ResponseSchemas { get; set; } = new();
 
 
         /// <summary>
@@ -87,7 +192,7 @@ namespace FunctionCalling
         public bool OAuth { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionRequestBuilder"/> class with specified parameters.
+        /// Initializes a new instance of the <see cref="ToolCallers"/> class with specified parameters.
         /// </summary>
         /// <param name="baseUrl">The baseUrl of the request.</param>
         /// <param name="path">The path of the request.</param>
@@ -98,7 +203,7 @@ namespace FunctionCalling
         /// <param name="responseSchemas"></param>
         /// <param name="authHeaders">The authentication headers for the request.</param>
         /// <param name="oAuth">Indicates whether the request uses OAuth for authentication.</param>
-        public ActionRequestBuilder(string baseUrl,
+        public ToolCallers(string baseUrl,
             string path,
             string method,
             string operation,
@@ -131,6 +236,7 @@ namespace FunctionCalling
         /// Executes the action request asynchronously.
         /// </summary>
         /// <param name="oAuthUserAccessToken">Optional OAuth user access token for authentication.</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<HttpResponseMessage> ExecuteWebApiAsync(string? oAuthUserAccessToken = null)
         {
             // Replace path parameters with actual values from Params
@@ -175,6 +281,8 @@ namespace FunctionCalling
                 var json = JsonSerializer.Serialize(Params);
                 request.Content = new StringContent(json, Encoding.UTF8, ContentType);
             }
+
+            TraceInformation($"{nameof(ExecuteWebApiAsync)}:{request.RequestUri!.Host}");
 
             // Execute the request based on the specified HTTP method
             switch (Method.ToUpperInvariant())
@@ -255,6 +363,8 @@ namespace FunctionCalling
             }
 
             if (method == null) throw new InvalidOperationException($"No matching method found for {methodName} with the provided parameters");
+
+            TraceInformation($"{nameof(ExecuteLocalFunctionAsync)}:{methodName}");
 
             // Get the parameters for the method
             var methodParameters = method.GetParameters();
@@ -337,13 +447,13 @@ namespace FunctionCalling
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ActionRequestBuilder"/> class that is a copy of the current instance.
+        /// Creates a new instance of the <see cref="ToolCallers"/> class that is a copy of the current instance.
         /// </summary>
-        /// <returns>A new instance of <see cref="ActionRequestBuilder"/> that is a copy of this instance.</returns>
-        public ActionRequestBuilder Clone()
+        /// <returns>A new instance of <see cref="ToolCallers"/> that is a copy of this instance.</returns>
+        public ToolCallers Clone()
         {
-            // Create a new instance of ActionRequestBuilder with the same properties
-            return new ActionRequestBuilder(
+            // Create a new instance of ToolCallers with the same properties
+            return new ToolCallers(
                 baseUrl: this.BaseUrl,
                 path: this.Path,
                 method: this.Method,

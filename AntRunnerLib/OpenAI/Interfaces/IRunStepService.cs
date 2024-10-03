@@ -1,7 +1,4 @@
-﻿using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
-
-namespace OpenAI.Interfaces;
+﻿namespace OpenAI.Interfaces;
 
 public interface IRunStepService
 {

@@ -1,9 +1,4 @@
-﻿using OpenAI.ObjectModels.SharedModels;
-using System;
-using System.Diagnostics;
-using System.Text.Json.Serialization;
-
-namespace AntRunnerLib
+﻿namespace AntRunnerLib
 {
     /// <summary>
     /// Responsible for running assistant threads through interaction with various utilities.
@@ -27,7 +22,14 @@ namespace AntRunnerLib
             {
                 throw new ArgumentNullException(nameof(assistantId));
             }
-            Trace.TraceInformation($"RunAssistant got assistant: {assistantId}");
+            // TraceInformation($"{nameof(RunThread)}: Got {assistantRunOptions!.AssistantName}: {assistantId}");
+
+            // 256000 is the maximum instruction length allowed by the API
+            if (assistantRunOptions.Instructions.Length >= 256000)
+            {
+                TraceWarning("Instructions are too long, truncating");
+                assistantRunOptions.Instructions = assistantRunOptions.Instructions.Substring(0, 255999);
+            }
 
             // Create a new thread and run it using the assistant ID and run options
             var ids = await ThreadUtility.CreateThreadAndRun(assistantId, assistantRunOptions, config);
@@ -37,6 +39,10 @@ namespace AntRunnerLib
             {
                 throw new Exception($"CreateThreadAndRun failed: {ids.ThreadId} {ids.ThreadRunId}");
             }
+
+            var started = DateTime.UtcNow;
+            TraceInformation(
+                $"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {ids.ThreadId} : {ids.ThreadRunId} : Started {started:yyyy-MM-dd HH:mm:ss}");
 
             ThreadRunOutput? runResults = null;
             bool completed = false;
@@ -56,7 +62,7 @@ namespace AntRunnerLib
                     runResults = await ThreadUtility.GetThreadOutput(ids.ThreadId, config);
                     runResults.Usage = run.Usage;
                     // Optionally use a conversation evaluator if specified in the run options
-                    if (assistantRunOptions.UseConversationEvaluator)
+                    if (!string.IsNullOrEmpty(assistantRunOptions.Evaluator))
                     {
                         int turnCounter = 0;
 
@@ -66,9 +72,8 @@ namespace AntRunnerLib
                             turnCounter++;
                             var evaluatorOptions = new AssistantRunOptions()
                             {
-                                AssistantName = "ConversationUserProxy",
-                                Instructions = runResults.Dialog,
-                                UseConversationEvaluator = false
+                                AssistantName = assistantRunOptions.Evaluator,
+                                Instructions = runResults.Dialog
                             };
 
                             // Recursively run the conversation evaluator
@@ -100,8 +105,7 @@ namespace AntRunnerLib
                             }
                         }
                     }
-
-                    Trace.TraceInformation($"Dialog: {runResults.Dialog}");
+                    //TraceInformation($"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {run.Id}: {runResults.Dialog}");
                     completed = true;
                 }
                 else if (run.Status == "failed")
@@ -116,10 +120,10 @@ namespace AntRunnerLib
                         LastMessage = $"Run is incomplete because of {run.IncompleteDetails?.Reason}"
                     };
                 }
-                else if(run.Status == "in_progress" || run.Status == "queued")
+                else if (run.Status == "in_progress" || run.Status == "queued")
                 {
                     // Wait for a short period before checking the run status again
-                    Trace.TraceInformation("RunAssistant waiting 1 second");
+                    // TraceInformation($"{nameof(RunThread)}: {assistantRunOptions!.AssistantName}: {run.Id}: Waiting 1 second");
                     await Task.Delay(1000);
                 }
                 else
@@ -131,6 +135,17 @@ namespace AntRunnerLib
                     };
                 }
             } while (!completed);
+
+            if (!string.IsNullOrEmpty(assistantRunOptions.PostProcessor))
+            {
+                runResults = await ThreadUtility.RunPostProcessor(assistantRunOptions.PostProcessor, runResults);
+            }
+
+            TraceInformation(
+                $"Usage:{runResults.Usage?.PromptTokens}:{runResults.Usage?.CompletionTokens}:{runResults.Usage?.TotalTokens}");
+
+            TraceInformation(
+                $"{nameof(RunThread)} : {assistantRunOptions!.AssistantName} : {ids.ThreadId} : {ids.ThreadRunId} : Run Completed {(DateTime.UtcNow - started).TotalMilliseconds}");
 
             // Delete the thread after completion
             await ThreadUtility.DeleteThread(ids.ThreadId, config);
@@ -150,13 +165,13 @@ namespace AntRunnerLib
         /// <returns>The LastMessage from the thread run</returns>
         public static async Task<string> RunThread(string assistantName, string instructions, string? evaluator = "")
         {
-            Trace.TraceInformation($"Running {assistantName}: {instructions}");
+            TraceInformation($"Running {assistantName}"); //: {instructions}");
             var config = AzureOpenAiConfigFactory.Get();
             var assistantRunOptions = new AssistantRunOptions()
             {
                 AssistantName = assistantName,
                 Instructions = instructions,
-                UseConversationEvaluator = evaluator != "" // TODO, specific evaluator as input instead of current canned one-size-fits-all
+                Evaluator = evaluator
             };
 
             // The primary purpose of this method is to provide a simplified way to run an assistant thread to allow the use of a thread run as a tool call via local functions.
@@ -164,8 +179,6 @@ namespace AntRunnerLib
             var output = await RunThread(assistantRunOptions, config!, false);
             if (output != null)
             {
-                Trace.TraceInformation(
-                    $"Usage:{output.Usage?.PromptTokens}:{output.Usage?.CompletionTokens}:{output.Usage?.TotalTokens}");
                 return output.LastMessage;
             }
 

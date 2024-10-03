@@ -1,9 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using OpenAI.Extensions;
-using OpenAI.Interfaces;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
-using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
 

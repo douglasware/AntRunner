@@ -1,7 +1,5 @@
-﻿using OpenAI.Extensions;
-using OpenAI.ObjectModels;
+﻿using OpenAI.ObjectModels;
 using OpenAI.ObjectModels.ResponseModels.FileResponseModels;
-using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Interfaces;
 

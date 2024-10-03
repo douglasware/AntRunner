@@ -1,6 +1,4 @@
-﻿using OpenAI.ObjectModels.RequestModels;
-
-namespace OpenAI.ObjectModels.SharedModels;
+﻿namespace OpenAI.ObjectModels.SharedModels;
 
 public interface IOpenAiModels
 {
