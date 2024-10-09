@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>AntRunnner Library</Title>
-    <Version>0.9.0</Version>
+    <Version>0.9.1</Version>
     <Authors>Doug Ware</Authors>
     <Company>Elumenotion</Company>
     <Description>Makes using the Assistants API on Open AI or Azure API easy. </Description>

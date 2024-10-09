@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AntRunnerLib;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
@@ -55,9 +56,9 @@ namespace AntRunnerFunctions
                 else if (state.RootRun.Status == "completed")
                 {
                     var runResults = await context.CallActivityAsync<ThreadRunOutput>(nameof(GetThreadOutput), state, RetryPolicy.Get());
-                    
+
                     runResults.Usage = state.RootRun.Usage;
-                    
+
                     if (!string.IsNullOrEmpty(state.AssistantRunOptions.Evaluator))
                     {
                         int turnCounter = 0;
@@ -96,6 +97,8 @@ namespace AntRunnerFunctions
                                     }
                                     else if (state.CurrentRun.Status == "incomplete")
                                     {
+                                        Trace.TraceError($"{nameof(AssistantsRunnerOrchestrator)}|Content Filter|{runResults.Dialog}");
+
                                         return new ThreadRunOutput()
                                         {
                                             Status = "incomplete",
@@ -139,6 +142,8 @@ namespace AntRunnerFunctions
                 }
                 else if (state.RootRun.Status == "incomplete")
                 {
+                    Trace.TraceError($"{nameof(AssistantsRunnerOrchestrator)}|Content Filter|{state.RootRun.Instructions}");
+
                     return new ThreadRunOutput()
                     {
                         Status = "incomplete",
@@ -163,7 +168,8 @@ namespace AntRunnerFunctions
 
             if (!string.IsNullOrEmpty(state.AssistantRunOptions.PostProcessor))
             {
-
+                state.CurrentRunOutput = runOutput;
+                runOutput = await context.CallActivityAsync<ThreadRunOutput>(nameof(RunPostProcessor), state, RetryPolicy.Get());
             }
 
             await context.CallActivityAsync(nameof(Cleanup), state, RetryPolicy.Get());
@@ -328,6 +334,30 @@ namespace AntRunnerFunctions
             if (state.ThreadId == null || state.ThreadRunId == null) { throw new Exception($"Can't get run output for missing {state.ThreadId} or {state.ThreadRunId}"); }
 
             await ThreadUtility.PerformRunRequiredActions(state.AssistantRunOptions.AssistantName, state.CurrentRun!, state.AzureOpenAiConfig, state.AssistantRunOptions.OauthUserAccessToken);
+        }
+
+        /// <summary>
+        /// Retrieves the thread output for the current thread.
+        /// </summary>
+        /// <param name="state">The current state of the AssistantRunner.</param>
+        /// <param name="executionContext">The function execution context.</param>
+        /// <returns>An instance of ThreadRunOutput representing the thread output.</returns>
+        [Function(nameof(RunPostProcessor))]
+        public static async Task<ThreadRunOutput?> RunPostProcessor([ActivityTrigger] AssistantRunnerState state, FunctionContext executionContext)
+        {
+            var logger = executionContext.GetLogger("CreateThreadAndRun");
+            logger.LogInformation("Running {state.AssistantRunOptions.AssistantName}: {state.AssistantRunOptions.Instructions}", state.AssistantRunOptions!.AssistantName, state.AssistantRunOptions.Instructions);
+
+            if (state.ThreadId == null || state.ThreadRunId == null) { throw new Exception($"Can't get run output for missing {state.ThreadId} or {state.ThreadRunId}"); }
+
+            if (state.AssistantRunOptions.PostProcessor != null)
+            {
+                return await ThreadUtility.RunPostProcessor(state.AssistantRunOptions.PostProcessor, state.CurrentRunOutput);
+            }
+            else
+            {
+                return state.CurrentRunOutput;
+            }
         }
 
         /// <summary>
