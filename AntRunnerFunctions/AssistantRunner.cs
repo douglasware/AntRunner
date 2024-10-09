@@ -98,6 +98,7 @@ namespace AntRunnerFunctions
                                     else if (state.CurrentRun.Status == "incomplete")
                                     {
                                         Trace.TraceError($"{nameof(AssistantsRunnerOrchestrator)}|Content Filter|{runResults.Dialog}");
+
                                         return new ThreadRunOutput()
                                         {
                                             Status = "incomplete",
@@ -142,6 +143,7 @@ namespace AntRunnerFunctions
                 else if (state.RootRun.Status == "incomplete")
                 {
                     Trace.TraceError($"{nameof(AssistantsRunnerOrchestrator)}|Content Filter|{state.RootRun.Instructions}");
+
                     return new ThreadRunOutput()
                     {
                         Status = "incomplete",

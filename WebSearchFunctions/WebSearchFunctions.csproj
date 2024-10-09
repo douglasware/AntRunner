@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AssistantDefinitions\PageContentExtractor\instructions.md" />
+    <None Remove="AssistantDefinitions\PageContentExtractor\manifest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AssistantDefinitions\PageContentExtractor\instructions.md">
+      <LogicalName>PageContentExtractor.md</LogicalName>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssistantDefinitions\PageContentExtractor\manifest.json">
+      <LogicalName>PageContentExtractor.json</LogicalName>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AntRunnerLib\AntRunnerLib.csproj" />
+    <ProjectReference Include="..\HtmlAgilityPackExtensions\HtmlAgilityPackExtensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AssistantDefinitions\ToolbasedWebSearchAgentAnt\instructions.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\ToolbasedWebSearchAgentAnt\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AssistantDefinitions\ToolbasedWebSearchAgentAnt\OpenAPI\tool.localhost.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
