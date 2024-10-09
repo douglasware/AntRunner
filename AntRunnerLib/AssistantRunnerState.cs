@@ -54,5 +54,10 @@
         /// The current run when extended by the conversation proxy
         /// </summary>
         public RunResponse? CurrentRun { get; set; }
+
+        /// <summary>
+        /// Current output for post processor
+        /// </summary>
+        public ThreadRunOutput? CurrentRunOutput { get; set; }
     }
 }

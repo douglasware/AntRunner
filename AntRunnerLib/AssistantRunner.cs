@@ -114,6 +114,7 @@
                 }
                 else if (run.Status == "incomplete")
                 {
+                    Trace.TraceError($"{nameof(RunThread)}|Content Filter|{run.Instructions}");
                     return new ThreadRunOutput()
                     {
                         Status = "incomplete",
@@ -142,7 +143,7 @@
             }
 
             TraceInformation(
-                $"Usage:{runResults.Usage?.PromptTokens}:{runResults.Usage?.CompletionTokens}:{runResults.Usage?.TotalTokens}");
+                $"Usage:{runResults!.Usage?.PromptTokens}:{runResults.Usage?.CompletionTokens}:{runResults.Usage?.TotalTokens}");
 
             TraceInformation(
                 $"{nameof(RunThread)} : {assistantRunOptions!.AssistantName} : {ids.ThreadId} : {ids.ThreadRunId} : Run Completed {(DateTime.UtcNow - started).TotalMilliseconds}");
