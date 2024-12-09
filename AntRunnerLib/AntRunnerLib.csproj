@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>AntRunnner Library</Title>
-    <Version>0.9.1</Version>
+    <Version>0.9.3</Version>
     <Authors>Doug Ware</Authors>
     <Company>Elumenotion</Company>
     <Description>Makes using the Assistants API on Open AI or Azure API easy. </Description>
@@ -48,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.64.0" />
     <PackageReference Include="YamlDotNet" Version="16.1.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
