@@ -312,7 +312,14 @@ namespace AntRunnerLib
                         }
                         else
                         {
-                            output = JsonSerializer.Serialize(await builder.ExecuteLocalFunctionAsync());
+                            try
+                            {
+                                output = JsonSerializer.Serialize(await builder.ExecuteLocalFunctionAsync());
+                            }
+                            catch (Exception ex)
+                            {
+                                output = $"ERROR: {ex.Message}";
+                            }
                         }
                         // Create a ToolOutput object.
                         return new ToolOutput()
