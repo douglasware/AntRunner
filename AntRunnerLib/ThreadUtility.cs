@@ -333,7 +333,16 @@ namespace AntRunnerLib
                 }
                 else
                 {
-                    throw new Exception($"No request builder found for {requiredOutput.FunctionCall.Name}");
+                    var task = Task.Run(() =>
+                    {
+                        Trace.TraceError($"No request builder found for {requiredOutput.FunctionCall.Name}");
+                        return new ToolOutput()
+                        {
+                            Output = $"Error: {requiredOutput.FunctionCall.Name} is not a valid tool.",
+                            ToolCallId = requiredOutput.Id
+                        };
+                    });     
+                    toolCallTasks.Add(task);
                 }
             }
 
