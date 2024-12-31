@@ -10,6 +10,15 @@ namespace HtmlAgility
     {
         static HttpClient _httpClient = new();
 
+        static HtmlAgilityPackExtensions()
+        {
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0");
+            _httpClient.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+            _httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
+            _httpClient.DefaultRequestHeaders.AcceptEncoding.ParseAdd("None");
+            _httpClient.DefaultRequestHeaders.Connection.ParseAdd("keep-alive");
+        }
+
         /// <summary>
         /// Converts an HtmlDocument to its Markdown representation.
         /// </summary>
@@ -34,6 +43,7 @@ namespace HtmlAgility
                 return;
             }
 
+            bool ignoreChildren = false;
             switch (node.Name.ToLower())
             {
                 case "h1":
@@ -96,22 +106,19 @@ namespace HtmlAgility
                 case "script":
                 case "style":
                 case "#comment":
-                    // Ignore script, style, and comment nodes
+                    ignoreChildren = true;
                     break;
                 default:
-                    if (node.HasChildNodes)
-                    {
-                        foreach (var child in node.ChildNodes)
-                        {
-                            ConvertNodeToMarkdown(child, markdownBuilder);
-                        }
-                    }
-                    else
-                    {
-                        markdownBuilder.Append(CleanText(node.InnerText));
-                    }
                     break;
             }
+            if (node.HasChildNodes && !ignoreChildren)
+            {
+                foreach (var child in node.ChildNodes)
+                {
+                    ConvertNodeToMarkdown(child, markdownBuilder);
+                }
+            }
+
         }
 
         /// <summary>
