@@ -241,7 +241,7 @@ namespace AntRunnerLib
             _ = await client.ThreadDelete(threadId);
         }
 
-        private static readonly ConcurrentDictionary<string, Dictionary<string, ToolCallers>> RequestBuilderCache = new();
+        private static readonly ConcurrentDictionary<string, Dictionary<string, ToolCaller>> RequestBuilderCache = new();
 
         /// <summary>
         /// Performs the required actions for the given run.
@@ -369,9 +369,9 @@ namespace AntRunnerLib
         private static async Task EnsureRequestBuilderCache(string assistantName, string assistantId)
         {
             // Check if the request builder cache already contains the assistant ID.
-            if (!RequestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ToolCallers>? actionRequestBuilders))
+            if (!RequestBuilderCache.TryGetValue(assistantId, out Dictionary<string, ToolCaller>? actionRequestBuilders))
             {
-                var assistantRequestBuilders = new Dictionary<string, ToolCallers>();
+                var assistantRequestBuilders = new Dictionary<string, ToolCaller>();
 
                 // Retrieve the OpenAPI schema files from the assistant definition folder.
                 var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenApiFolder(assistantName);
@@ -399,11 +399,7 @@ namespace AntRunnerLib
                         continue;
                     }
 
-                    // Extract tool definitions from the OpenAPI specification.
-                    var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec);
-
-                    // Get request builders for the extracted tool definitions and assistant name.
-                    var requestBuilders = await ToolCallers.GetToolCallers(spec, toolDefinitions, assistantName);
+                    var requestBuilders = await ToolCaller.GetToolCallers(spec, assistantName);
 
                     // Add the request builders to the assistant request builders dictionary.
                     foreach (var tool in requestBuilders.Keys)

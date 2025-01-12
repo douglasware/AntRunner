@@ -63,7 +63,7 @@ namespace AntRunnerLib.Tests
         }
 
         [TestMethod]
-        public async Task OpenApiToFunction_ValidSpec_ShouldReturnToolDefinitions()
+        public void OpenApiToFunction_ValidSpec_ShouldReturnToolDefinitions()
         {
             // Arrange
             string validJson = @"
@@ -85,7 +85,68 @@ namespace AntRunnerLib.Tests
                             ""operationId"": ""getSample"",
                             ""responses"": {
                                 ""200"": {
-                                    ""description"": ""Successful response""
+                                    ""description"": ""Successful response"",
+                                    ""content"": {
+                                      ""application/json"": {
+                                        ""schema"": {
+                                          ""type"": ""object"",
+                                          ""properties"": {
+                                            ""queryContext"": {
+                                              ""type"": ""object"",
+                                              ""properties"": {
+                                                ""originalQuery"": {
+                                                  ""type"": ""string""
+                                                }
+                                              }
+                                            },
+                                            ""webPages"": {
+                                              ""type"": ""object"",
+                                              ""properties"": {
+                                                ""value"": {
+                                                  ""type"": ""array"",
+                                                  ""items"": {
+                                                    ""type"": ""object"",
+                                                    ""properties"": {
+                                                      ""name"": {
+                                                        ""type"": ""string""
+                                                      },
+                                                      ""url"": {
+                                                        ""type"": ""string""
+                                                      }
+                                                    },
+                                                    ""required"": [""name"", ""url""]
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            ""images"": {
+                                              ""type"": ""object"",
+                                              ""properties"": {
+                                                ""value"": {
+                                                  ""type"": ""array"",
+                                                  ""items"": {
+                                                    ""type"": ""object"",
+                                                    ""properties"": {
+                                                      ""thumbnailUrl"": {
+                                                        ""type"": ""string""
+                                                      },
+                                                      ""contentUrl"": {
+                                                        ""type"": ""string""
+                                                      },
+                                                      ""hostPageUrl"": {
+                                                        ""type"": ""string""
+                                                      }
+                                                    },
+                                                    ""required"": [""thumbnailUrl"", ""contentUrl"", ""hostPageUrl""]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          ""required"": [""queryContext"", ""webPages"", ""images""]
+                                        }
+                                      }
+                                    }
                                 }
                             }
                         }
@@ -97,7 +158,7 @@ namespace AntRunnerLib.Tests
 
             // Act
             var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec!);
-            var requestBuilders = await ToolCallers.GetToolCallers(spec!, toolDefinitions);
+            var requestBuilders = ToolCaller.GetToolCallers(spec!);
 
             // Assert
             Assert.AreEqual(1, toolDefinitions.Count);
@@ -112,7 +173,7 @@ namespace AntRunnerLib.Tests
         }
 
         [TestMethod]
-        public async Task OpenApiToFunction_EmptyPaths_ShouldReturnEmptyLists()
+        public void OpenApiToFunction_EmptyPaths_ShouldReturnEmptyLists()
         {
             // Arrange
             var openApiHelper = new OpenApiHelper();
@@ -135,7 +196,7 @@ namespace AntRunnerLib.Tests
 
             // Act
             var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec!);
-            var requestBuilders = await ToolCallers.GetToolCallers(spec!, toolDefinitions);
+            var requestBuilders = ToolCaller.GetToolCallers(spec!);
 
             // Assert
             Assert.AreEqual(0, toolDefinitions.Count);
@@ -168,7 +229,7 @@ namespace AntRunnerLib.Tests
             }
 
             var toolDefinitions = OpenApiHelper.GetToolDefinitionsFromSchema(spec);
-            var requestBuilders = await ToolCallers.GetToolCallers(spec, toolDefinitions, "Blob Pirate");
+            var requestBuilders = await ToolCaller.GetToolCallers(spec, "Blob Pirate");
 
             // Assert
             Assert.IsTrue(toolDefinitions.Count > 0);

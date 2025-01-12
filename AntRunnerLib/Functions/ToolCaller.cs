@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
 using System.Text;
 using AntRunnerLib.AssistantDefinitions;
+using Azure;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAI.ObjectModels.RequestModels;
 
 namespace AntRunnerLib.Functions
 {
@@ -25,21 +27,35 @@ namespace AntRunnerLib.Functions
     /// <summary>
     /// Represents an action request to make HTTP calls.
     /// </summary>
-    public class ToolCallers
+    public class ToolCaller
     {
         private static IHttpClientFactory? _httpClientFactory;
 
         /// <summary>
         /// Generates request builders based on the OpenAPI specification.
         /// </summary>
-        /// <param name="openapiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
-        /// <param name="toolDefinitions">The list of tool definitions extracted from the OpenAPI spec.</param>
-        /// <param name="domainAuth"></param>
-        /// <returns>A dictionary of <see cref="ToolCallers"/> objects with operation IDs as keys.</returns>
-        public static Dictionary<string, ToolCallers> GetToolCallers(JsonDocument openapiSpec, List<ToolDefinition> toolDefinitions, DomainAuth? domainAuth)
+        /// <param name="openApiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
+        /// <returns>A dictionary of <see cref="ToolCaller"/> objects with operation IDs as keys.</returns>
+        public static Dictionary<string, ToolCaller> GetToolCallers(JsonDocument openApiSpec)
         {
-            var root = openapiSpec.RootElement;
-            var baseUrl = root.GetProperty("servers")[0].GetProperty("url").GetString()
+            var openApiSpecRootJsonElement = openApiSpec.RootElement;
+            var baseUrl = openApiSpecRootJsonElement.GetProperty("servers")[0].GetProperty("url").GetString()
+                          ?? throw new InvalidOperationException("Base URL not found");
+
+            return GetToolCallers(openApiSpec, baseUrl, new(), false);
+        }
+
+
+        /// <summary>
+        /// Generates request builders based on the OpenAPI specification.
+        /// </summary>
+        /// <param name="openApiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
+        /// <param name="domainAuth"></param>
+        /// <returns>A dictionary of <see cref="ToolCaller"/> objects with operation IDs as keys.</returns>
+        public static Dictionary<string, ToolCaller> GetToolCallers(JsonDocument openApiSpec, DomainAuth? domainAuth)
+        {
+            var openApiSpecRootJsonElement = openApiSpec.RootElement;
+            var baseUrl = openApiSpecRootJsonElement.GetProperty("servers")[0].GetProperty("url").GetString()
                           ?? throw new InvalidOperationException("Base URL not found");
 
             var host = (new Uri(baseUrl)).Host;
@@ -59,20 +75,19 @@ namespace AntRunnerLib.Functions
                 }
             }
 
-            return GetToolCallers(toolDefinitions, root, baseUrl, authHeaders, oAuth);
+            return GetToolCallers(openApiSpec, baseUrl, authHeaders, oAuth);
         }
 
         /// <summary>
         /// Generates request builders based on the OpenAPI specification.
         /// </summary>
-        /// <param name="openapiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
-        /// <param name="toolDefinitions">The list of tool definitions extracted from the OpenAPI spec.</param>
+        /// <param name="openApiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
         /// <param name="assistantName">The assistant</param>
-        /// <returns>A dictionary of <see cref="ToolCallers"/> objects with operation IDs as keys.</returns>
-        public static async Task<Dictionary<string, ToolCallers>> GetToolCallers(JsonDocument openapiSpec, List<ToolDefinition> toolDefinitions, string? assistantName = null)
+        /// <returns>A dictionary of <see cref="ToolCaller"/> objects with operation IDs as keys.</returns>
+        public static async Task<Dictionary<string, ToolCaller>> GetToolCallers(JsonDocument openApiSpec, string? assistantName = null)
         {
-            var root = openapiSpec.RootElement;
-            var baseUrl = root.GetProperty("servers")[0].GetProperty("url").GetString()
+            var openApiSpecRootJsonElement = openApiSpec.RootElement;
+            var baseUrl = openApiSpecRootJsonElement.GetProperty("servers")[0].GetProperty("url").GetString()
                           ?? throw new InvalidOperationException("Base URL not found");
 
             var host = (new Uri(baseUrl)).Host;
@@ -86,19 +101,19 @@ namespace AntRunnerLib.Functions
 
                     if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out _))
                     {
-                        return GetToolCallers(openapiSpec, toolDefinitions, domainAuth);
+                        return GetToolCallers(openApiSpec, domainAuth);
                     }
                 }
             }
 
-            return GetToolCallers(toolDefinitions, root, baseUrl, new(), false);
+            return GetToolCallers(openApiSpec, baseUrl, new(), false);
         }
 
 
-        private static Dictionary<string, ToolCallers> GetToolCallers(List<ToolDefinition> toolDefinitions, JsonElement root, string baseUrl, Dictionary<string, string> authHeaders, bool oAuth)
+        private static Dictionary<string, ToolCaller> GetToolCallers(JsonDocument openApiSpec, string baseUrl, Dictionary<string, string> authHeaders, bool oAuth)
         {
-            var toolCallers = new Dictionary<string, ToolCallers>();
-            foreach (var pathProperty in root.GetProperty("paths").EnumerateObject())
+            var toolCallers = new Dictionary<string, ToolCaller>();
+            foreach (var pathProperty in openApiSpec.RootElement.GetProperty("paths").EnumerateObject())
             {
                 foreach (var methodProperty in pathProperty.Value.EnumerateObject())
                 {
@@ -107,25 +122,18 @@ namespace AntRunnerLib.Functions
                         ? opId.GetString()
                         : $"{methodProperty.Name}_{pathProperty.Name}";
 
-                    var toolDefinition = toolDefinitions.FirstOrDefault(o => o.Function?.AsObject?.Name == operationId);
-                    var responseSchemas = toolDefinition?.Function?.AsObject?.ResponseSchemas;
+                    var toolDefinition = OpenApiHelper.GetToolDefinitionsFromSchema(openApiSpec).FirstOrDefault(o => o.Function?.AsObject?.Name == operationId);
 
-                    var actionRequest = new ToolCallers(
+                    var actionRequest = new ToolCaller(
                         baseUrl,
                         pathProperty.Name,
                         methodProperty.Name,
                         operationId!,
-                        false,
+                        operationObj, // Open API Schema
                         toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
-                        responseSchemas!,
                         authHeaders,
                         oAuth
                     );
-
-                    if (responseSchemas != null && responseSchemas.TryGetValue("200", out var schema))
-                    {
-                        actionRequest.ResponseSchemas["200"] = schema;
-                    }
 
                     toolCallers[operationId!] = actionRequest;
                 }
@@ -157,6 +165,7 @@ namespace AntRunnerLib.Functions
         /// Gets or sets the operation name of the request.
         /// </summary>
         public string Operation { get; set; }
+        public JsonElement MethodSchema { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the request is consequential.
@@ -183,7 +192,28 @@ namespace AntRunnerLib.Functions
         /// This dictionary holds the response schema for the `200` status code for each operation.
         /// The key is the operation ID, and the value is the JSON schema representing the successful response.
         /// </summary>
-        public Dictionary<string, JsonElement> ResponseSchemas { get; set; } = new();
+        public Dictionary<string, JsonElement> ResponseSchemas
+        {
+            get
+            {
+                var responseSchemas = new Dictionary<string, JsonElement>();
+                if (MethodSchema.TryGetProperty("responses", out var responses))
+                {
+                    foreach (var response in responses.EnumerateObject())
+                    {
+                        if (response.Name == "200" && response.Value.TryGetProperty("content", out var content))
+                        {
+                            var mediaType = content.EnumerateObject().FirstOrDefault();
+                            var schema = mediaType.Value.GetProperty("schema");
+
+                            responseSchemas["200"] = schema;
+                            break;
+                        }
+                    }
+                }
+                return responseSchemas;
+            }
+        }
 
 
         /// <summary>
@@ -192,24 +222,22 @@ namespace AntRunnerLib.Functions
         public bool OAuth { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ToolCallers"/> class with specified parameters.
+        /// Initializes a new instance of the <see cref="ToolCaller"/> class with specified parameters.
         /// </summary>
         /// <param name="baseUrl">The baseUrl of the request.</param>
         /// <param name="path">The path of the request.</param>
         /// <param name="method">The HTTP method used in the request.</param>
         /// <param name="operation">The operation name of the request.</param>
-        /// <param name="isConsequential">Indicates whether the request is consequential.</param>
+        /// <param name="methodSchema">Open API method description</param>
         /// <param name="contentType">The content type of the request.</param>
-        /// <param name="responseSchemas"></param>
         /// <param name="authHeaders">The authentication headers for the request.</param>
         /// <param name="oAuth">Indicates whether the request uses OAuth for authentication.</param>
-        public ToolCallers(string baseUrl,
+        public ToolCaller(string baseUrl,
             string path,
             string method,
             string operation,
-            bool isConsequential,
+            JsonElement methodSchema,
             string contentType,
-            Dictionary<string, JsonElement> responseSchemas,
             Dictionary<string, string> authHeaders,
             bool oAuth = false)
         {
@@ -218,9 +246,9 @@ namespace AntRunnerLib.Functions
             Path = path ?? throw new ArgumentNullException(nameof(path));
             Method = method ?? throw new ArgumentNullException(nameof(method));
             Operation = operation ?? throw new ArgumentNullException(nameof(operation));
-            IsConsequential = isConsequential;
+            MethodSchema = methodSchema;
             ContentType = contentType ?? throw new ArgumentNullException(nameof(contentType));
-            ResponseSchemas = responseSchemas ?? ResponseSchemas;
+
             AuthHeaders = authHeaders;
             this.OAuth = oAuth;
 
@@ -447,20 +475,19 @@ namespace AntRunnerLib.Functions
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ToolCallers"/> class that is a copy of the current instance.
+        /// Creates a new instance of the <see cref="ToolCaller"/> class that is a copy of the current instance.
         /// </summary>
-        /// <returns>A new instance of <see cref="ToolCallers"/> that is a copy of this instance.</returns>
-        public ToolCallers Clone()
+        /// <returns>A new instance of <see cref="ToolCaller"/> that is a copy of this instance.</returns>
+        public ToolCaller Clone()
         {
-            // Create a new instance of ToolCallers with the same properties
-            return new ToolCallers(
+            // Create a new instance of ToolCaller with the same properties
+            return new ToolCaller(
                 baseUrl: this.BaseUrl,
                 path: this.Path,
                 method: this.Method,
                 operation: this.Operation,
-                isConsequential: this.IsConsequential,
+                methodSchema: this.MethodSchema,
                 contentType: this.ContentType,
-                responseSchemas: this.ResponseSchemas.ToDictionary(),
                 authHeaders: new Dictionary<string, string>(this.AuthHeaders),
                 oAuth: this.OAuth)
             {
