@@ -129,7 +129,7 @@ namespace AntRunnerLib.Functions
                         pathProperty.Name,
                         methodProperty.Name,
                         operationId!,
-                        operationObj, // Open API Schema
+                        operationObj, 
                         toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
                         authHeaders,
                         oAuth

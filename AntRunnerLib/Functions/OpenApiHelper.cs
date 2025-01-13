@@ -61,12 +61,12 @@ namespace AntRunnerLib.Functions
         /// <summary>
         /// Extracts tool definitions from the OpenAPI specification.
         /// </summary>
-        /// <param name="openapiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
+        /// <param name="openApiSpec">The OpenAPI specification as a <see cref="JsonDocument"/>.</param>
         /// <returns>A list of <see cref="ToolDefinition"/> objects extracted from the OpenAPI spec.</returns>
-        public static List<ToolDefinition> GetToolDefinitionsFromSchema(JsonDocument openapiSpec)
+        public static List<ToolDefinition> GetToolDefinitionsFromSchema(JsonDocument openApiSpec)
         {
             var toolDefinitions = new List<ToolDefinition>();
-            var root = openapiSpec.RootElement;
+            var root = openApiSpec.RootElement;
 
             // Iterate over all paths in the OpenAPI spec
             foreach (var pathProperty in root.GetProperty("paths").EnumerateObject())
