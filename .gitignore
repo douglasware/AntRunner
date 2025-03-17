@@ -402,3 +402,4 @@ FodyWeavers.xsd
 /Notebooks/Mine.ipynb
 /RefactorTests/Program.cs
 /RefactorTests/RefactorTests.csproj
+/TestConsole/appsettings.json

@@ -97,6 +97,8 @@ namespace AntRunnerLib.Functions
                         foreach (var param in parameters.EnumerateArray())
                         {
                             var paramName = param.GetProperty("name").GetString();
+                            param.TryGetProperty("description", out var paramDescriptionElement);
+
                             var schema = param.GetProperty("schema");
 
                             var propertyDefinition = new PropertyDefinition
@@ -104,7 +106,7 @@ namespace AntRunnerLib.Functions
                                 Type = schema.GetProperty("type").GetString() ?? "string",
                                 Description = schema.TryGetProperty("description", out var descriptionElement)
                                     ? descriptionElement.GetString()
-                                    : null,
+                                    : paramDescriptionElement.GetString(),
                                 Default = schema.TryGetProperty("default", out var defaultElement)
                                     ? (defaultElement.ValueKind == JsonValueKind.String
                                         ? defaultElement.GetString()
