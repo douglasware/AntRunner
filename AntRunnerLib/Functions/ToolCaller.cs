@@ -438,7 +438,7 @@ namespace AntRunnerLib.Functions
                 return null;
             }
 
-            return result ?? "Failed to execute function";
+            return result;
         }
 
         private object? ConvertJsonElement(JsonElement jsonElement, Type targetType)
