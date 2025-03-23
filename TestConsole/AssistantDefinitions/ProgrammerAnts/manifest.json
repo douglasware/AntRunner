@@ -3,7 +3,7 @@
   "description": "I help work with local drives and files",
   "instructions": "",
   "tools": [
-    
+    { "type": "code_interpreter" }
   ],
   "tool_resources": {},
   "top_p": 0.7,

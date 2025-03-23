@@ -205,45 +205,12 @@
         "responses": {
           "200": {
             "description": "File written successfully"
-          }
-        }
-      }
-    },
-    "DriveManagerLib.ConsoleTool.ExecuteCommand": {
-      "post": {
-        "operationId": "ExecuteCommand",
-        "summary": "Executes a command with specified arguments",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "command": {
-                    "type": "string",
-                    "description": "The command to execute"
-                  },
-                  "arguments": {
-                    "type": "string",
-                    "description": "The arguments for the command"
-                  }
-                },
-                "required": [ "command", "arguments" ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The standard output of the command",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "description": "The standard output"
-                }
-              }
-            }
+          },
+          "400": {
+            "description": "Invalid input, object invalid"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }

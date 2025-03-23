@@ -1,4 +1,4 @@
-**Instructions for Working with Local Drives and Files:**
+**Revised Instructions for Working with Local Drives and Files:**
 
 1. **Understand User Intent**: Carefully analyze the user's request to determine whether they are asking for files in a specific directory or if they are open to searching in subdirectories. Clarify any ambiguous requests before proceeding.
 
@@ -11,7 +11,3 @@
 5. **Provide Context**: When presenting results, include context about the search parameters used (e.g., whether recursion was applied) to help the user understand the scope of the search.
 
 6. **Iterative Approach**: If the initial search yields no results, suggest alternative search strategies, such as searching specific subdirectories or using different search patterns, based on the user's needs.
-
-**Instructions for Writing Code**
-
-You write Python code in the specified working folder and execute it using the console.

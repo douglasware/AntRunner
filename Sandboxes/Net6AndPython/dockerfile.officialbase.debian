@@ -1,0 +1,51 @@
+# Use the official .NET SDK image
+FROM my-dotnet-sdk:6.0
+
+# Set the working directory inside the container
+WORKDIR /workspace
+
+# Install dependencies for building Python from source
+RUN apt-get update && \
+    apt-get install -y \
+    wget \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libncurses5-dev \
+    libncursesw5-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libgdbm-dev \
+    libdb5.3-dev \
+    libbz2-dev \
+    libexpat1-dev \
+    liblzma-dev \
+    tk-dev \
+    libffi-dev \
+    libgdbm-compat-dev \
+    git
+
+# Configure Git
+RUN git config --global user.name "Your Name" && \
+    git config --global user.email "your.email@example.com"
+
+# Download and install Python 3.11.11
+RUN wget https://www.python.org/ftp/python/3.11.11/Python-3.11.11.tgz && \
+    tar xzf Python-3.11.11.tgz && \
+    cd Python-3.11.11 && \
+    ./configure --enable-optimizations && \
+    make -j$(nproc) && \
+    make altinstall && \
+    cd .. && \
+    rm -rf Python-3.11.11 Python-3.11.11.tgz
+
+# Add Python to PATH
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Verify Python and Git installation
+RUN python3.11 --version && \
+    pip3.11 --version && \
+    git --version
+
+# Set the entry point to a shell to keep the container running
+CMD ["tail", "-f", "/dev/null"]

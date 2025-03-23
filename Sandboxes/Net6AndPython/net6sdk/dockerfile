@@ -1,0 +1,35 @@
+# Use Alpine as the base image
+FROM alpine:latest
+
+# Set environment variables
+ENV DOTNET_VERSION=6.0.36 \
+    DOTNET_SDK_VERSION=6.0.428 \
+    DOTNET_RUNNING_IN_CONTAINER=true
+
+# Install necessary packages and dependencies
+RUN apk add --no-cache \
+       curl \
+       ca-certificates \
+       bash \
+       icu-libs \
+       krb5-libs \
+       libgcc \
+       libintl \
+       libssl3 \
+       libstdc++ \
+       zlib \
+       nodejs \
+       npm \
+       && apk add --no-cache --virtual .build-deps \
+       tar \
+       && rm -rf /var/cache/apk/*
+
+# Install .NET SDK and runtime
+RUN curl -fSL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-musl-x64.tar.gz \
+    && mkdir -p /usr/share/dotnet \
+    && tar -zxf dotnet.tar.gz -C /usr/share/dotnet \
+    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
+    && rm dotnet.tar.gz
+
+# Set the default command to bash
+CMD ["tail", "-f", "/dev/null"]
