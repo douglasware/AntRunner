@@ -1,0 +1,52 @@
+FROM dotnet-sdk-python-environment:latest
+WORKDIR /app
+COPY requirements.txt .
+COPY requirements2.txt .
+RUN apk add --no-cache \
+    python3-dev \
+    py3-numpy \
+    g++ \
+    musl-dev \
+    linux-headers \
+    openblas-dev
+RUN apk add --no-cache \
+    build-base \
+    libffi-dev \
+    openblas-dev \
+    freetype-dev \
+    gfortran \
+    lapack-dev \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    zlib-dev \
+    libpng-dev \
+    libxml2-dev \
+    libxslt-dev \
+    libmagic \
+    libwebp-dev \
+    tiff-dev \
+    openssl-dev \
+    musl-dev \
+    libjpeg-turbo-dev \
+    ffmpeg \
+    poppler-utils \
+    poppler-data \
+    poppler \
+    postgresql-dev \
+    libpq \
+    graphviz \
+    py3-lxml \
+    libxml2-dev \
+    libxslt-dev \
+    git \
+    bash \
+    openjdk8-jre 
+RUN pip install --upgrade pip
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir -r requirements2.txt
+
+
+pip install --upgrade pip
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+pip install --no-cache-dir -r requirements2.txt
