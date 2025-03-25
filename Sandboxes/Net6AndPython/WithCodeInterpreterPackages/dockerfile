@@ -9,9 +9,7 @@ RUN apk add --no-cache \
     g++ \
     musl-dev \
     linux-headers \
-    openblas-dev
-
-RUN apk add --no-cache \
+    openblas-dev \
     build-base \
     libffi-dev \
     openblas-dev \
@@ -40,7 +38,20 @@ RUN apk add --no-cache \
     graphviz \
     py3-lxml \
     libxml2-dev \
-    libxslt-dev 
+    libxslt-dev \
+    hdf5-dev \
+    llvm15 llvm15-dev cmake \
+    py3-opencv \
+    py3-scikit-learn
+
+# Set LLVM_CONFIG environment variable
+ENV LLVM_CONFIG=/usr/bin/llvm-config-15
+
+# Install llvmlite
+RUN LLVM_CONFIG=/usr/bin/llvm-config-15 pip install llvmlite
+
+# Update timestamps to avoid clock skew issues
+RUN find /tmp -exec touch {} +
 
 # Install pip
 RUN apk add --no-cache python3 py3-pip
@@ -94,5 +105,5 @@ RUN apk update && \
     rm -rf fpdf-1.7.2 && \
     rm fpdf-1.7.2.tar.gz
 
-# Uncomment if you need to install additional requirements
+# Install additional requirements
 RUN pip install --no-cache-dir -r requirements2.txt
