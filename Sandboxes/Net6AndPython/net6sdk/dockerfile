@@ -18,8 +18,6 @@ RUN apk add --no-cache \
        libssl3 \
        libstdc++ \
        zlib \
-       nodejs \
-       npm \
        && apk add --no-cache --virtual .build-deps \
        tar \
        && rm -rf /var/cache/apk/*

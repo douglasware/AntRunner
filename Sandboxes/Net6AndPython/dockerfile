@@ -39,6 +39,7 @@ RUN wget https://www.python.org/ftp/python/3.11.11/Python-3.11.11.tgz && \
 ENV PATH="/usr/local/bin:${PATH}"
 
 RUN ln -s /usr/local/bin/python3.11 /usr/local/bin/py && \
+    ln -s /usr/local/bin/python3.11 /usr/local/bin/python && \
     ln -s /usr/local/bin/pip3.11 /usr/local/bin/pip
 
 HEALTHCHECK CMD python3.11 --version || exit 1

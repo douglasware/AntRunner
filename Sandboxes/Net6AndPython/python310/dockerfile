@@ -1,0 +1,59 @@
+# Use the official .NET SDK image
+FROM my-dotnet-sdk:6.0
+
+# Set the working directory inside the container
+WORKDIR /workspace
+
+# Install dependencies for building Python from source and for building NumPy
+RUN apk update && \
+    apk add --no-cache \
+    wget \
+    build-base \
+    openssl \
+    openssl-dev \
+    zlib-dev \
+    ncurses-dev \
+    readline-dev \
+    sqlite-dev \
+    gdbm-dev \
+    db-dev \
+    bzip2-dev \
+    expat-dev \
+    xz-dev \
+    tk-dev \
+    libffi-dev \
+    gfortran \
+    musl-dev \
+    linux-headers \
+    openblas-dev
+
+# Download and install Python from source
+RUN wget https://www.python.org/ftp/python/3.10.11/Python-3.10.11.tgz && \
+    tar xzf Python-3.10.11.tgz && \
+    cd Python-3.10.11 && \
+    ./configure --enable-optimizations && \
+    make -j$(nproc) && \
+    make altinstall && \
+    cd .. && \
+    rm -rf Python-3.10.11 Python-3.10.11.tgz
+
+# Update PATH environment variable
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Create symbolic links for Python and pip
+RUN ln -s /usr/local/bin/python3.10 /usr/local/bin/py && \
+    ln -s /usr/local/bin/pip3.10 /usr/local/bin/pip
+
+# Set environment variables for OpenBLAS
+ENV BLAS=/usr/lib/libopenblas.so
+ENV LAPACK=/usr/lib/libopenblas.so
+
+# Install NumPy with GCC
+RUN pip install --upgrade pip && \
+    pip install numpy==1.22.4
+
+# Healthcheck to verify Python installation
+HEALTHCHECK CMD python3.10 --version || exit 1
+
+# Default command to keep the container running
+CMD ["tail", "-f", "/dev/null"]
