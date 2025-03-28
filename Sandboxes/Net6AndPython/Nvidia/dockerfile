@@ -1,0 +1,10 @@
+FROM my-torch-codeinterpreter:0.1
+
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+WORKDIR /app
+#COPY . /app
+RUN mkdir -p /tmp/matplotlib && chown -R appuser:appgroup /tmp/matplotlib
+ENV MPLCONFIGDIR=/tmp/matplotlib
+RUN chown -R appuser:appgroup /app
+USER appuser
+CMD ["tail", "-f", "/dev/null"]
