@@ -3,8 +3,8 @@ FROM python:3.11.11-bullseye
 
 # Set environment variables
 ENV DOTNET_RUNNING_IN_CONTAINER=true \
-    DOTNET_VERSION=6.0.36 \
-    DOTNET_SDK_VERSION=6.0.428 \
+    DOTNET_VERSION=9.0.3 \
+    DOTNET_SDK_VERSION=9.0.202 \
     DOTNET_USE_POLLING_FILE_WATCHER=true \
     NUGET_XMLDOC_MODE=skip \
     POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-DotnetSDK-Debian-11
@@ -45,15 +45,6 @@ RUN powershell_version=7.2.23 \
 
 # Set the working directory
 WORKDIR /app
-
-# Copy the requirements file
-#COPY requirements.txt .
-
-# Install Python dependencies
-#RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application code
-#COPY . .
 
 # Set the default command to bash
 CMD ["tail", "-f", "/dev/null"]
