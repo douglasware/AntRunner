@@ -1,1 +1,1 @@
-pip install fiona==1.9.2
+pip install -r requirementsCPU.txt

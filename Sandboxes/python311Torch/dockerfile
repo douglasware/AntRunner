@@ -1,4 +1,3 @@
-#FROM debian.dotnet.sandbox
 FROM net9-python-3.11:latest
 
 WORKDIR /app

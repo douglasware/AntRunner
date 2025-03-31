@@ -1,0 +1,26 @@
+# Use an official OpenJDK runtime as a parent image
+FROM openjdk:11-jre-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Install dependencies (GraphViz)
+RUN apt-get update && \
+    apt-get install -y graphviz wget && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create a directory for PlantUML in /usr/local/lib
+RUN mkdir -p /usr/local/lib/plantuml
+
+# Download the PlantUML jar file to /usr/local/lib/plantuml
+RUN wget https://github.com/plantuml/plantuml/releases/download/v1.2025.2/plantuml-1.2025.2.jar -O /usr/local/lib/plantuml/plantuml.jar
+
+# Verify the jar file
+RUN ls -l /usr/local/lib/plantuml/plantuml.jar
+
+# Create a symbolic link or script to run PlantUML
+RUN echo '#!/bin/sh\nexec java -jar /usr/local/lib/plantuml/plantuml.jar "$@"' > /usr/local/bin/plantuml && \
+    chmod +x /usr/local/bin/plantuml
+
+# Add a default command to keep the container running
+CMD ["tail", "-f", "/dev/null"]

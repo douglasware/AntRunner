@@ -28,7 +28,7 @@ countryinfo==0.1.2
 cryptography==3.4.8
 cssselect2==0.8.0
 databricks-sql-connector==0.9.1
-dlib==19.24.2
+dlib>=19.24
 dnspython==2.7.0
 docx2txt==0.8
 email_validator==2.2.0
@@ -87,6 +87,7 @@ loguru==0.5.3
 lxml==5.3.1
 markdown2==2.5.3
 markdownify==0.9.3
+matplotlib>=3.10.1
 matplotlib-venn==0.11.6
 minikanren==1.0.3
 mizani==0.10.0
@@ -177,7 +178,7 @@ sentencepiece==0.2.0
 shap==0.39.0
 shapely==2.0.7
 slicer==0.0.7
-snowflake-connector-python==2.7.12
+#snowflake-connector-python==2.7.12
 snuggs==1.4.7
 starlette==0.37.2
 statsmodels==0.13.5
@@ -193,6 +194,8 @@ tifffile==2025.3.13
 toml==0.10.2
 torchtext
 trimesh==3.9.29
+types-dataclasses==0.6.6
+types-python-dateutil==2.9.0.20241206
 ujson==5.10.0
 uvicorn==0.19.0
 uvloop==0.21.0
