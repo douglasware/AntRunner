@@ -6,4 +6,5 @@ python -c "import torch; x = torch.tensor([1.0, 2.0, 3.0]); print(x * 2)"
 
 mkdir -p HelloApp && cd HelloApp && dotnet new console -n HelloApp && cd HelloApp && echo 'using System; namespace HelloApp { class Program { static void Main(string[] args) { Console.WriteLine("Hello World!"); } } }' > Program.cs && dotnet restore && dotnet build && dotnet run && cd ../.. && echo "Hello App has been created, built, and run successfully."
 
-docker build -t python.3.11.torch.dotnet9.user -f dockerfile.multi .
+docker build -t python-3.11-dotnet-9-torch-cpu-user -f dockerfile.multi .
+docker build -t python-3.11-dotnet-9-torch-cpu -f dockerfile .

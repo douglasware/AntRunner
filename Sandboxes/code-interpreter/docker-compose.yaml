@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./PlantUml:/usr/share/nginx/html
+      - ./shared:/usr/share/nginx/html/shared
+
+  python-app:
+    image: python-3.11-dotnet-9-torch-cuda-user
+    container_name: python-app
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./shared:/usr/src/app/shared
+
+  plantuml:
+    image: plantuml-1.2025.2
+    container_name: plantuml
+    volumes:
+      - ./shared:/usr/src/app/shared

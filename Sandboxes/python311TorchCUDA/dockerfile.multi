@@ -1,5 +1,5 @@
-# Use Debian as the base image
-FROM python:3.11.11-bullseye
+# Stage 1: Base image with .NET SDK, PowerShell, and Python
+FROM python:3.11.11-bullseye AS base
 
 # Set environment variables
 ENV DOTNET_RUNNING_IN_CONTAINER=true \
@@ -42,3 +42,34 @@ RUN powershell_version=7.2.23 \
     && ln -s /opt/microsoft/powershell/${powershell_version}/pwsh /usr/bin/pwsh \
     && chmod +x /usr/bin/pwsh \
     && rm /tmp/powershell.tar.gz
+
+# Stage 2: Python dependencies and additional tools
+FROM base AS final
+
+WORKDIR /app
+COPY requirements.txt .
+
+RUN pip install --upgrade pip
+
+# Install additional dependencies and Python 3.11 from the official repositories
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        graphviz \
+        graphviz-dev \
+        build-essential \
+        cmake \
+        libopenblas-dev \
+        liblapack-dev \
+        libboost-python-dev \
+        python3-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu126
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create a non-root user and set permissions
+RUN useradd --create-home --shell /bin/bash appuser \
+    && chown -R appuser:appuser /app
+
+# Switch to the non-root user
+USER appuser
