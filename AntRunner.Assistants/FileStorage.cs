@@ -2,7 +2,7 @@
 
 namespace AntRunnerLib.AssistantDefinitions
 {
-    internal class FileStorage
+    public class FileStorage
     {
         private static string GetBasePath()
         {
@@ -53,25 +53,25 @@ namespace AntRunnerLib.AssistantDefinitions
             }
         }
 
-        internal static Task<string?> GetManifest(string assistantName)
+        public static Task<string?> GetManifest(string assistantName)
         {
             var filePath = GetFilePath(assistantName, "manifest.json");
             return ReadFileAsync(filePath);
         }
 
-        internal static Task<string?> GetInstructions(string assistantName)
+        public static Task<string?> GetInstructions(string assistantName)
         {
             var filePath = GetFilePath(assistantName, "instructions.md");
             return ReadFileAsync(filePath);
         }
 
-        internal static Task<string?> GetActionAuth(string assistantName)
+        public static Task<string?> GetActionAuth(string assistantName)
         {
             var filePath = GetFilePath(assistantName, "OpenAPI/auth.json");
             return ReadFileAsync(filePath);
         }
 
-        internal static async Task<byte[]?> GetFile(string filePath)
+        public static async Task<byte[]?> GetFile(string filePath)
         {
             if (File.Exists(filePath))
             {
@@ -80,19 +80,19 @@ namespace AntRunnerLib.AssistantDefinitions
             return null;
         }
 
-        internal static List<string>? GetFilesInOpenApiFolder(string assistantName)
+        public static List<string>? GetFilesInOpenApiFolder(string assistantName)
         {
             var folderPath = GetFolderPath(assistantName, "OpenAPI");
             return EnumerateFilesInFolder(folderPath)?.Where(o => !o.Contains("auth.json", StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        internal static List<string>? GetFilesInCodeInterpreterFolder(string assistantName)
+        public static List<string>? GetFilesInCodeInterpreterFolder(string assistantName)
         {
             var folderPath = GetFolderPath(assistantName, "CodeInterpreter");
             return EnumerateFilesInFolder(folderPath);
         }
 
-        internal static List<string>? GetFilesInVectorStoreFolder(string assistantName, string vectorStoreName)
+        public static List<string>? GetFilesInVectorStoreFolder(string assistantName, string vectorStoreName)
         {
             var folderPath = GetFolderPath(assistantName, $"VectorStores\\{vectorStoreName}");
             return EnumerateFilesInFolder(folderPath);

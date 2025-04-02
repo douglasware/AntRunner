@@ -1,10 +1,14 @@
-﻿using System.Reflection;
-using System.Text;
-using AntRunnerLib.AssistantDefinitions;
-using Azure;
-using Azure.Core;
+﻿using AntRunnerLib.AssistantDefinitions;
 using Microsoft.Extensions.DependencyInjection;
-using OpenAI.ObjectModels.RequestModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using static System.Diagnostics.Trace;
 
 namespace AntRunnerLib.Functions
 {

@@ -1,15 +1,18 @@
-version: '3.8'
-
 services:
-  nginx:
-    image: nginx
-    container_name: nginx
+  dotnet-server:
+    image: dotnet-server
+    container_name: dotnet-server
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - ASPNETCORE_URLS=http://+:80;https://+:443
+      - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=SecurePassword123!
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/aspnetapp.pfx
     volumes:
-      - ./PlantUml:/usr/share/nginx/html
-      - ./shared:/usr/share/nginx/html/shared
+      - ./shared:/app/shared
+      - ${USERPROFILE}/.aspnet/https:/root/.aspnet/https/
 
   python-app:
     image: python-3.11-dotnet-9-torch-cuda-user
@@ -25,10 +28,10 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ./shared:/usr/src/app/shared
+      - ./shared:/app/shared
 
   plantuml:
     image: plantuml-1.2025.2
     container_name: plantuml
     volumes:
-      - ./shared:/usr/src/app/shared
+      - ./shared:/app/shared

@@ -1,0 +1,27 @@
+docx2txt==0.8
+Flask-CacheBuster==1.0.0
+└── Flask [required: Any, installed: 3.1.0]
+    ├── Werkzeug [required: >=3.1, installed: 3.1.3]
+    │   └── MarkupSafe [required: >=2.1.1, installed: 2.1.5]
+    ├── Jinja2 [required: >=3.1.2, installed: 3.1.4]
+    │   └── MarkupSafe [required: >=2.0, installed: 2.1.5]
+    ├── itsdangerous [required: >=2.2, installed: 2.2.0]
+    ├── click [required: >=8.1.3, installed: 8.1.8]
+    └── blinker [required: >=1.9, installed: 1.9.0]
+h5py==3.13.0
+└── numpy [required: >=1.19.3, installed: 1.22.4]
+pipdeptree==2.26.0
+├── packaging [required: >=24.1, installed: 24.2]
+└── pip [required: >=24.2, installed: 25.0.1]
+setuptools==65.5.0
+torchaudio==2.6.0+cpu
+└── torch [required: ==2.6.0, installed: 2.6.0+cpu]
+    ├── filelock [required: Any, installed: 3.13.1]
+    ├── typing_extensions [required: >=4.10.0, installed: 4.12.2]
+    ├── networkx [required: Any, installed: 3.3]
+    ├── Jinja2 [required: Any, installed: 3.1.4]
+    │   └── MarkupSafe [required: >=2.0, installed: 2.1.5]
+    ├── fsspec [required: Any, installed: 2024.6.1]
+    └── sympy [required: ==1.13.1, installed: 1.13.1]
+        └── mpmath [required: >=1.1.0,<1.4, installed: 1.3.0]
+torchvision==0.1.6
