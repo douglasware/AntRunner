@@ -15,7 +15,7 @@ namespace AntRunner.Services
                 return BadRequest("Request cannot be null.");
             }
 
-            var result = await DockerScriptService.ExecuteDockerScriptAsync(
+            var result = await DockerScriptService.ExecuteDockerScript(
                 request.Script,
                 request.ContainerName,
                 request.ScriptType
