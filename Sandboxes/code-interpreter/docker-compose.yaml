@@ -13,6 +13,7 @@ services:
     volumes:
       - ./shared:/app/shared
       - ${USERPROFILE}/.aspnet/https:/root/.aspnet/https/
+      - /var/run/docker.sock:/var/run/docker.sock  # Bind mount Docker socket
 
   python-app:
     image: python-3.11-dotnet-9-torch-cuda-user

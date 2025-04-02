@@ -3,11 +3,11 @@ using AntRunnerLib.Functions;
 
 namespace AntRunner.Services
 {
-    [Route("api/[controller]")]
+    [Route("sandbox")]
     [ApiController]
     public class DockerScriptController : ControllerBase
     {
-        [HttpPost("execute")]
+        [HttpPost("run")]
         public async Task<ActionResult<ScriptExecutionResult>> ExecuteScript([FromBody] ScriptExecutionRequest request)
         {
             if (request == null)
@@ -18,14 +18,8 @@ namespace AntRunner.Services
             var result = await DockerScriptService.ExecuteDockerScriptAsync(
                 request.Script,
                 request.ContainerName,
-                request.ScriptType,
-                request.Filename
+                request.ScriptType
             );
-
-            if (result.ExecutionException != null)
-            {
-                return StatusCode(500, result);
-            }
 
             return Ok(result);
         }
