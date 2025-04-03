@@ -3,13 +3,11 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using CliWrap;
 
 namespace AntRunnerLib.Functions
 {
-    /// <summary>
-    /// Enumeration for different script types.
-    /// </summary>
     public enum ScriptType
     {
         Bash,
@@ -17,42 +15,20 @@ namespace AntRunnerLib.Functions
         Python
     }
 
-    /// <summary>
-    /// Class representing the result of script execution.
-    /// </summary>
     public class ScriptExecutionResult
     {
-        /// <summary>
-        /// Gets or sets the standard output.
-        /// </summary>
         public string StandardOutput { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the standard error.
-        /// </summary>
         public string StandardError { get; set; } = string.Empty;
     }
 
-    /// <summary>
-    /// Service to execute scripts inside Docker containers.
-    /// </summary>
     public class DockerScriptService
     {
-        /// <summary>
-        /// Executes a script inside a Docker container and returns the result.
-        /// </summary>
-        /// <param name="script">The script to execute.</param>
-        /// <param name="containerName">The name of the Docker container.</param>
-        /// <param name="scriptType">The type of the script (Bash, PowerShell, Python).</param>
-        /// <param name="filename">Optional. The name of the file to save the result. If not provided, a GUID will be used.</param>
-        /// <returns>A <see cref="ScriptExecutionResult"/> containing the standard output, standard error, and any execution exception.</returns>
         public static async Task<ScriptExecutionResult> ExecuteDockerScript(string script, string containerName, ScriptType scriptType)
         {
             var stdOutBuffer = new StringBuilder();
             var stdErrBuffer = new StringBuilder();
             Exception? executionException = null;
 
-            // Validate that the script has content
             if (string.IsNullOrWhiteSpace(script))
             {
                 stdErrBuffer.AppendLine("Script cannot be null or empty.");
@@ -63,43 +39,40 @@ namespace AntRunnerLib.Functions
                 };
             }
 
-            // Ensure the script uses Unix-style line endings
             script = script.Replace("\r\n", "\n").Replace("\r", "\n");
 
-            // Generate a unique GUID for the working directory
             var guid = Guid.NewGuid().ToString();
             var workingDirectory = $"/app/shared/{guid}";
+            var scriptFilename = scriptType switch
+            {
+                ScriptType.Bash => "script.sh",
+                ScriptType.PowerShell => "script.ps1",
+                ScriptType.Python => "script.py",
+                _ => throw new ArgumentOutOfRangeException(nameof(scriptType), scriptType, null)
+            };
+            var containerScriptFilePath = $"{workingDirectory}/{scriptFilename}";
+            var hostScriptFilePath = Path.Combine(Path.GetTempPath(), scriptFilename);
 
             try
             {
-                string command = scriptType switch
-                {
-                    ScriptType.Bash => $"bash -c \"mkdir -p {workingDirectory} && cd {workingDirectory} && {script}\"", // TODO: 
-                    ScriptType.PowerShell => $"pwsh -c \"New-Item -ItemType Directory -Path {workingDirectory} -Force; Set-Location {workingDirectory}; {script}\"",
-                    ScriptType.Python => $"python -c \"import os; os.makedirs('{workingDirectory}', exist_ok=True); os.chdir('{workingDirectory}'); {script}\"",
-                    _ => throw new ArgumentOutOfRangeException(nameof(scriptType), scriptType, null)
-                };
+                // Create working directory
+                await CreateWorkingDirectory(containerName, workingDirectory, stdOutBuffer, stdErrBuffer);
 
-                try
-                {
-                    var result = await Cli.Wrap("docker")
-                        .WithArguments($"exec -w /app {containerName} {command}")
-                        .WithStandardOutputPipe(PipeTarget.ToDelegate(line => stdOutBuffer.AppendLine(line)))
-                        .WithStandardErrorPipe(PipeTarget.ToDelegate(line => stdErrBuffer.AppendLine(line)))
-                        .WithValidation(CommandResultValidation.None)
-                        .ExecuteAsync();
-                }
-                catch (Exception ex)
-                {
-                    stdErrBuffer.AppendLine($"Error running script in Docker container {containerName}:");
-                    stdErrBuffer.AppendLine(ex.ToString());
+                // Create script file on host
+                await CreateScriptFileOnHost(hostScriptFilePath, script);
 
-                    return new ScriptExecutionResult
-                    {
-                        StandardOutput = stdOutBuffer.ToString(),
-                        StandardError = stdErrBuffer.ToString()
-                    };
+                // Copy script file to container
+                await CopyScriptFileToContainer(containerName, hostScriptFilePath, containerScriptFilePath, stdOutBuffer, stdErrBuffer);
+
+                // Make script file executable if it's a Bash script
+                if (scriptType == ScriptType.Bash)
+                {
+                    await MakeScriptFileExecutable(containerName, containerScriptFilePath, workingDirectory, stdOutBuffer, stdErrBuffer);
                 }
+
+                // Execute the script
+                await ExecuteScript(containerName, containerScriptFilePath, scriptType, workingDirectory, stdOutBuffer, stdErrBuffer);
+
                 var filesList = await GetNewFileUrls(containerName, workingDirectory, guid);
                 if (!string.IsNullOrWhiteSpace(filesList))
                 {
@@ -113,6 +86,14 @@ namespace AntRunnerLib.Functions
                 stdErrBuffer.AppendLine(ex.ToString());
                 executionException = ex;
             }
+            finally
+            {
+                // Clean up temporary script file on host
+                if (File.Exists(hostScriptFilePath))
+                {
+                    File.Delete(hostScriptFilePath);
+                }
+            }
 
             if (stdOutBuffer.Length == 0 && stdErrBuffer.Length == 0)
             {
@@ -125,14 +106,12 @@ namespace AntRunnerLib.Functions
                 StandardError = stdErrBuffer.ToString()
             };
 
-            // Save the result to a location set in the environment
             var basePath = Environment.GetEnvironmentVariable("DOCKER_EXEC_LOG_PATH") ?? "/tmp/scripts";
             var scriptFolder = Path.Combine(basePath, scriptType.ToString(), executionException == null ? "success" : "failure");
             Directory.CreateDirectory(scriptFolder);
             var resultFilename = $"{Guid.NewGuid()}.json";
             var resultPath = Path.Combine(scriptFolder, resultFilename);
 
-            // Create a log object to include inputs and response
             var logObject = new
             {
                 Script = script,
@@ -146,13 +125,73 @@ namespace AntRunnerLib.Functions
 
             return scriptExecutionResult;
         }
-        /// <summary>
-        /// Creates a list of URLs in text format for the files in the specified working directory inside the Docker container, associated with the given session folder.
-        /// </summary>
-        /// <param name="containerName">The name of the Docker container.</param>
-        /// <param name="workingDirectory">The working directory to list files from.</param>
-        /// <param name="sessionFolder">The session folder associated with the working directory.</param>
-        /// <returns>A string containing the list of file URLs, one per line.</returns>
+
+        private static async Task ExecuteDockerCommand(string containerName, string command, string workingDirectory, StringBuilder stdOutBuffer, StringBuilder stdErrBuffer)
+        {
+            try
+            {
+                var result = await Cli.Wrap("docker")
+                    .WithArguments($"exec -w {workingDirectory} {containerName} {command}")
+                    .WithStandardOutputPipe(PipeTarget.ToDelegate(line => stdOutBuffer.AppendLine(line)))
+                    .WithStandardErrorPipe(PipeTarget.ToDelegate(line => stdErrBuffer.AppendLine(line)))
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteAsync();
+            }
+            catch (Exception ex)
+            {
+                stdErrBuffer.AppendLine($"Error executing Docker command '{command}' in container '{containerName}':");
+                stdErrBuffer.AppendLine(ex.ToString());
+                throw;
+            }
+        }
+
+        private static async Task CreateWorkingDirectory(string containerName, string workingDirectory, StringBuilder stdOutBuffer, StringBuilder stdErrBuffer)
+        {
+            await ExecuteDockerCommand(containerName, $"mkdir -p {workingDirectory}", "/", stdOutBuffer, stdErrBuffer);
+        }
+
+        private static async Task CreateScriptFileOnHost(string scriptFilePath, string scriptContent)
+        {
+            await File.WriteAllTextAsync(scriptFilePath, scriptContent);
+        }
+
+        private static async Task CopyScriptFileToContainer(string containerName, string hostScriptFilePath, string containerScriptFilePath, StringBuilder stdOutBuffer, StringBuilder stdErrBuffer)
+        {
+            try
+            {
+                var result = await Cli.Wrap("docker")
+                    .WithArguments($"cp {hostScriptFilePath} {containerName}:{containerScriptFilePath}")
+                    .WithStandardOutputPipe(PipeTarget.ToDelegate(line => stdOutBuffer.AppendLine(line)))
+                    .WithStandardErrorPipe(PipeTarget.ToDelegate(line => stdErrBuffer.AppendLine(line)))
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteAsync();
+            }
+            catch (Exception ex)
+            {
+                stdErrBuffer.AppendLine($"Error copying script file to Docker container '{containerName}':");
+                stdErrBuffer.AppendLine(ex.ToString());
+                throw;
+            }
+        }
+
+        private static async Task MakeScriptFileExecutable(string containerName, string scriptFilePath, string workingDirectory, StringBuilder stdOutBuffer, StringBuilder stdErrBuffer)
+        {
+            await ExecuteDockerCommand(containerName, $"chmod +x {scriptFilePath}", workingDirectory, stdOutBuffer, stdErrBuffer);
+        }
+
+        private static async Task ExecuteScript(string containerName, string scriptFilePath, ScriptType scriptType, string workingDirectory, StringBuilder stdOutBuffer, StringBuilder stdErrBuffer)
+        {
+            string command = scriptType switch
+            {
+                ScriptType.Bash => $"bash -c \"{scriptFilePath}\"",
+                ScriptType.PowerShell => $"pwsh -c \"{scriptFilePath}\"",
+                ScriptType.Python => $"python \"{scriptFilePath}\"",
+                _ => throw new ArgumentOutOfRangeException(nameof(scriptType), scriptType, null)
+            };
+
+            await ExecuteDockerCommand(containerName, command, workingDirectory, stdOutBuffer, stdErrBuffer);
+        }
+
         private static async Task<string> GetNewFileUrls(string containerName, string workingDirectory, string sessionFolder)
         {
             if (string.IsNullOrWhiteSpace(containerName))
@@ -175,27 +214,19 @@ namespace AntRunnerLib.Functions
 
             try
             {
-                Trace.TraceInformation($"Starting to list files in Docker container '{containerName}' from directory '{workingDirectory}'.");
-
                 var result = await Cli.Wrap("docker")
                     .WithArguments($"exec {containerName} ls -1 {workingDirectory}")
                     .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                     .WithValidation(CommandResultValidation.None)
                     .ExecuteAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 
-                Trace.TraceInformation("Command executed successfully.");
-                Trace.TraceInformation($"Standard Output: {stdOutBuffer.ToString().Trim()}");
-
                 var files = stdOutBuffer.ToString().Trim().Split('\n');
-                Trace.TraceInformation($"Number of files found: {files.Length}");
-
                 foreach (var file in files)
                 {
                     if (!string.IsNullOrWhiteSpace(file))
                     {
                         var fileUri = new Uri(new Uri(hostUrl), $"{sessionFolder}/{file}");
                         formattedFilesList.AppendLine(fileUri.ToString());
-                        Trace.TraceInformation($"File URL created: {fileUri.ToString()}");
                     }
                 }
 
@@ -208,7 +239,6 @@ namespace AntRunnerLib.Functions
                 stdOutBuffer.AppendLine($"Working Directory: {workingDirectory}");
                 stdOutBuffer.AppendLine($"Session Folder: {sessionFolder}");
                 stdOutBuffer.AppendLine($"Host URL: {hostUrl}");
-                Trace.TraceError(stdOutBuffer.ToString());
             }
             catch (Exception ex)
             {
@@ -219,7 +249,6 @@ namespace AntRunnerLib.Functions
                 stdOutBuffer.AppendLine($"Host URL: {hostUrl}");
                 stdOutBuffer.AppendLine($"Exception: {ex.Message}");
                 stdOutBuffer.AppendLine(ex.ToString());
-                Trace.TraceError(stdOutBuffer.ToString());
             }
 
             return stdOutBuffer.ToString().Trim();
