@@ -74,7 +74,7 @@ namespace AntRunnerLib.Functions
             {
                 string command = scriptType switch
                 {
-                    ScriptType.Bash => $"bash -c \"mkdir -p {workingDirectory} && cd {workingDirectory} && {script}\"",
+                    ScriptType.Bash => $"bash -c \"mkdir -p {workingDirectory} && cd {workingDirectory} && {script}\"", // TODO: 
                     ScriptType.PowerShell => $"pwsh -c \"New-Item -ItemType Directory -Path {workingDirectory} -Force; Set-Location {workingDirectory}; {script}\"",
                     ScriptType.Python => $"python -c \"import os; os.makedirs('{workingDirectory}', exist_ok=True); os.chdir('{workingDirectory}'); {script}\"",
                     _ => throw new ArgumentOutOfRangeException(nameof(scriptType), scriptType, null)
@@ -82,8 +82,6 @@ namespace AntRunnerLib.Functions
 
                 try
                 {
-                    stdOutBuffer.AppendLine($"Running script in Docker container {containerName}...");
-
                     var result = await Cli.Wrap("docker")
                         .WithArguments($"exec -w /app {containerName} {command}")
                         .WithStandardOutputPipe(PipeTarget.ToDelegate(line => stdOutBuffer.AppendLine(line)))
