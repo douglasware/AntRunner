@@ -1,0 +1,59 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "List Drives",
+    "description": "Fetches the drives available in the local environment"
+  },
+  "servers": [
+    {
+      "url": "tool://localhost",
+      "description": "Local environment"
+    }
+  ],
+  "paths": {
+    "DriveManagerLib.DriveTools.ListDrives": {
+      "get": {
+        "operationId": "ListDrives",
+        "summary": "Lists all drives available in the local environment",
+        "responses": {
+          "200": {
+            "description": "A list of drives",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the drive"
+                      },
+                      "driveType": {
+                        "type": "string",
+                        "description": "The type of the drive (e.g., Fixed, Removable, Network)"
+                      },
+                      "totalSize": {
+                        "type": "integer",
+                        "description": "The total size of the drive in bytes"
+                      },
+                      "availableFreeSpace": {
+                        "type": "integer",
+                        "description": "The available free space on the drive in bytes"
+                      },
+                      "isReady": {
+                        "type": "boolean",
+                        "description": "Indicates if the drive is ready"
+                      }
+                    },
+                    "required": [ "name", "driveType", "totalSize", "availableFreeSpace", "isReady" ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

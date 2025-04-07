@@ -1,0 +1,12 @@
+{
+  "name": "Python Ants Notebook",
+  "description": "Python Ants Notebook",
+  "instructions": "",
+  "tools": [ ],
+  "tool_resources": { },
+  "top_p": 0.7,
+  "response_format": "auto",
+  "metadata": {},
+  "model": "gpt-4o",
+  "temperature": 0.5
+}
