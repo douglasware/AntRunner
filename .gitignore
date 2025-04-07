@@ -403,3 +403,4 @@ FodyWeavers.xsd
 /RefactorTests/Program.cs
 /RefactorTests/RefactorTests.csproj
 /TestConsole/appsettings.json
+/Sandboxes/code-interpreter/shared
