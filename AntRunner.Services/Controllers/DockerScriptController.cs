@@ -3,6 +3,32 @@ using AntRunnerLib.Functions;
 
 namespace AntRunner.Services
 {
+
+    [ApiController]
+    [Route("sandbox")]
+    public class GenericSandbox : ControllerBase
+    {
+        [HttpPost("run/{containerName}/{scriptType}")]
+        public async Task<ActionResult<ScriptExecutionResult>> ExecuteScriptWithContainer(
+            [FromBody] ScriptExecutionRequest request,
+            string containerName,
+            ScriptType scriptType)
+        {
+            if (request == null)
+            {
+                return BadRequest("Request cannot be null.");
+            }
+
+            var result = await DockerScriptService.ExecuteDockerScript(
+                request.Script,
+                containerName,
+                scriptType
+            );
+
+            return Ok(result);
+        }
+    }
+
     [Route("sandbox/bash")]
     [ApiController]
     public class BashScriptController : ControllerBase
