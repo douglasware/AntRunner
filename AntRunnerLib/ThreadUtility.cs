@@ -33,7 +33,7 @@ namespace AntRunnerLib
             {
                 AssistantId = assistantId,
                 Thread = threadOptions,
-                MaxCompletionTokens = 4096
+                //MaxCompletionTokens = 16348 use default
             };
 
             if (assistantRunOptions.Files is { Count: > 0 })
@@ -314,7 +314,15 @@ namespace AntRunnerLib
                         {
                             try
                             {
-                                output = JsonSerializer.Serialize(await builder.ExecuteLocalFunctionAsync());
+                                var toolResult = await builder.ExecuteLocalFunctionAsync();
+                                if (toolResult != null)
+                                {
+                                    output = JsonSerializer.Serialize(toolResult);
+                                }
+                                else
+                                {
+                                    output = "Operation completed successfully";
+                                }
                             }
                             catch (Exception ex)
                             {
