@@ -12,9 +12,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
     <PackageReference Include="CliWrap" Version="3.8.2" />
+    <PackageReference Include="OpenAI-DotNet" Version="8.6.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AntRunner.Chat\AntRunner.Chat.csproj" />
+    <ProjectReference Include="..\AntRunner.ToolCalling\AntRunner.ToolCalling.csproj" />
     <ProjectReference Include="..\AntRunnerLib\AntRunnerLib.csproj" />
   </ItemGroup>
 
