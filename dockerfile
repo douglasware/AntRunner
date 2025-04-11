@@ -32,6 +32,9 @@ COPY ["AntRunner.ToolCalling/", "AntRunner.ToolCalling/"]
 COPY ["AntRunner.Assistants/AntRunner.Assistants.csproj", "AntRunner.Assistants/"]
 COPY ["AntRunner.Assistants/", "AntRunner.Assistants/"]
 
+COPY ["AntRunner.Chat/AntRunner.Chat.csproj", "AntRunner.Chat/"]
+COPY ["AntRunner.Chat/", "AntRunner.Chat/"]
+
 # Copy the main project files
 COPY ["AntRunner.Services/AntRunner.Services.csproj", "AntRunner.Services/"]
 COPY ["AntRunner.Services/", "AntRunner.Services/"]

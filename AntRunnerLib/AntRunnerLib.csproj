@@ -13,16 +13,13 @@
     <Description>Makes using the Assistants API on Open AI or Azure API easy. </Description>
     <PackageProjectUrl>https://github.com/douglasware/AntRunner</PackageProjectUrl>
     <PackageIcon>favicon-32x32.png</PackageIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/douglasware/AntRunner</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="AssistantDefinitions\ConversationUserProxy\instructions.md" />
-    <None Remove="AssistantDefinitions\ConversationUserProxy\manifest.json" />
-    <None Remove="OpenAI\Tokenizer\GPT3\encoder.json" />
-    <None Remove="OpenAI\Tokenizer\GPT3\vocab.bpe" />
+    <Content Include="readme.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,8 +29,6 @@
     <EmbeddedResource Include="AssistantDefinitions\ConversationUserProxy\manifest.json">
       <LogicalName>ConversationUserProxy.json</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpenAI\Tokenizer\GPT3\encoder.json" />
-    <EmbeddedResource Include="OpenAI\Tokenizer\GPT3\vocab.bpe" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,18 +36,18 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\README.md">
+    <None Include="readme.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.69.1" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <ProjectReference Include="..\AntRunner.ToolCalling\AntRunner.ToolCalling.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ResourceFile.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;1529;1591</NoWarn>

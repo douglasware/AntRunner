@@ -404,3 +404,4 @@ FodyWeavers.xsd
 /RefactorTests/RefactorTests.csproj
 /TestConsole/appsettings.json
 /Sandboxes/code-interpreter/shared
+/AntRunner.Services/appsettings.json

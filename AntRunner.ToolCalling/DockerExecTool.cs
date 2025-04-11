@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 using CliWrap;
+using System.Text.RegularExpressions;
 
 namespace AntRunnerLib.Functions
 {
@@ -29,6 +30,19 @@ namespace AntRunnerLib.Functions
             var stdErrBuffer = new StringBuilder();
             Exception? executionException = null;
 
+            // This is a frequent problem with the LLM - doubled escape codes
+            Regex regex = new Regex(@"\\(.)");
+            script = regex.Replace(script, match => match.Groups[1].Value switch
+            {
+                "n" => "\n",
+                "t" => "\t",
+                "r" => "\r",
+                "\\" => "\\",
+                "\"" => "\"",
+                "'" => "'",
+                _ => match.Value // Keep the original if the escape sequence is not recognized
+            });
+
             if (string.IsNullOrWhiteSpace(script))
             {
                 stdErrBuffer.AppendLine("Script cannot be null or empty.");
@@ -43,15 +57,15 @@ namespace AntRunnerLib.Functions
 
             var guid = Guid.NewGuid().ToString();
             var workingDirectory = $"/app/shared/{guid}";
-            var scriptFilename = scriptType switch
+            var scriptFilename = $"{guid}_{scriptType switch
             {
                 ScriptType.Bash => "script.sh",
                 ScriptType.PowerShell => "script.ps1",
                 ScriptType.Python => "script.py",
                 _ => throw new ArgumentOutOfRangeException(nameof(scriptType), scriptType, null)
-            };
-            var containerScriptFilePath = $"{workingDirectory}/{scriptFilename}";
+            }}";
             var hostScriptFilePath = Path.Combine(Path.GetTempPath(), scriptFilename);
+            var containerScriptFilePath = $"{workingDirectory}/{scriptFilename}";
 
             try
             {
@@ -73,7 +87,7 @@ namespace AntRunnerLib.Functions
                 // Execute the script
                 await ExecuteScript(containerName, containerScriptFilePath, scriptType, workingDirectory, stdOutBuffer, stdErrBuffer);
 
-                var filesList = await GetNewFileUrls(containerName, workingDirectory, guid);
+                var filesList = await GetNewFileUrls(containerName, workingDirectory, guid, scriptFilename);
                 if (!string.IsNullOrWhiteSpace(filesList))
                 {
                     stdOutBuffer.Append("\nNew Files\n\n---\n");
@@ -131,7 +145,7 @@ namespace AntRunnerLib.Functions
             try
             {
                 var result = await Cli.Wrap("docker")
-                    .WithArguments($"exec -w {workingDirectory} {containerName} {command}")
+                    .WithArguments($"exec -i -w {workingDirectory} {containerName} {command}")
                     .WithStandardOutputPipe(PipeTarget.ToDelegate(line => stdOutBuffer.AppendLine(line)))
                     .WithStandardErrorPipe(PipeTarget.ToDelegate(line => stdErrBuffer.AppendLine(line)))
                     .WithValidation(CommandResultValidation.None)
@@ -192,7 +206,7 @@ namespace AntRunnerLib.Functions
             await ExecuteDockerCommand(containerName, command, workingDirectory, stdOutBuffer, stdErrBuffer);
         }
 
-        private static async Task<string> GetNewFileUrls(string containerName, string workingDirectory, string sessionFolder)
+        private static async Task<string> GetNewFileUrls(string containerName, string workingDirectory, string sessionFolder, string scriptFilename)
         {
             if (string.IsNullOrWhiteSpace(containerName))
             {
@@ -215,7 +229,7 @@ namespace AntRunnerLib.Functions
             try
             {
                 var result = await Cli.Wrap("docker")
-                    .WithArguments($"exec {containerName} ls -1 {workingDirectory}")
+                    .WithArguments($"exec -i {containerName} ls -1 {workingDirectory}")
                     .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                     .WithValidation(CommandResultValidation.None)
                     .ExecuteAsync(cancellationTokenSource.Token).ConfigureAwait(false);
@@ -223,7 +237,7 @@ namespace AntRunnerLib.Functions
                 var files = stdOutBuffer.ToString().Trim().Split('\n');
                 foreach (var file in files)
                 {
-                    if (!string.IsNullOrWhiteSpace(file))
+                    if (!string.IsNullOrWhiteSpace(file) && !file.Equals(scriptFilename, StringComparison.OrdinalIgnoreCase))
                     {
                         var fileUri = new Uri(new Uri(hostUrl), $"{sessionFolder}/{file}");
                         formattedFilesList.AppendLine(fileUri.ToString());

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="readme.md" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="OpenAI-DotNet" Version="8.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AntRunner.ToolCalling\AntRunner.ToolCalling.csproj" />
+    <ProjectReference Include="..\AntRunnerLib\AntRunnerLib.csproj" />
+  </ItemGroup>
+
+</Project>
