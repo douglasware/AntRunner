@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>AntRunner Tools Calling</Title>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Doug Ware</Authors>
     <Description>Tool calling for AntRunner</Description>
   </PropertyGroup>
@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AntRunner.Assistants" Version="0.1.1" />
     <PackageReference Include="CliWrap" Version="3.8.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageReference Include="System.Text.Json" Version="6.0.10" />

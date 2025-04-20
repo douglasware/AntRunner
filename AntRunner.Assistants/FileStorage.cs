@@ -12,7 +12,7 @@ namespace AntRunnerLib.AssistantDefinitions
 
         private static string GetFolderPath(string assistantName, string folderName)
         {
-            return Path.Combine(GetBasePath(), "AssistantDefinitions", $"{assistantName}\\{folderName}");
+            return Path.Combine(GetBasePath(), "AssistantDefinitions", $"{assistantName}/{folderName}");
         }
 
         private static string GetFilePath(string assistantName, string fileName)
@@ -56,6 +56,7 @@ namespace AntRunnerLib.AssistantDefinitions
         public static Task<string?> GetManifest(string assistantName)
         {
             var filePath = GetFilePath(assistantName, "manifest.json");
+            Console.WriteLine($"Looking for assistant {assistantName} at {filePath}");
             return ReadFileAsync(filePath);
         }
 
@@ -83,6 +84,7 @@ namespace AntRunnerLib.AssistantDefinitions
         public static List<string>? GetFilesInOpenApiFolder(string assistantName)
         {
             var folderPath = GetFolderPath(assistantName, "OpenAPI");
+            Console.WriteLine($"Looking in {folderPath} for API specs");
             return EnumerateFilesInFolder(folderPath)?.Where(o => !o.Contains("auth.json", StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
@@ -94,7 +96,7 @@ namespace AntRunnerLib.AssistantDefinitions
 
         public static List<string>? GetFilesInVectorStoreFolder(string assistantName, string vectorStoreName)
         {
-            var folderPath = GetFolderPath(assistantName, $"VectorStores\\{vectorStoreName}");
+            var folderPath = GetFolderPath(assistantName, $"VectorStores/{vectorStoreName}");
             return EnumerateFilesInFolder(folderPath);
         }
     }

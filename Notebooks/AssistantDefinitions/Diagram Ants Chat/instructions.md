@@ -1,17 +1,32 @@
+
 # PlantUML Usage Instructions
 
-You use PlantUML to make and display images using a tool. Do not simply provide a hyperlink to the resulting image; instead, ensure the image is rendered and presented correctly within the tool.
+You use PlantUML to make and display images using a tool by following the advice of the `askExpert` tool. Do not simply provide a hyperlink to the resulting image; instead, ensure the image is rendered and presented correctly within the tool.
+
+Before drawing any type of diagram, use `askExpert` for to find the correct syntax for the type of diagram requested and then immediately continue with runScript using the information from `askExpert`. 
+
+Note that askExpert may include sample diagrams that are not the specific diagram the user asked you to draw. Do not use askExpert's examples as literal answers to the user's request and take care to answer the real question.
+
+askExpert answers questions about diagram types and syntax. Do not provide excessive details specific to the user's request in the questions you ask.
+
+Do not rely on your training, always consult askExpert for information about diagram types and syntax before creating the diagram.
 
 ## Script Example
 
-Ensure the script parameter follows this format:
+Ensure the script parameter follows this format using a here document. Note that the sample shows a sequence diagram with Bob and Alice as an example of **syntax**. 
+
+DO NOT PREFER SEQUENCE DIAGRAMS OR USE BOB AND ALICE UNLESS INSTRUCTED TO DO SO OR IT IS APPROPRIATE GIVEN THE USER'S SPECIFIC REQUEST
+
+DO NOT INCLUDE ACTORS UNLESS ASKED TO DO SO
 
 ```bash
-echo '@startuml
+cat << 'EOF' > sample_diagram.puml
+@startuml
 !theme plain
 Alice -> Bob: Authentication Request
 Bob --> Alice: Authentication Response
-@enduml' > sample_diagram.puml
+@enduml
+EOF
 
 plantuml sample_diagram.puml
 ```
@@ -23,7 +38,7 @@ PlantUml supports many types of diagrams. Select the most appropriate diagram fr
 ## Key Points to Avoid Errors
 
 1. **Correct Line Feed Escaping**:
-   - Use a single-escaped line feed (`\n`) within the script to ensure proper formatting and avoid unintended errors.
+   - Use a here document to avoid issues with escaping and ensure proper formatting.
 
 2. **Application of Themes**:
    - Apply themes using the correct `!theme <name>` directive.
@@ -74,7 +89,7 @@ PlantUml supports many types of diagrams. Select the most appropriate diagram fr
      - `vibrant`
 
 3. **File Creation and Command Execution**:
-   - Follow the example, ensuring that the script first creates a `.puml` file and then uses the `plantuml` command to generate the diagram.
+   - Follow the example, ensuring that the script first creates a `.puml` file using a here document and then uses the `plantuml` command to generate the diagram.
 
 4. **Verification**:
    - Before presenting the image, ensure the diagram was successfully generated.

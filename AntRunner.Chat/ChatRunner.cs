@@ -1,4 +1,5 @@
-﻿using AntRunnerLib.AssistantDefinitions;
+﻿using AntRunner.Chat;
+using AntRunnerLib.AssistantDefinitions;
 using AntRunnerLib.Functions;
 using OpenAI;
 using OpenAI.Chat;
@@ -26,13 +27,13 @@ namespace AntRunnerLib
         /// <param name="config">The configuration for Azure OpenAI.</param>
         /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
         /// <returns>The output of the thread run including possible additional run output from additional messages when using the default evaluator</returns>
-        public static async Task<ThreadRunOutput?> RunThread(ChatRunOptions chatRunOptions, AzureOpenAiConfig config)
+        public static async Task<ChatRunOutput?> RunThread(ChatRunOptions chatRunOptions, AzureOpenAiConfig config, List<Message>? previousMessages = null)
         {
             // Retrieve the assistant ID using the assistant name from the configuration
             var assistantDef = await AssistantUtility.GetAssistantCreateRequest(chatRunOptions.AssistantName);
             if (assistantDef == null)
             {
-                throw new ArgumentNullException(nameof(chatRunOptions.AssistantName));
+                throw new Exception($"Can't find {assistantDef}");
             }
 
             // 256000 is the maximum instruction length allowed by the API
@@ -43,14 +44,27 @@ namespace AntRunnerLib
             }
 
             var auth = new OpenAIAuthentication(config.ApiKey);
-            var settings = new OpenAIClientSettings(resourceName: config.ResourceName, config.DeploymentId, apiVersion: config.ApiVersion);
+            var settings = new OpenAIClientSettings(resourceName: config.ResourceName, chatRunOptions.DeploymentId, apiVersion: config.ApiVersion);
             using var api = new OpenAIClient(auth, settings);
 
-            var messages = new List<Message>
+            var messages = new List<Message>();
+
+            if (previousMessages != null)
             {
-                new Message(Role.System, assistantDef.Instructions),
-                new Message(Role.User, chatRunOptions.Instructions),
-            };
+                foreach (var previousMessage in previousMessages)
+                {
+                    messages.Add(previousMessage);
+                }
+                messages.Add(new Message(Role.User, chatRunOptions.Instructions));
+            }
+            else
+            {
+                messages = new List<Message>
+                {
+                    new Message(Role.System, assistantDef.Instructions),
+                    new Message(Role.User, chatRunOptions.Instructions),
+                };
+            }
 
             var tools = new List<Tool>();
 
@@ -73,18 +87,18 @@ namespace AntRunnerLib
             bool continueChat = true;
 
             Choice? choice = null;
-            ThreadRunOutput? runResults = null;
+            ChatRunOutput? runResults = null;
             int evaluatorTurnCounter = 0;
 
             while (continueChat)
             {
-                var chatRequest = new ChatRequest(messages, tools: tools);
+                var chatRequest = new ChatRequest(messages, tools: tools, model: chatRunOptions.DeploymentId, temperature: assistantDef.Temperature, topP: assistantDef.TopP);
                 var response = await api.ChatEndpoint.GetCompletionAsync(chatRequest);
                 messages.Add(response.FirstChoice.Message);
 
                 choice = response.FirstChoice;
 
-                Console.WriteLine($"[{choice.Index}] {choice.Message.Role}: {choice.Message} | Finish Reason: {choice.FinishReason}");
+                //Console.WriteLine($"[{choice.Index}] {choice.Message.Role}: {choice.Message} | Finish Reason: {choice.FinishReason}");
 
                 switch (choice.FinishReason)
                 {
@@ -109,7 +123,7 @@ namespace AntRunnerLib
                         break;
                 }
 
-                runResults = BuildRunResults(messages, choice);
+                runResults = BuildRunResults(messages, response);
 
                 if (choice.FinishReason == "stop" && !string.IsNullOrEmpty(chatRunOptions.Evaluator))
                 {
@@ -135,17 +149,18 @@ namespace AntRunnerLib
                 }
             }
 
-            if (!string.IsNullOrEmpty(chatRunOptions.PostProcessor))
-            {
-                runResults = await ThreadUtility.RunPostProcessor(chatRunOptions.PostProcessor, runResults);
-            }
+            //if (!string.IsNullOrEmpty(chatRunOptions.PostProcessor))
+            //{
+            //    runResults = (ChatRunOutput)(await ThreadUtility.RunPostProcessor(chatRunOptions.PostProcessor, runResults));
+            //    runResults.Messages = messages;
+            //}
 
             return runResults;
         }
 
-        private static ThreadRunOutput BuildRunResults(List<Message> messages, Choice? choice)
+        private static ChatRunOutput? BuildRunResults(List<Message> messages, ChatResponse response)
         {
-            ThreadRunOutput? runResults = new();
+            ChatRunOutput? runResults = new() { Messages = messages };
             if (messages.Last().Content is JsonElement && messages.Last().Content.ValueKind == JsonValueKind.String)
             {
                 runResults.LastMessage = messages.Last().Content.ToString();
@@ -154,13 +169,14 @@ namespace AntRunnerLib
             {
                 runResults.LastMessage = messages.Last().Content[0].Text;
             }
+            var choice = response.FirstChoice;
             runResults.Status = choice?.FinishReason ?? "unknown";
             foreach (var message in messages)
             {
                 if (message.Role == Role.System || message.Role == Role.Developer) continue;
                 if(message.Role == Role.User)
                 {
-                    runResults.ConversationMessages.Add(new() { Message = message.Content.ToString(), MessageType = ThreadConversationMessageType.User });
+                    runResults.ConversationMessages.Add(new() { Message = message.Content!.ToString(), MessageType = ThreadConversationMessageType.User });
                 }
                 else if (message.Role == Role.Assistant)
                 {
@@ -183,9 +199,16 @@ namespace AntRunnerLib
                 }
                 else if (message.Role == Role.Tool)
                 {
-                    runResults.ConversationMessages.Add(new() { Message = $"I got this output: {message.Content[0].Text.ToString()}\n", MessageType = ThreadConversationMessageType.Tool });
+                    runResults.ConversationMessages.Add(new() { Message = $"I got this output: {message.Content![0].Text.ToString()}\n", MessageType = ThreadConversationMessageType.Tool });
                 }
             }
+
+            runResults.Usage = new() { 
+                CompletionTokens = response.Usage.CompletionTokens,
+                PromptTokens = response.Usage.PromptTokens ?? 0,
+                CachedPromptTokens = response.Usage.PromptTokensDetails.CachedTokens,
+                TotalTokens = response.Usage.TotalTokens ?? 0
+            };
 
             return runResults;
         }
@@ -217,7 +240,8 @@ namespace AntRunnerLib
             var output = await RunThread(chatRunOptions, config!);
             if (output != null)
             {
-                return output.LastMessage;
+                return output.Dialog;
+                //return output.LastMessage;
             }
 
             return "Unable to process request";

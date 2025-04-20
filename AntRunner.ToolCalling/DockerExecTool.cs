@@ -29,19 +29,7 @@ namespace AntRunnerLib.Functions
             var stdOutBuffer = new StringBuilder();
             var stdErrBuffer = new StringBuilder();
             Exception? executionException = null;
-
-            // This is a frequent problem with the LLM - doubled escape codes
-            Regex regex = new Regex(@"\\(.)");
-            script = regex.Replace(script, match => match.Groups[1].Value switch
-            {
-                "n" => "\n",
-                "t" => "\t",
-                "r" => "\r",
-                "\\" => "\\",
-                "\"" => "\"",
-                "'" => "'",
-                _ => match.Value // Keep the original if the escape sequence is not recognized
-            });
+           
 
             if (string.IsNullOrWhiteSpace(script))
             {

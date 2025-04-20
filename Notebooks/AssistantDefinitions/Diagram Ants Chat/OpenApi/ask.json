@@ -1,0 +1,67 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+      "title": "Microsoft.KernelMemory.ServiceAssembly",
+      "version": "1.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:9001/"
+      }
+    ],
+    "paths": {
+      "/ask": {
+        "post": {
+          "tags": ["Microsoft.KernelMemory.ServiceAssembly"],
+          "summary": "Use the memories extracted from the files uploaded to generate an answer. The query can include filters to use only a subset of the memories available.",
+          "description": "Answer a user question using the internal knowledge base.",
+          "operationId": "AskExpert",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "index": {
+                      "type": "string",
+                      "nullable": false,
+                      "default": "plantuml3",
+                      "description": "Required, must be 'plantuml3'"
+                    },
+                    "question": {
+                      "type": "string",
+                      "nullable": false,
+                      "description": "What you need to know about plantuml"
+                    }
+                  },
+                  "required": ["index", "question"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

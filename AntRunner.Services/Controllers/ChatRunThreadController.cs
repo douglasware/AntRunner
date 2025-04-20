@@ -40,7 +40,8 @@ namespace AntRunner.Services.Controllers
                 var output = await ChatRunner.RunThread(chatRunOptions, _config);
                 if (output != null)
                 {
-                    return Ok(output.LastMessage);
+                    //return Ok(output.LastMessage);
+                    return Ok(output.Dialog);
                 }
 
                 return BadRequest("Unable to process request");

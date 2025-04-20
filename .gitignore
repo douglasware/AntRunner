@@ -405,3 +405,4 @@ FodyWeavers.xsd
 /TestConsole/appsettings.json
 /Sandboxes/code-interpreter/shared
 /AntRunner.Services/appsettings.json
+/AntRunner.Services/appsettings.Development.json
