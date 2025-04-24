@@ -400,9 +400,13 @@ FodyWeavers.xsd
 /AntRunnerPowershell/LocalTests.ps1
 /AntRunnerPowershell/Downloads/*
 /Notebooks/Mine.ipynb
-/RefactorTests/Program.cs
-/RefactorTests/RefactorTests.csproj
-/TestConsole/appsettings.json
+*/TestConsole/appsettings.json
 /Sandboxes/code-interpreter/shared
 /AntRunner.Services/appsettings.json
 /AntRunner.Services/appsettings.Development.json
+/AntRunner.Chat/Sandboxes/code-interpreter/content/*
+*/appsettings.Development.json
+*/appsettings.json
+/AntRunner.Chat/AntRunner.Services/appsettings.Development.json
+/AntRunner.Chat/TestConsole/appsettings.json
+/AntRunner.Chat/Sandboxes/code-interpreter/qdrant_data
