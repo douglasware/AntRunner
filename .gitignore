@@ -410,3 +410,7 @@ FodyWeavers.xsd
 /AntRunner.Chat/AntRunner.Services/appsettings.Development.json
 /AntRunner.Chat/TestConsole/appsettings.json
 /AntRunner.Chat/Sandboxes/code-interpreter/qdrant_data
+/AntRunner/AntRunnerPowershell/LocalTests.ps1
+/AntRunner/AntRunnerPowershell/SetEnvAndLoadModule.ps1
+/AntRunner/Notebooks/AssistantDefinitions/State_DOE_AI_Guides
+/AntRunner/Notebooks/Mine.ipynb
