@@ -1,0 +1,74 @@
+services:
+  dotnet-server:
+    image: dotnet-server
+    container_name: dotnet-server
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - ASPNETCORE_URLS=http://+:80;https://+:443
+      - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=SecurePassword123!
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/aspnetapp.pfx
+      - BASH_CONTAINER_NAME=python-app
+      - POWERSHELL_CONTAINER_NAME=python-app
+      - PYTHON_CONTAINER_NAME=python-app
+      - AZURE_OPENAI_RESOURCE=el-eastus
+      - AZURE_OPENAI_API_KEY=93920525a31c4293b2bf3419c423b81e
+      - AZURE_OPENAI_DEPLOYMENT=gpt-4o
+      - AZURE_OPENAI_API_VERSION=2025-01-01-preview
+      - ASSISTANTS_BASE_FOLDER_PATH=/app/AssistantDefinitions
+      - ANTRUNNER_SERVICES_HOST_URL=http://localhost/
+    volumes:
+      - ./shared:/app/shared
+      - ./content:/app/shared/content
+      - ${USERPROFILE}/.aspnet/https:/root/.aspnet/https/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../../Notebooks/AssistantDefinitions:/app/AssistantDefinitions
+
+  python-app:
+    image: python-3.11-dotnet-9-torch-cuda
+    container_name: python-app
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./content:/app/shared/content
+      - ./shared:/app/shared
+
+  plantuml:
+    image: plantuml-1.2025.2
+    container_name: plantuml
+    volumes:
+      - ./content:/app/shared/content    
+      - ./shared:/app/shared
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    environment:
+      - api_key=api123456key 
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+
+  kernel-memory:
+    image: kernelmemory/service
+    container_name: kernel-memory
+    ports:
+      - "9001:9001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./shared:/app/shared
+      - ./content:/app/shared/content
+      - ./kernel-memory/appsettings.json:/app/appsettings.json
+  

@@ -396,17 +396,18 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/AntRunnerPowershell/SetEnvAndLoadModule.ps1
-/AntRunnerPowershell/LocalTests.ps1
-/AntRunnerPowershell/Downloads/*
-/Notebooks/Mine.ipynb
-*/TestConsole/appsettings.json
-/Sandboxes/code-interpreter/shared
-/AntRunner.Services/appsettings.json
-/AntRunner.Services/appsettings.Development.json
-/AntRunner.Chat/Sandboxes/code-interpreter/content/*
-*/appsettings.Development.json
-*/appsettings.json
-/AntRunner.Chat/AntRunner.Services/appsettings.Development.json
-/AntRunner.Chat/TestConsole/appsettings.json
-/AntRunner.Chat/Sandboxes/code-interpreter/qdrant_data
+./AntRunnerPowershell/SetEnvAndLoadModule.ps1
+./AntRunnerPowershell/LocalTests.ps1
+./AntRunnerPowershell/Downloads/*
+./Notebooks/Mine.ipynb
+./RefactorTests/Program.cs
+./RefactorTests/RefactorTests.csproj
+./TestConsole/appsettings.json
+./Sandboxes/code-interpreter/shared
+./AntRunner.Services/appsettings.json
+./AntRunner.Services/appsettings.Development.json
+./Sandboxes/code-interpreter/content/project_diagrams
+./Sandboxes/code-interpreter/content
+./Sandboxes/code-interpreter/EY Fabric Content
+./Sandboxes/code-interpreter/qdrant_data
+./Sandboxes/code-interpreter/kernel-memory
