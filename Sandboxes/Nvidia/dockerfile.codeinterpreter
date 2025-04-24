@@ -1,8 +1,0 @@
-FROM nvcr.io/nvidia/pytorch:24.10-py3
-WORKDIR /app
-COPY requirements.txt .
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends graphviz graphviz-dev && \
-    rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir -r requirements.txt
-CMD ["tail", "-f", "/dev/null"]

@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>AntRunnner Library</Title>
+    <Version>0.9.6</Version>
+    <Authors>Doug Ware</Authors>
+    <Company>Elumenotion</Company>
+    <Description>Makes using the Assistants API on Open AI or Azure API easy. </Description>
+    <PackageProjectUrl>https://github.com/douglasware/AntRunner</PackageProjectUrl>
+    <PackageIcon>favicon-32x32.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/douglasware/AntRunner</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AssistantDefinitions\ConversationUserProxy\instructions.md" />
+    <None Remove="AssistantDefinitions\ConversationUserProxy\manifest.json" />
+    <None Remove="OpenAI\Tokenizer\GPT3\encoder.json" />
+    <None Remove="OpenAI\Tokenizer\GPT3\vocab.bpe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AssistantDefinitions\ConversationUserProxy\instructions.md">
+      <LogicalName>ConversationUserProxy.md</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssistantDefinitions\ConversationUserProxy\manifest.json">
+      <LogicalName>ConversationUserProxy.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OpenAI\Tokenizer\GPT3\encoder.json" />
+    <EmbeddedResource Include="OpenAI\Tokenizer\GPT3\vocab.bpe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="favicon-32x32.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.64.0" />
+    <PackageReference Include="YamlDotNet" Version="16.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+  </ItemGroup>
+  <PropertyGroup>
+    <NoWarn>1701;1702;1529;1591</NoWarn>
+    <PackageReleaseNotes>Return local function errors to the run instead of throwing unhandled exceptions</PackageReleaseNotes>
+  </PropertyGroup>
+</Project>
