@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using AntRunnerLib.Functions;
 using static AntRunnerLib.AssistantDefinitions.AssistantDefinitionFiles;
+using System.Collections;
 
 namespace AntRunnerLib
 {
@@ -159,12 +160,12 @@ namespace AntRunnerLib
                 {
                     throw new Exception(newAssistant.Error.Message);
                 }
-                
+
                 AssistantCache.Clear();
 
                 return newAssistant.Id!;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception($"Unable to create assistant. {ex.Message}");
             }
@@ -237,6 +238,33 @@ namespace AntRunnerLib
             var assistant = (await client.AssistantList())?.Data?.FirstOrDefault(o => o.Name == assistantName);
             if (assistant != null && !string.IsNullOrWhiteSpace(assistant.Id)) await client.AssistantDelete(assistant.Id);
             else throw new Exception($"{assistantName} not found.");
+        }
+
+        public static async Task<Dictionary<string, ToolCaller>> GetToolCallers(string assistantName)
+        {
+            Dictionary<string, ToolCaller> toolCallers = new();
+            var openApiSchemaFiles = await GetFilesInOpenApiFolder(assistantName);
+            if (openApiSchemaFiles == null || !openApiSchemaFiles.Any()) return toolCallers;
+
+            foreach (var openApiSchemaFile in openApiSchemaFiles)
+            {
+                var schema = await GetFile(openApiSchemaFile);
+                if (schema == null)
+                {
+                    Trace.TraceWarning("openApiSchemaFile {0} is null. Ignoring", openApiSchemaFile);
+                    continue;
+                }
+
+                var openApiJson = Encoding.Default.GetString(schema);
+                var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(openApiJson);
+                var openApiSpec = validationResult.Spec;
+
+                var assistantToolCallers = await ToolCaller.GetToolCallers(openApiSpec!, assistantName);
+                foreach (var toolCaller in assistantToolCallers) {
+                    toolCallers[toolCaller.Key] = toolCaller.Value;
+                }
+            }
+            return toolCallers;
         }
 
         private static async Task AddFunctionTools(string assistantName, AssistantCreateRequest options)

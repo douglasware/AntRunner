@@ -39,15 +39,6 @@ public class ToolDefinition
         };
     }
 
-    [Obsolete("Retrieval is now called FileSearch")]
-    public static ToolDefinition DefineRetrieval()
-    {
-        return new()
-        {
-            Type = StaticValues.AssistantsStatics.ToolCallTypes.FileSearch
-        };
-    }
-
     public static ToolDefinition DefineFileSearch()
     {
         return new()

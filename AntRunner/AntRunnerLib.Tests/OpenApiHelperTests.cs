@@ -1,8 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json;
-using AntRunnerLib.Functions;
-using Functions;
-using OpenAI.ObjectModels.RequestModels;
+﻿using AntRunnerLib.Functions;
 
 namespace AntRunnerLib.Tests
 {

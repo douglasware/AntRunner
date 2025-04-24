@@ -129,7 +129,8 @@ namespace AntRunnerLib.Functions
                         pathProperty.Name,
                         methodProperty.Name,
                         operationId!,
-                        operationObj, 
+                        toolDefinition?.Function?.AsObject?.Description ?? "",
+                        operationObj,
                         toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
                         authHeaders,
                         oAuth
@@ -165,12 +166,16 @@ namespace AntRunnerLib.Functions
         /// Gets or sets the operation name of the request.
         /// </summary>
         public string Operation { get; set; }
-        public JsonElement MethodSchema { get; private set; }
-
+        
         /// <summary>
-        /// Gets or sets a value indicating whether the request is consequential.
+        /// What the operation deos
         /// </summary>
-        public bool IsConsequential { get; set; }
+        public string Description { get; private set; }
+        
+        /// <summary>
+        /// The Open API schema fragment for the operation
+        /// </summary>
+        public JsonElement MethodSchema { get; private set; }
 
         /// <summary>
         /// Gets or sets the content type of the request.
@@ -228,6 +233,7 @@ namespace AntRunnerLib.Functions
         /// <param name="path">The path of the request.</param>
         /// <param name="method">The HTTP method used in the request.</param>
         /// <param name="operation">The operation name of the request.</param>
+        /// <param name="description">What the operation does</param>
         /// <param name="methodSchema">Open API method description</param>
         /// <param name="contentType">The content type of the request.</param>
         /// <param name="authHeaders">The authentication headers for the request.</param>
@@ -236,6 +242,7 @@ namespace AntRunnerLib.Functions
             string path,
             string method,
             string operation,
+            string description,
             JsonElement methodSchema,
             string contentType,
             Dictionary<string, string> authHeaders,
@@ -246,6 +253,7 @@ namespace AntRunnerLib.Functions
             Path = path ?? throw new ArgumentNullException(nameof(path));
             Method = method ?? throw new ArgumentNullException(nameof(method));
             Operation = operation ?? throw new ArgumentNullException(nameof(operation));
+            Description = description ?? "";
             MethodSchema = methodSchema;
             ContentType = contentType ?? throw new ArgumentNullException(nameof(contentType));
 
@@ -486,6 +494,7 @@ namespace AntRunnerLib.Functions
                 path: this.Path,
                 method: this.Method,
                 operation: this.Operation,
+                description: this.Description,
                 methodSchema: this.MethodSchema,
                 contentType: this.ContentType,
                 authHeaders: new Dictionary<string, string>(this.AuthHeaders),
