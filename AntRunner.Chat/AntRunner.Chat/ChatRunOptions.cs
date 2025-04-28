@@ -17,8 +17,7 @@ namespace AntRunner.Chat
         /// <summary>
         /// Gets or sets the instructions for the assistant.
         /// </summary>
-        [Required]
-        public required string Instructions { get; set; }
+        public string Instructions { get; set; } = string.Empty;
 
         /// <summary>
         /// Files to upload to the assistant and attach to the message.

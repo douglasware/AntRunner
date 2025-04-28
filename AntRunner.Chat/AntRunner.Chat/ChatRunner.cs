@@ -38,7 +38,7 @@ namespace AntRunner.Chat
             if (chatRunOptions.Instructions.Length >= 256000)
             {
                 TraceWarning("Instructions are too long, truncating");
-                chatRunOptions.Instructions = chatRunOptions.Instructions.Substring(0, 255999);
+                chatRunOptions.Instructions = chatRunOptions.Instructions[..255999];
             }
 
             var auth = new OpenAIAuthentication(config.ApiKey);
@@ -57,11 +57,11 @@ namespace AntRunner.Chat
             }
             else
             {
-                messages = new List<Message>
-                {
+                messages =
+                [
                     new Message(Role.System, assistantDef.Instructions),
                     new Message(Role.User, chatRunOptions.Instructions),
-                };
+                ];
             }
 
             var tools = new List<Tool>();
@@ -106,7 +106,7 @@ namespace AntRunner.Chat
                         break;
                     case "tool_calls":
                         // Perform required actions for the tool calls
-                        await PerformRunRequiredActions(assistantDef, tools, choice.Message.ToolCalls, messages);
+                        await PerformRunRequiredActions(assistantDef, choice.Message.ToolCalls, messages);
                         break;
                     case "length":
                         // Handle the case where the maximum token length is reached
@@ -180,7 +180,7 @@ namespace AntRunner.Chat
                         {
                             if (toolCall.Function != null)
                             {
-                                messageText += $"I called the tool named {toolCall.Function.Name} with {toolCall.Function.Arguments.ToString()}\n";
+                                messageText += $"I called the tool named {toolCall.Function.Name} with {toolCall.Function.Arguments}\n";
                             }
                         }
                     }
@@ -188,7 +188,37 @@ namespace AntRunner.Chat
                 }
                 else if (message.Role == Role.Tool)
                 {
-                    runResults.ConversationMessages.Add(new() { Message = $"I got this output: {message.Content![0].Text.ToString()}\n", MessageType = ThreadConversationMessageType.Tool });
+                    try
+                    {
+                        string textContent = message.Content![0].Text.ToString();
+                        runResults.ConversationMessages.Add(new() { Message = $"I got this output: {textContent}\n", MessageType = ThreadConversationMessageType.Tool });
+                    }
+                    catch
+                    {
+                        // Workaround for serialize/deserialize behavior in the Message class
+                        // TODO: Identify root cause and file an issue
+                        string jsonString = message.Content![0].ToString();
+
+                        try
+                        {
+                            JsonDocument jsonDoc = JsonDocument.Parse(jsonString);
+                            JsonElement root = jsonDoc.RootElement;
+
+                            if (root.TryGetProperty("text", out JsonElement textElement))
+                            {
+                                string textValue = textElement.GetString() ?? jsonString;
+                                runResults.ConversationMessages.Add(new() { Message = $"I got this output: {textValue}\n", MessageType = ThreadConversationMessageType.Tool });
+                            }
+                            else
+                            {
+                                runResults.ConversationMessages.Add(new() { Message = $"I got this output: {jsonString}\n", MessageType = ThreadConversationMessageType.Tool });
+                            }
+                        }
+                        catch
+                        {
+                            runResults.ConversationMessages.Add(new() { Message = $"I got this output: {jsonString}\n", MessageType = ThreadConversationMessageType.Tool });
+                        }
+                    }
                 }
             }
 
@@ -236,7 +266,7 @@ namespace AntRunner.Chat
 
             return "Unable to process request";
         }
-        private static async Task PerformRunRequiredActions(AssistantDefinition assistantDef, List<Tool> tools, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null)
+        private static async Task PerformRunRequiredActions(AssistantDefinition assistantDef, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null)
         {
             var assistantName = assistantDef.Name!;
 
@@ -254,10 +284,10 @@ namespace AntRunner.Chat
                 var toolCallId = requiredOutput.Id;
                 var toolName = requiredOutput.Function.Name;
                 var parameters = requiredOutput.Function.Arguments;
-                if (builders.ContainsKey(toolName))
+                if (builders.TryGetValue(toolName, out ToolCaller? tool))
                 {
                     // Create a new builder instance for each tool call to avoid shared state.
-                    var builder = builders[toolName].Clone();
+                    var builder = tool.Clone();
                     builder.Params = JsonSerializer.Deserialize<Dictionary<string, object>>(parameters.ToString());
 
                     var task = Task.Run(async () =>
@@ -343,58 +373,58 @@ namespace AntRunner.Chat
                 {
                     if (!toolCall.IsFunction) continue;
                     var id = toolCall.Id;
-                    var toolOutput = toolOutputs.FirstOrDefault(to => to.ToolCallId == id);
-                    if (toolOutput == null) throw new Exception("No match");
-                    messages.Add(new Message(toolCallId: id, toolFunctionName: toolCall.Function.Name, new List<Content>() { new(toolOutput.Output!) }));
+                    var toolOutput = toolOutputs.FirstOrDefault(to => to.ToolCallId == id) ?? throw new Exception("No match");
+                    messages.Add(new Message(toolCallId: id, toolFunctionName: toolCall.Function.Name, [new(toolOutput.Output!)]));
                 }
             }
         }
 
         static async Task EnsureRequestBuilderCache(string assistantName)
         {
-            // Check if the request builder cache already contains the assistant name.
-            if (!RequestBuilderCache.TryGetValue(assistantName, out Dictionary<string, ToolCaller>? actionRequestBuilders))
+            if (RequestBuilderCache.ContainsKey(assistantName))
             {
-                var assistantRequestBuilders = new Dictionary<string, ToolCaller>();
+                return;
+            }
 
-                // Retrieve the OpenAPI schema files from the assistant definition folder.
-                var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenApiFolder(assistantName);
-                if (openApiSchemaFiles == null || !openApiSchemaFiles.Any()) return;
+            var assistantRequestBuilders = new Dictionary<string, ToolCaller>();
 
-                foreach (var openApiSchemaFile in openApiSchemaFiles)
+            // Retrieve the OpenAPI schema files from the assistant definition folder.
+            var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenApiFolder(assistantName);
+            if (openApiSchemaFiles == null || openApiSchemaFiles.Count == 0) return;
+
+            foreach (var openApiSchemaFile in openApiSchemaFiles)
+            {
+                var schema = await AssistantDefinitionFiles.GetFile(openApiSchemaFile);
+                if (schema == null)
                 {
-                    var schema = await AssistantDefinitionFiles.GetFile(openApiSchemaFile);
-                    if (schema == null)
-                    {
-                        Trace.TraceWarning("openApiSchemaFile {openApiSchemaFile} is null. Ignoring", openApiSchemaFile);
-                        continue;
-                    }
-
-                    var json = Encoding.Default.GetString(schema);
-
-                    // Validate and parse the OpenAPI specification from the JSON string.
-                    var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(json);
-                    var spec = validationResult.Spec;
-
-                    // Check if the validation was successful and if the specification is not null.
-                    if (!validationResult.Status || spec == null)
-                    {
-                        Trace.TraceWarning("Json is not a valid OpenAPI spec {json}. Ignoring", json);
-                        continue;
-                    }
-
-                    var requestBuilders = await ToolCaller.GetToolCallers(spec, assistantName);
-
-                    // Add the request builders to the assistant request builders dictionary.
-                    foreach (var tool in requestBuilders.Keys)
-                    {
-                        assistantRequestBuilders[tool] = requestBuilders[tool];
-                    }
+                    TraceWarning($"openApiSchemaFile {openApiSchemaFile} is null. Ignoring");
+                    continue;
                 }
 
-                // Add the assistant request builders to the request builder cache.
-                RequestBuilderCache[assistantName] = assistantRequestBuilders;
+                var json = Encoding.Default.GetString(schema);
+
+                // Validate and parse the OpenAPI specification from the JSON string.
+                var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(json);
+                var spec = validationResult.Spec;
+
+                // Check if the validation was successful and if the specification is not null.
+                if (!validationResult.Status || spec == null)
+                {
+                    TraceWarning($"Json is not a valid OpenAPI spec {json}. Ignoring");
+                    continue;
+                }
+
+                var requestBuilders = await ToolCaller.GetToolCallers(spec, assistantName);
+
+                // Add the request builders to the assistant request builders dictionary.
+                foreach (var tool in requestBuilders.Keys)
+                {
+                    assistantRequestBuilders[tool] = requestBuilders[tool];
+                }
             }
+
+            // Add the assistant request builders to the request builder cache.
+            RequestBuilderCache[assistantName] = assistantRequestBuilders;
         }
     }
 }
