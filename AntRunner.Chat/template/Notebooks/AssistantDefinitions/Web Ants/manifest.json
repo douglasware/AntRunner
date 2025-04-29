@@ -1,0 +1,11 @@
+{
+  "name": "Web Ants",
+  "description": "We search the web and read pages looking for answers to your questions!",
+  "tools": [],
+  "tool_resources": {},
+  "top_p": 0.7,
+  "response_format": "auto",
+  "metadata": {},
+  "model": "gpt-4o-mini",
+  "temperature": 0.5
+}

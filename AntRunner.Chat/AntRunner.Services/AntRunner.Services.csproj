@@ -14,12 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AntRunner.Chat" Version="0.6.1" />
     <PackageReference Include="AntRunnerLib" Version="0.9.7.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\AntRunner.Chat\AntRunner.Chat.csproj" />
   </ItemGroup>
 
 </Project>

@@ -21,20 +21,6 @@ RUN apt-get update && apt-get install -y \
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the AntRunnerLib project files
-COPY ["AntRunnerLib/AntRunnerLib.csproj", "AntRunnerLib/"]
-COPY ["AntRunnerLib/", "AntRunnerLib/"]
-
-# Copy the AntRunner.ToolCalling project files
-COPY ["AntRunner.ToolCalling/AntRunner.ToolCalling.csproj", "AntRunner.ToolCalling/"]
-COPY ["AntRunner.ToolCalling/", "AntRunner.ToolCalling/"]
-
-COPY ["AntRunner.Assistants/AntRunner.Assistants.csproj", "AntRunner.Assistants/"]
-COPY ["AntRunner.Assistants/", "AntRunner.Assistants/"]
-
-COPY ["AntRunner.Chat/AntRunner.Chat.csproj", "AntRunner.Chat/"]
-COPY ["AntRunner.Chat/", "AntRunner.Chat/"]
-
 # Copy the main project files
 COPY ["AntRunner.Services/AntRunner.Services.csproj", "AntRunner.Services/"]
 COPY ["AntRunner.Services/", "AntRunner.Services/"]

@@ -1,0 +1,9 @@
+{
+  "TypeKey": "azure",
+  "ModelKey": "AZURE_OPENAI_DEPLOYMENT",
+  "AzureOpenAIResourceName": "AZURE_OPENAI_RESOURCE",
+  "ApiKey": "AZURE_OPENAI_API_KEY",
+  "OrgKey": "",
+  "ApiVersionKey": "2025-01-01-preview",
+  "AssistantDefinitionsPath": "./AssistantDefinitions"
+}

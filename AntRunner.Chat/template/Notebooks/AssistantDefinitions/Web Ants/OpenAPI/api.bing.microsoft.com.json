@@ -1,0 +1,110 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Bing Web Search API",
+    "version": "v7.0",
+    "description": "The Bing Web Search API returns web search results for a given query."
+  },
+  "servers": [
+    {
+      "url": "https://api.bing.microsoft.com",
+      "description": "Bing Web Search API server"
+    }
+  ],
+  "paths": {
+    "/v7.0/search": {
+      "get": {
+        "summary": "Search for answers",
+        "operationId": "Search",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A short form of the user's question"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "maximum": 20
+            },
+            "description": "Required, default is 10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "queryContext": {
+                      "type": "object",
+                      "properties": {
+                        "originalQuery": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "webPages": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "url": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["name", "url"]
+                          }
+                        }
+                      }
+                    },
+                    "images": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "thumbnailUrl": {
+                                "type": "string"
+                              },
+                              "contentUrl": {
+                                "type": "string"
+                              },
+                              "hostPageUrl": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["thumbnailUrl", "contentUrl", "hostPageUrl"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": ["queryContext", "webPages", "images"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
