@@ -1,6 +1,12 @@
-# PowerShell script to deploy template with optional environment variable overrides and volume mapping updates
+# PowerShell script to deploy ProjectTemplate with optional environment variable overrides and volume mapping updates
 
 Set-StrictMode -Version Latest
+
+# Check for PowerShell Core
+if ($PSVersionTable.PSVersion.Major -lt 6) {
+    Write-Host "Error: This script requires PowerShell Core (version 6 or later). Exiting."
+    exit 1
+}
 
 function Prompt-EnvVar {
     param(
@@ -53,19 +59,19 @@ function Prompt-VolumePath {
 }
 
 # 1. Collect target directory from user
-$targetDir = Read-Host "Enter the target directory where template will be copied"
+$targetDir = Read-Host "Enter the target directory where ProjectTemplate will be copied"
 if ([string]::IsNullOrWhiteSpace($targetDir)) {
     Write-Host "Target directory is required. Exiting."
     exit 1
 }
 
-# 2. Copy template folders to target directory
-# Assuming the script is in the same folder as the template folder
+# 2. Copy ProjectTemplate folders to target directory
+# Assuming the script is in the same folder as the ProjectTemplate folder
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-Not (Test-Path -Path $targetDir)) {
     New-Item -Path $targetDir -ItemType Directory | Out-Null
 }
-Copy-Item -Path "$scriptDir\template\*" -Destination $targetDir -Recurse -Force
+Copy-Item -Path "$scriptDir\ProjectTemplate\*" -Destination $targetDir -Recurse -Force
 
 # 3. Override environment variables in docker-compose.yaml if requested
 $dockerComposeFile = Join-Path $targetDir "Sandboxes\code-interpreter\docker-compose.yaml"
@@ -198,5 +204,8 @@ docker compose -f $dockerComposeFile down
 
 Write-Host "Starting containers with updated configuration..."
 docker compose -f $dockerComposeFile up -d
+
+Write-Host "Uploading docs to memory"
+. .\upload-to-memory.ps1
 
 Write-Host "Deployment completed successfully."

@@ -1,0 +1,83 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fetch Page API",
+    "description": "API to fetch and return markdown content from a specified page URL.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://webantsfunctions.azurewebsites.net",
+      "description": "Default server"
+    }
+  ],
+  "paths": {
+    "api/FetchPageHttpTrigger": {
+      "get": {
+        "operationId": "Fetch",
+        "summary": "Get the content. If the content is an error or doesn't have the answer, try again with a different search result",
+        "description": "Fetches and returns markdown content from the specified page URL.",
+        "parameters": [
+          {
+            "name": "pageUrl",
+            "in": "query",
+            "required": true,
+            "description": "The URL of the found content.",
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with markdown content.",
+            "content": {
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "# Sample Markdown\n\nThis is a sample markdown content."
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The 'pageUrl' query parameter is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Please provide a pageUrl query parameter."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. An error occurred while fetching the page content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error fetching page content: <error message>"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}
