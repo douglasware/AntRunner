@@ -206,6 +206,7 @@ Write-Host "Starting containers with updated configuration..."
 docker compose -f $dockerComposeFile up -d
 
 Write-Host "Uploading docs to memory"
-. .\upload-to-memory.ps1
+Start-Sleep -Seconds 10
+.\upload-to-memory.ps1
 
 Write-Host "Deployment completed successfully."
