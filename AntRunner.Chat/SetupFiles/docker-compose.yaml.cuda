@@ -18,7 +18,6 @@ services:
     volumes:
       - ../shared-working:/app/shared
       - ../../Notebooks/shared-content:/app/shared/content
-      - ${USERPROFILE}/.aspnet/https:/root/.aspnet/https/
       - /var/run/docker.sock:/var/run/docker.sock
       - ../../Notebooks/AssistantDefinitions:/app/AssistantDefinitions
 
