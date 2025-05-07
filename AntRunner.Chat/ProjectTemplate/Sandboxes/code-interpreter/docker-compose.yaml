@@ -25,14 +25,6 @@ services:
   python-app:
     image: python-3.11-dotnet-9-torch
     container_name: python-app
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
     stdin_open: true
     tty: true
     volumes:
