@@ -18,9 +18,19 @@ RUN apt-get update && \
         python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install torch==2.3.1+cpu -f https://download.pytorch.org/whl/torch_stable.html && \
-    pip install torchaudio==2.3.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
-    
+RUN pip install torch==2.3.1 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip install torchaudio==2.3.1 -f https://download.pytorch.org/whl/torch_stable.html
+
+# Added the following dependency so that dependencies in requirements.txt can be installed without issues.
+    RUN apt-get update && apt-get install -y \
+    gdal-bin \
+    libgdal-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add environment variables so pip install can find GDAL
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
+ENV GDAL_VERSION=3.2.2
 RUN pip install --no-cache-dir -r requirements.txt
 SHELL ["/bin/bash", "-c"]
 CMD ["tail", "-f", "/dev/null"]
