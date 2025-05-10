@@ -9,8 +9,9 @@ namespace AntRunner.Chat
     /// </summary>
     public class Conversation
     {
-        private ChatRunOptions _chatConfiguration;
-        private AzureOpenAiConfig _serviceConfiguration;
+        private ChatRunOptions? _chatConfiguration;
+        private AzureOpenAiConfig? _serviceConfiguration;
+        private HttpClient _httpClient = new() { Timeout = TimeSpan.FromMinutes(3) };
 
         /// <summary>
         /// Gets or sets the messages exchanged with the assistant.
@@ -41,7 +42,7 @@ namespace AntRunner.Chat
         /// <summary>
         /// Gets the definition of the assistant being used in the conversation.
         /// </summary>
-        public AssistantDefinition AssistantDefinition { get; set; }
+        public AssistantDefinition? AssistantDefinition { get; set; }
 
         /// <summary>
         /// Gets the usage statistics of the conversation.
@@ -76,6 +77,9 @@ namespace AntRunner.Chat
         /// <param name="assistantName">The name of the new assistant to use.</param>
         public async Task ChangeAssistant(string assistantName)
         {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+
             if (assistantName == AssistantDefinition.Name) return;
             var assistantDef = await AssistantUtility.GetAssistantCreateRequest(assistantName) ?? throw new Exception($"Can't find assistant definition for {assistantName}");
 
@@ -97,12 +101,16 @@ namespace AntRunner.Chat
         /// <returns>A task representing the output of the chat run.</returns>
         public async Task<ChatRunOutput> Chat(string instructions)
         {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_serviceConfiguration == null) throw new Exception("_serviceConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+
             _chatConfiguration.Instructions = instructions;
 
             Turn turn = new() { AssistantName = _chatConfiguration.AssistantName, Instructions = instructions };
             Turns.Add(turn);
 
-            var runnerOutput = await ChatRunner.RunThread(_chatConfiguration, _serviceConfiguration, AssistantMessages[AssistantDefinition.Name!]);
+            var runnerOutput = await ChatRunner.RunThread(_chatConfiguration, _serviceConfiguration, AssistantMessages[AssistantDefinition.Name!], _httpClient);
 
             if (runnerOutput != null && runnerOutput.Messages != null)
             {
@@ -123,6 +131,10 @@ namespace AntRunner.Chat
         /// </summary>
         public void Undo()
         {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_serviceConfiguration == null) throw new Exception("_serviceConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+
             var lastIndex = AssistantMessages[AssistantDefinition.Name!].FindLastIndex(m => m.Role == Role.User);
             if (lastIndex != -1)
             {
@@ -144,6 +156,10 @@ namespace AntRunner.Chat
         /// <param name="messageText">The text of the user message to undo.</param>
         public void Undo(string messageText)
         {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_serviceConfiguration == null) throw new Exception("_serviceConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+
             var lastIndex = AssistantMessages[AssistantDefinition.Name!].FindLastIndex(m => m.Role == Role.User && m.Content == (dynamic)messageText);
             if (lastIndex != -1)
             {
@@ -158,10 +174,10 @@ namespace AntRunner.Chat
         /// </summary>
         /// <param name="chatConfiguration">The configuration options for the chat.</param>
         /// <returns>A task representing the newly created conversation.</returns>
-        public static async Task<Conversation> Create(ChatRunOptions chatConfiguration)
+        public static async Task<Conversation> Create(ChatRunOptions chatConfiguration, HttpClient? httpClient = null)
         {
             var serviceConfiguration = AzureOpenAiConfigFactory.Get();
-            return await Create(chatConfiguration, serviceConfiguration);
+            return await Create(chatConfiguration, serviceConfiguration, httpClient);
         }
 
         /// <summary>
@@ -170,10 +186,11 @@ namespace AntRunner.Chat
         /// <param name="chatConfiguration">The configuration options for the chat.</param>
         /// <param name="serviceConfiguration">The configuration options for the service.</param>
         /// <returns>A task representing the newly created conversation.</returns>
-        public static async Task<Conversation> Create(ChatRunOptions chatConfiguration, AzureOpenAiConfig serviceConfiguration)
+        public static async Task<Conversation> Create(ChatRunOptions chatConfiguration, AzureOpenAiConfig serviceConfiguration, HttpClient? httpClient = null)
         {
             var assistantDef = await AssistantUtility.GetAssistantCreateRequest(chatConfiguration.AssistantName) ?? throw new Exception($"Can't find assistant definition for {chatConfiguration.AssistantName}");
             var conversation = new Conversation(chatConfiguration, serviceConfiguration, assistantDef);
+            conversation._httpClient = httpClient ?? conversation._httpClient;
             return conversation;
         }
 
@@ -184,17 +201,19 @@ namespace AntRunner.Chat
         /// <param name="chatConfiguration">The configuration options for the chat.</param>
         /// <param name="serviceConfiguration">The configuration options for the service.</param>
         /// <returns>A task representing the loaded conversation.</returns>
-        public static Conversation Create(string filePath, AzureOpenAiConfig serviceConfiguration)
+        public static Conversation Create(string filePath, AzureOpenAiConfig serviceConfiguration, HttpClient? httpClient = null)
         {
             var jsonString = File.ReadAllText(filePath);
             var conversation = JsonSerializer.Deserialize<Conversation>(jsonString) ?? throw new Exception("Failed to deserialize the conversation.");
 
             // Apply the provided configurations to the deserialized conversation
-            conversation._chatConfiguration = new() { AssistantName = conversation.AssistantDefinition.Name!, DeploymentId = conversation.AssistantDefinition.Model };
+            conversation._chatConfiguration = new() { AssistantName = conversation.AssistantDefinition!.Name!, DeploymentId = conversation.AssistantDefinition.Model };
             conversation._serviceConfiguration = serviceConfiguration;
-
+            conversation._httpClient = httpClient ?? conversation._httpClient;
             return conversation;
         }
+
+        static readonly JsonSerializerOptions WriteIndentedOptions = new() { WriteIndented = true };
 
         /// <summary>
         /// Serializes the current instance to a JSON file.
@@ -202,8 +221,7 @@ namespace AntRunner.Chat
         /// <param name="filePath">The path to the file where the instance will be saved.</param>
         public void Save(string filePath)
         {
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            var jsonString = JsonSerializer.Serialize(this, options);
+            var jsonString = JsonSerializer.Serialize(this, WriteIndentedOptions);
             File.WriteAllText(filePath, jsonString);
         }
     }

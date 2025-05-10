@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.6.2</Version>
+    <Version>0.6.5</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Title>AntRunner Chat-based Agents</Title>
     <Description>Toolbased AI Agents via Chat Completions compatible with AntRunner assistant definitions</Description>

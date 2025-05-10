@@ -9,23 +9,34 @@ using System.Text.Json.Nodes;
 
 namespace AntRunner.Chat
 {
+    public class ChatConversationException(Exception ex, ChatRunOutput? chatRunOutput) : Exception("An error occured during the run", ex)
+    {
+        public ChatRunOutput? ChatRunOutput { get; private set; } = chatRunOutput;
+    }
+
     /// <summary>
     /// Responsible for running assistant threads through interaction with various utilities.
     /// </summary>
     public class ChatRunner
     {
+        // Seems like a reasonable default for reasoning models
+        static readonly HttpClient _httpClient = new () {Timeout = TimeSpan.FromMinutes(3) };
+
         private static readonly ConcurrentDictionary<string, Dictionary<string, ToolCaller>> RequestBuilderCache = new();
 
         /// <summary>
-        /// Runs the assistant thread with the specified run options and configuration.
-        /// It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
-        /// By default, the assistant will be created if it doesn't exist and a definition is found.
+        /// Executes a chat conversation thread with an AI assistant using Azure OpenAI.
         /// </summary>
-        /// <param name="chatRunOptions">The options for running the assistant.</param>
-        /// <param name="config">The configuration for Azure OpenAI.</param>
-        /// <param name="autoCreate">Whether to automatically create the assistant if it doesn't exist.</param>
-        /// <returns>The output of the thread run including possible additional run output from additional messages when using the default evaluator</returns>
-        public static async Task<ChatRunOutput?> RunThread(ChatRunOptions chatRunOptions, AzureOpenAiConfig config, List<Message>? previousMessages = null)
+        /// <param name="chatRunOptions">Options and settings for running the chat, including assistant name and instructions.</param>
+        /// <param name="config">Configuration object for Azure OpenAI, containing API keys and necessary settings.</param>
+        /// <param name="previousMessages">Optional list of messages from a previous conversation for context continuity.</param>
+        /// <param name="httpClient">Optional HttpClient instance for making HTTP requests, with a default fallback if not provided.</param>
+        /// <returns>
+        /// Returns a <see cref="ChatRunOutput"/> containing the results of the chat run, including the final state of the conversation.
+        /// </returns>
+        /// <exception cref="Exception">Thrown when the assistant definition cannot be found.</exception>
+        /// <exception cref="ChatConversationException">Thrown when an error occurs during the chat conversation, encapsulating the current run results.</exception>
+        public static async Task<ChatRunOutput?> RunThread(ChatRunOptions chatRunOptions, AzureOpenAiConfig config, List<Message>? previousMessages = null, HttpClient? httpClient = null)
         {
             // Retrieve the assistant ID using the assistant name from the configuration
             var assistantDef = await AssistantUtility.GetAssistantCreateRequest(chatRunOptions.AssistantName);
@@ -43,7 +54,7 @@ namespace AntRunner.Chat
 
             var auth = new OpenAIAuthentication(config.ApiKey);
             var settings = new OpenAIClientSettings(resourceName: config.ResourceName, chatRunOptions.DeploymentId, apiVersion: config.ApiVersion);
-            using var api = new OpenAIClient(auth, settings);
+            using var api = new OpenAIClient(auth, settings, httpClient ?? _httpClient);
 
             var messages = new List<Message>();
 
@@ -88,63 +99,70 @@ namespace AntRunner.Chat
             ChatRunOutput? runResults = null;
             int evaluatorTurnCounter = 0;
 
-            while (continueChat)
+            try
             {
-                var chatRequest = new ChatRequest(messages, tools: tools, model: chatRunOptions.DeploymentId, temperature: assistantDef.Temperature, topP: assistantDef.TopP);
-                var response = await api.ChatEndpoint.GetCompletionAsync(chatRequest);
-                messages.Add(response.FirstChoice.Message);
-
-                choice = response.FirstChoice;
-
-                //Console.WriteLine($"[{choice.Index}] {choice.Message.Role}: {choice.Message} | Finish Reason: {choice.FinishReason}");
-
-                switch (choice.FinishReason)
+                while (continueChat)
                 {
-                    case "stop":
-                        evaluatorTurnCounter = 0;
-                        continueChat = false;
-                        break;
-                    case "tool_calls":
-                        // Perform required actions for the tool calls
-                        await PerformRunRequiredActions(assistantDef, choice.Message.ToolCalls, messages);
-                        break;
-                    case "length":
-                        // Handle the case where the maximum token length is reached
-                        continueChat = false;
-                        break;
-                    case "function_call":
-                        // Handle the case where a function call is needed
-                        continueChat = false;
-                        break;
-                    default:
-                        messages.Add(choice.Message);
-                        break;
-                }
+                    var chatRequest = new ChatRequest(messages, tools: tools, model: chatRunOptions.DeploymentId, temperature: assistantDef.Temperature, topP: assistantDef.TopP);
+                    var response = await api.ChatEndpoint.GetCompletionAsync(chatRequest);
+                    messages.Add(response.FirstChoice.Message);
 
-                runResults = BuildRunResults(messages, response);
+                    choice = response.FirstChoice;
 
-                if (choice.FinishReason == "stop" && !string.IsNullOrEmpty(chatRunOptions.Evaluator))
-                {
-                    while (evaluatorTurnCounter < 2)
+                    //Console.WriteLine($"[{choice.Index}] {choice.Message.Role}: {choice.Message} | Finish Reason: {choice.FinishReason}");
+
+                    switch (choice.FinishReason)
                     {
-                        evaluatorTurnCounter++;
-                        var evaluatorOptions = new ChatRunOptions()
-                        {
-                            AssistantName = chatRunOptions.Evaluator,
-                            Instructions = runResults?.Dialog ?? ""
-                        };
+                        case "stop":
+                            evaluatorTurnCounter = 0;
+                            continueChat = false;
+                            break;
+                        case "tool_calls":
+                            // Perform required actions for the tool calls
+                            await PerformRunRequiredActions(assistantDef, choice.Message.ToolCalls, messages, httpClient: httpClient);
+                            break;
+                        case "length":
+                            // Handle the case where the maximum token length is reached
+                            continueChat = false;
+                            break;
+                        case "function_call":
+                            // Handle the case where a function call is needed
+                            continueChat = false;
+                            break;
+                        default:
+                            messages.Add(choice.Message);
+                            break;
+                    }
 
-                        var evaluatorOutput = (await RunThread(evaluatorOptions, config))?.LastMessage ?? "";
-                        if (!evaluatorOutput.Contains("End Conversation", StringComparison.OrdinalIgnoreCase))
+                    runResults = BuildRunResults(messages, response);
+
+                    if (choice.FinishReason == "stop" && !string.IsNullOrEmpty(chatRunOptions.Evaluator))
+                    {
+                        while (evaluatorTurnCounter < 2)
                         {
-                            messages.Add(new Message(Role.User, evaluatorOutput));
-                            continueChat = true;
+                            evaluatorTurnCounter++;
+                            var evaluatorOptions = new ChatRunOptions()
+                            {
+                                AssistantName = chatRunOptions.Evaluator,
+                                Instructions = runResults?.Dialog ?? ""
+                            };
+
+                            var evaluatorOutput = (await RunThread(evaluatorOptions, config))?.LastMessage ?? "";
+                            if (!evaluatorOutput.Contains("End Conversation", StringComparison.OrdinalIgnoreCase))
+                            {
+                                messages.Add(new Message(Role.User, evaluatorOutput));
+                                continueChat = true;
+                            }
                         }
                     }
                 }
-            }
 
-            return runResults;
+                return runResults;
+            }
+            catch(Exception ex)
+            {
+                throw new ChatConversationException(ex, runResults);
+            }
         }
 
         private static ChatRunOutput? BuildRunResults(List<Message> messages, ChatResponse response)
@@ -234,16 +252,22 @@ namespace AntRunner.Chat
         }
 
         /// <summary>
-        /// Runs the assistant thread with the specified assistant using the environment configuration.
-        /// It manages the lifecycle of an assistant run, handles required actions, and optionally evaluates conversations.
-        /// By default, the assistant will be created if it doesn't exist and a definition is found.
-        /// This method's main purpose is to provide a simplified way to run an assistant thread to allow the use of a thread run as a tool call via local functions.
+        /// Executes a chat conversation thread with an AI assistant using a simplified approach.
         /// </summary>
-        /// <param name="assistantName">The options for running the assistant.</param>
-        /// <param name="instructions">The configuration for Azure OpenAI.</param>
-        /// <param name="evaluator">A named evaluator. In this version it causes the UseConversationEvaluator to be true but does NOT use an assistant with the provided name</param>
-        /// <returns>The LastMessage from the thread run</returns>
-        public static async Task<string> RunThread(string assistantName, string instructions, string? evaluator = "")
+        /// <param name="assistantName">The name of the assistant to run.</param>
+        /// <param name="instructions">The instructions for the conversation with the assistant.</param>
+        /// <param name="evaluator">Optional evaluator name for further processing or evaluation.</param>
+        /// <param name="httpClient">Optional HttpClient instance for making HTTP requests, with a default fallback if not provided.</param>
+        /// <returns>
+        /// Returns a <see cref="string"/> containing the dialog from the chat run.
+        /// If unable to process the request, returns "Unable to process request".
+        /// </returns>
+        /// <remarks>
+        /// This method is designed to provide a simplified interface for running an assistant thread,
+        /// allowing the use of a thread run as a tool call via local functions.
+        /// </remarks>
+        /// <exception cref="ChatConversationException">Thrown when an error occurs during the chat conversation, encapsulating the current run results.</exception>
+        public static async Task<string> RunThread(string assistantName, string instructions, string? evaluator = "", HttpClient? httpClient = null)
         {
             TraceInformation($"Running {assistantName}"); //: {instructions}");
             var config = AzureOpenAiConfigFactory.Get();
@@ -255,18 +279,16 @@ namespace AntRunner.Chat
                 DeploymentId = config.DeploymentId
             };
 
-            // The primary purpose of this method is to provide a simplified way to run an assistant thread to allow the use of a thread run as a tool call via local functions.
-            // Accordingly, autoCreate is set to false to avoid creating an assistant if it doesn't exist because otherwise parallel runs would create multiple assistants.
-            var output = await RunThread(chatRunOptions, config!);
+            var output = await RunThread(chatRunOptions, config!, httpClient: httpClient);
             if (output != null)
             {
                 return output.Dialog;
-                //return output.LastMessage;
             }
 
             return "Unable to process request";
         }
-        private static async Task PerformRunRequiredActions(AssistantDefinition assistantDef, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null)
+        
+        private static async Task PerformRunRequiredActions(AssistantDefinition assistantDef, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null, HttpClient? httpClient = null)
         {
             var assistantName = assistantDef.Name!;
 
@@ -288,6 +310,7 @@ namespace AntRunner.Chat
                 {
                     // Create a new builder instance for each tool call to avoid shared state.
                     var builder = tool.Clone();
+                    
                     builder.Params = JsonSerializer.Deserialize<Dictionary<string, object>>(parameters.ToString());
 
                     var task = Task.Run(async () =>
@@ -296,7 +319,7 @@ namespace AntRunner.Chat
                         if (builder.ActionType == ActionType.WebApi)
                         {
                             // Execute the request and collect the response.
-                            var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken);
+                            var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken, httpClient ?? _httpClient);
                             var responseContent = await response.Content.ReadAsStringAsync();
 
                             if (builder.ResponseSchemas.TryGetValue("200", out var schemaJson))

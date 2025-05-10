@@ -12,6 +12,8 @@ namespace TestConsole
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
+            var httpClient = new HttpClient() { Timeout = new TimeSpan(0, 5, 0) };
+
             foreach (var setting in configuration.AsEnumerable())
             {
                 if (!string.IsNullOrEmpty(setting.Value))
@@ -27,8 +29,11 @@ namespace TestConsole
 
             //var result = await ChatRunner.RunThread(chatRunOptions, config);
 
-            var conversation = await Conversation.Create(chatRunOptions, config);
-            var result = await conversation.Chat("What is today's date?");
+            var conversation = await Conversation.Create(chatRunOptions, config, httpClient);
+            Console.WriteLine(DateTime.Now.ToLongTimeString());
+            var result = await conversation.Chat("Extract the audio from https://youtu.be/t16LK7gk9SY and save it to ../content\nYou will need to install one or more packages to complete the task. Do not give up if you get an error. Instead, correct yourself and proceed.");
+            //https://youtu.be/WT8t3i8CkMQ
+            Console.WriteLine(DateTime.Now.ToLongTimeString());
             Console.WriteLine(conversation.LastResponse?.LastMessage);
             Console.WriteLine(conversation.Usage.TotalTokens);
             await conversation.ChangeAssistant("Web Ants");
@@ -48,7 +53,7 @@ namespace TestConsole
             var conversation2 = Conversation.Create(@"e:\suwaneeactivities.json", config);
             result = await conversation2.Chat("What is there to do the week after that?");
 
-            Console.WriteLine(conversation2.Usage.TotalTokens);
+            //Console.WriteLine(conversation2.Usage.TotalTokens);
             Console.WriteLine(conversation2.LastResponse?.LastMessage);
 
             Console.WriteLine(conversation2.LastResponse?.Dialog);

@@ -264,7 +264,7 @@ namespace AntRunner.ToolCalling.Functions
         /// </summary>
         /// <param name="oAuthUserAccessToken">Optional OAuth user access token for authentication.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<HttpResponseMessage> ExecuteWebApiAsync(string? oAuthUserAccessToken = null)
+        public async Task<HttpResponseMessage> ExecuteWebApiAsync(string? oAuthUserAccessToken = null, HttpClient? httpClient = null)
         {
             // Replace path parameters with actual values from Params
             foreach (var param in Params ?? new Dictionary<string, object>())
@@ -285,7 +285,7 @@ namespace AntRunner.ToolCalling.Functions
             }
 
             // Create the HTTP client and request message
-            var client = _httpClientFactory!.CreateClient();
+            var client = httpClient ?? _httpClientFactory!.CreateClient();
             var request = new HttpRequestMessage(new HttpMethod(Method), url);
             request.Headers.TryAddWithoutValidation("Content-Type", ContentType);
 
