@@ -1,9 +1,22 @@
-﻿using AntRunner.ToolCalling.AssistantDefinitions;
+
+using AntRunner.ToolCalling.AssistantDefinitions;
 using OpenAI;
 using OpenAI.Chat;
 
 namespace AntRunner.Chat
 {
+    public delegate void MessageAddedEventHandler(object? sender, MessageAddedEventArgs e);
+
+    public class MessageAddedEventArgs : EventArgs
+    {
+        public string NewMessage { get; }
+
+        public MessageAddedEventArgs(string newMessage)
+        {
+            NewMessage = newMessage;
+        }
+    }
+
     /// <summary>
     /// Represents a conversation with an AI assistant, managing the interaction and message history.
     /// </summary>
@@ -11,7 +24,7 @@ namespace AntRunner.Chat
     {
         private ChatRunOptions? _chatConfiguration;
         private AzureOpenAiConfig? _serviceConfiguration;
-        private HttpClient _httpClient = new() { Timeout = TimeSpan.FromMinutes(3) };
+        private HttpClient _httpClient = HttpClientUtility.Get();
 
         /// <summary>
         /// Gets or sets the messages exchanged with the assistant.
@@ -22,6 +35,8 @@ namespace AntRunner.Chat
         /// Gets or sets the list of turns in the conversation.
         /// </summary>
         public List<Turn> Turns { get; set; } = [];
+
+        public event MessageAddedEventHandler? MessageAdded;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Conversation"/> class.
@@ -110,7 +125,9 @@ namespace AntRunner.Chat
             Turn turn = new() { AssistantName = _chatConfiguration.AssistantName, Instructions = instructions };
             Turns.Add(turn);
 
-            var runnerOutput = await ChatRunner.RunThread(_chatConfiguration, _serviceConfiguration, AssistantMessages[AssistantDefinition.Name!], _httpClient);
+            var oldMessages = AssistantMessages[AssistantDefinition.Name!];
+
+            var runnerOutput = await ChatRunner.RunThread(_chatConfiguration, _serviceConfiguration, oldMessages, _httpClient, MessageAdded);
 
             if (runnerOutput != null && runnerOutput.Messages != null)
             {
@@ -206,7 +223,7 @@ namespace AntRunner.Chat
             var jsonString = File.ReadAllText(filePath);
             var conversation = JsonSerializer.Deserialize<Conversation>(jsonString) ?? throw new Exception("Failed to deserialize the conversation.");
 
-            // Apply the provided configurations to the deserialized conversation
+            conversation._chatConfiguration = new ChatRunOptions { AssistantName = conversation.AssistantDefinition!.Name!, DeploymentId = conversation.AssistantDefinition.Model };
             conversation._chatConfiguration = new() { AssistantName = conversation.AssistantDefinition!.Name!, DeploymentId = conversation.AssistantDefinition.Model };
             conversation._serviceConfiguration = serviceConfiguration;
             conversation._httpClient = httpClient ?? conversation._httpClient;

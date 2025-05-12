@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.6.5</Version>
+    <Version>0.7.0</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Title>AntRunner Chat-based Agents</Title>
     <Description>Toolbased AI Agents via Chat Completions compatible with AntRunner assistant definitions</Description>
@@ -16,6 +16,7 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/douglasware/AntRunner</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReleaseNotes>Streaming messages through events, oAuth token fix</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

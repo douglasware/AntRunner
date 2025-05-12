@@ -1,4 +1,5 @@
-﻿using AntRunner.ToolCalling.AssistantDefinitions.Storage;
+
+using AntRunner.ToolCalling.AssistantDefinitions.Storage;
 using AntRunner.ToolCalling.AssistantDefinitions;
 using AntRunner.ToolCalling.Functions;
 using OpenAI;
@@ -9,9 +10,14 @@ using System.Text.Json.Nodes;
 
 namespace AntRunner.Chat
 {
-    public class ChatConversationException(Exception ex, ChatRunOutput? chatRunOutput) : Exception("An error occured during the run", ex)
+    public class ChatConversationException : Exception
     {
-        public ChatRunOutput? ChatRunOutput { get; private set; } = chatRunOutput;
+        public ChatRunOutput? ChatRunOutput { get; private set; }
+
+        public ChatConversationException(Exception ex, ChatRunOutput? chatRunOutput) : base("An error occured during the run", ex)
+        {
+            ChatRunOutput = chatRunOutput;
+        }
     }
 
     /// <summary>
@@ -19,8 +25,7 @@ namespace AntRunner.Chat
     /// </summary>
     public class ChatRunner
     {
-        // Seems like a reasonable default for reasoning models
-        static readonly HttpClient _httpClient = new () {Timeout = TimeSpan.FromMinutes(3) };
+        static readonly HttpClient _httpClient = HttpClientUtility.Get();
 
         private static readonly ConcurrentDictionary<string, Dictionary<string, ToolCaller>> RequestBuilderCache = new();
 
@@ -36,7 +41,7 @@ namespace AntRunner.Chat
         /// </returns>
         /// <exception cref="Exception">Thrown when the assistant definition cannot be found.</exception>
         /// <exception cref="ChatConversationException">Thrown when an error occurs during the chat conversation, encapsulating the current run results.</exception>
-        public static async Task<ChatRunOutput?> RunThread(ChatRunOptions chatRunOptions, AzureOpenAiConfig config, List<Message>? previousMessages = null, HttpClient? httpClient = null)
+        public static async Task<ChatRunOutput?> RunThread(ChatRunOptions chatRunOptions, AzureOpenAiConfig config, List<Message>? previousMessages = null, HttpClient? httpClient = null, MessageAddedEventHandler? messageAdded = null)
         {
             // Retrieve the assistant ID using the assistant name from the configuration
             var assistantDef = await AssistantUtility.GetAssistantCreateRequest(chatRunOptions.AssistantName);
@@ -65,6 +70,7 @@ namespace AntRunner.Chat
                     messages.Add(previousMessage);
                 }
                 messages.Add(new Message(Role.User, chatRunOptions.Instructions));
+                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
             }
             else
             {
@@ -73,6 +79,8 @@ namespace AntRunner.Chat
                     new Message(Role.System, assistantDef.Instructions),
                     new Message(Role.User, chatRunOptions.Instructions),
                 ];
+                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.First().GetText()));
+                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
             }
 
             var tools = new List<Tool>();
@@ -106,10 +114,8 @@ namespace AntRunner.Chat
                     var chatRequest = new ChatRequest(messages, tools: tools, model: chatRunOptions.DeploymentId, temperature: assistantDef.Temperature, topP: assistantDef.TopP);
                     var response = await api.ChatEndpoint.GetCompletionAsync(chatRequest);
                     messages.Add(response.FirstChoice.Message);
-
+                    messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
                     choice = response.FirstChoice;
-
-                    //Console.WriteLine($"[{choice.Index}] {choice.Message.Role}: {choice.Message} | Finish Reason: {choice.FinishReason}");
 
                     switch (choice.FinishReason)
                     {
@@ -118,19 +124,15 @@ namespace AntRunner.Chat
                             continueChat = false;
                             break;
                         case "tool_calls":
-                            // Perform required actions for the tool calls
-                            await PerformRunRequiredActions(assistantDef, choice.Message.ToolCalls, messages, httpClient: httpClient);
+                            await DoToolCalls(assistantDef, choice.Message.ToolCalls, messages, oAuthUserAccessToken: chatRunOptions.oAuthUserAccessToken, httpClient: httpClient);
                             break;
                         case "length":
-                            // Handle the case where the maximum token length is reached
                             continueChat = false;
                             break;
                         case "function_call":
-                            // Handle the case where a function call is needed
                             continueChat = false;
                             break;
                         default:
-                            messages.Add(choice.Message);
                             break;
                     }
 
@@ -168,6 +170,7 @@ namespace AntRunner.Chat
         private static ChatRunOutput? BuildRunResults(List<Message> messages, ChatResponse response)
         {
             ChatRunOutput? runResults = new() { Messages = messages };
+
             if (messages.Last().Content is JsonElement && messages.Last().Content.ValueKind == JsonValueKind.String)
             {
                 runResults.LastMessage = messages.Last().Content.ToString();
@@ -176,67 +179,27 @@ namespace AntRunner.Chat
             {
                 runResults.LastMessage = messages.Last().Content[0].Text;
             }
+
             var choice = response.FirstChoice;
             runResults.Status = choice?.FinishReason ?? "unknown";
+
             foreach (var message in messages)
             {
                 if (message.Role == Role.System || message.Role == Role.Developer) continue;
+
+                string messageText = message.GetText();
+
                 if (message.Role == Role.User)
                 {
-                    runResults.ConversationMessages.Add(new() { Message = message.Content!.ToString(), MessageType = ThreadConversationMessageType.User });
+                    runResults.ConversationMessages.Add(new() { Message = messageText, MessageType = ThreadConversationMessageType.User });
                 }
                 else if (message.Role == Role.Assistant)
                 {
-                    string messageText = "";
-                    if (message.Content?.ValueKind == JsonValueKind.String)
-                    {
-                        messageText += $"{message.Content.ToString()}\n";
-                    }
-                    if (message.ToolCalls != null)
-                    {
-                        foreach (var toolCall in message.ToolCalls)
-                        {
-                            if (toolCall.Function != null)
-                            {
-                                messageText += $"I called the tool named {toolCall.Function.Name} with {toolCall.Function.Arguments}\n";
-                            }
-                        }
-                    }
                     runResults.ConversationMessages.Add(new() { Message = messageText, MessageType = ThreadConversationMessageType.Assistant });
                 }
                 else if (message.Role == Role.Tool)
                 {
-                    try
-                    {
-                        string textContent = message.Content![0].Text.ToString();
-                        runResults.ConversationMessages.Add(new() { Message = $"I got this output: {textContent}\n", MessageType = ThreadConversationMessageType.Tool });
-                    }
-                    catch
-                    {
-                        // Workaround for serialize/deserialize behavior in the Message class
-                        // TODO: Identify root cause and file an issue
-                        string jsonString = message.Content![0].ToString();
-
-                        try
-                        {
-                            JsonDocument jsonDoc = JsonDocument.Parse(jsonString);
-                            JsonElement root = jsonDoc.RootElement;
-
-                            if (root.TryGetProperty("text", out JsonElement textElement))
-                            {
-                                string textValue = textElement.GetString() ?? jsonString;
-                                runResults.ConversationMessages.Add(new() { Message = $"I got this output: {textValue}\n", MessageType = ThreadConversationMessageType.Tool });
-                            }
-                            else
-                            {
-                                runResults.ConversationMessages.Add(new() { Message = $"I got this output: {jsonString}\n", MessageType = ThreadConversationMessageType.Tool });
-                            }
-                        }
-                        catch
-                        {
-                            runResults.ConversationMessages.Add(new() { Message = $"I got this output: {jsonString}\n", MessageType = ThreadConversationMessageType.Tool });
-                        }
-                    }
+                    runResults.ConversationMessages.Add(new() { Message = messageText, MessageType = ThreadConversationMessageType.Tool });
                 }
             }
 
@@ -288,18 +251,16 @@ namespace AntRunner.Chat
             return "Unable to process request";
         }
         
-        private static async Task PerformRunRequiredActions(AssistantDefinition assistantDef, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null, HttpClient? httpClient = null)
+        private static async Task DoToolCalls(AssistantDefinition assistantDef, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null, HttpClient? httpClient = null)
         {
             var assistantName = assistantDef.Name!;
 
-            // Ensure the request builder cache is populated for the given assistant.
             await EnsureRequestBuilderCache(assistantName);
 
             if (!RequestBuilderCache.TryGetValue(assistantName, out var builders)) throw new Exception($"No request builders found for {assistantName}");
 
             var toolCallTasks = new List<Task<ToolOutput>>();
 
-            // Iterate through each required tool call and execute the necessary requests.
             foreach (var requiredOutput in toolCalls)
             {
                 if (!requiredOutput.IsFunction) continue;
@@ -308,7 +269,6 @@ namespace AntRunner.Chat
                 var parameters = requiredOutput.Function.Arguments;
                 if (builders.TryGetValue(toolName, out ToolCaller? tool))
                 {
-                    // Create a new builder instance for each tool call to avoid shared state.
                     var builder = tool.Clone();
                     
                     builder.Params = JsonSerializer.Deserialize<Dictionary<string, object>>(parameters.ToString());
@@ -318,7 +278,6 @@ namespace AntRunner.Chat
                         string output;
                         if (builder.ActionType == ActionType.WebApi)
                         {
-                            // Execute the request and collect the response.
                             var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken, httpClient ?? _httpClient);
                             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -333,13 +292,11 @@ namespace AntRunner.Chat
                                 }
                                 catch
                                 {
-                                    // If filtering fails, use the original response content.
                                     output = responseContent;
                                 }
                             }
                             else
                             {
-                                // If no response schema, use the original response content.
                                 output = responseContent;
                             }
                         }
@@ -362,7 +319,6 @@ namespace AntRunner.Chat
                                 output = $"ERROR: {ex.Message}";
                             }
                         }
-                        // Create a ToolOutput object.
                         return new ToolOutput()
                         {
                             Output = output,
@@ -389,7 +345,6 @@ namespace AntRunner.Chat
 
             if (toolCallTasks.Count > 0)
             {
-                // Wait for all tool call tasks to complete.
                 var toolOutputs = await Task.WhenAll(toolCallTasks);
 
                 foreach (var toolCall in toolCalls)
@@ -411,7 +366,6 @@ namespace AntRunner.Chat
 
             var assistantRequestBuilders = new Dictionary<string, ToolCaller>();
 
-            // Retrieve the OpenAPI schema files from the assistant definition folder.
             var openApiSchemaFiles = await AssistantDefinitionFiles.GetFilesInOpenApiFolder(assistantName);
             if (openApiSchemaFiles == null || openApiSchemaFiles.Count == 0) return;
 
@@ -426,11 +380,9 @@ namespace AntRunner.Chat
 
                 var json = Encoding.Default.GetString(schema);
 
-                // Validate and parse the OpenAPI specification from the JSON string.
                 var validationResult = OpenApiHelper.ValidateAndParseOpenApiSpec(json);
                 var spec = validationResult.Spec;
 
-                // Check if the validation was successful and if the specification is not null.
                 if (!validationResult.Status || spec == null)
                 {
                     TraceWarning($"Json is not a valid OpenAPI spec {json}. Ignoring");
@@ -439,14 +391,12 @@ namespace AntRunner.Chat
 
                 var requestBuilders = await ToolCaller.GetToolCallers(spec, assistantName);
 
-                // Add the request builders to the assistant request builders dictionary.
                 foreach (var tool in requestBuilders.Keys)
                 {
                     assistantRequestBuilders[tool] = requestBuilders[tool];
                 }
             }
 
-            // Add the assistant request builders to the request builder cache.
             RequestBuilderCache[assistantName] = assistantRequestBuilders;
         }
     }
