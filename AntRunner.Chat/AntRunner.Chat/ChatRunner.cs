@@ -124,7 +124,7 @@ namespace AntRunner.Chat
                             continueChat = false;
                             break;
                         case "tool_calls":
-                            await DoToolCalls(assistantDef, choice.Message.ToolCalls, messages, oAuthUserAccessToken: chatRunOptions.oAuthUserAccessToken, httpClient: httpClient);
+                            await DoToolCalls(assistantDef, choice.Message.ToolCalls, messages, oAuthUserAccessToken: chatRunOptions.oAuthUserAccessToken, httpClient: httpClient, messageAdded: messageAdded);
                             break;
                         case "length":
                             continueChat = false;
@@ -251,7 +251,7 @@ namespace AntRunner.Chat
             return "Unable to process request";
         }
         
-        private static async Task DoToolCalls(AssistantDefinition assistantDef, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null, HttpClient? httpClient = null)
+        private static async Task DoToolCalls(AssistantDefinition assistantDef, IReadOnlyList<OpenAI.ToolCall> toolCalls, List<Message> messages, string? oAuthUserAccessToken = null, HttpClient? httpClient = null, MessageAddedEventHandler? messageAdded = null)
         {
             var assistantName = assistantDef.Name!;
 
@@ -353,6 +353,7 @@ namespace AntRunner.Chat
                     var id = toolCall.Id;
                     var toolOutput = toolOutputs.FirstOrDefault(to => to.ToolCallId == id) ?? throw new Exception("No match");
                     messages.Add(new Message(toolCallId: id, toolFunctionName: toolCall.Function.Name, [new(toolOutput.Output!)]));
+                    messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
                 }
             }
         }
