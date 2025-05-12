@@ -20,7 +20,9 @@ public static class Settings
         { "ApiKey", "AZURE_OPENAI_API_KEY" },
         { "OrgKey", "org" },
         { "ApiVersionKey", "AZURE_OPENAI_API_VERSION" },
-        { "AssistantDefinitionsPath", "ASSISTANTS_BASE_FOLDER_PATH" }
+        { "AssistantDefinitionsPath", "ASSISTANTS_BASE_FOLDER_PATH" },
+        { "SearchApiKey", "SEARCH_API_KEY" },
+        { "FetchApiKey", "FETCH_API_KEY" }
     };
 
     private static readonly Dictionary<string, string> SettingsDefaults = new Dictionary<string, string>
