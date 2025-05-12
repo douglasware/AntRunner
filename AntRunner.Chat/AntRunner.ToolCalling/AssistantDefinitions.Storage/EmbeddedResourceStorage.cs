@@ -1,47 +1,38 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace AntRunner.ToolCalling.AssistantDefinitions.Storage
 {
-    internal class EmbeddedResourceStorage
+    internal static class EmbeddedResourceStorage
     {
+        internal static string? GetManifest(string assistantName)
+        {
+            var assistantDir = Path.Combine(AppContext.BaseDirectory, "Assistants", assistantName);
+
+            var namedFile = Path.Combine(assistantDir, $"{assistantName}.json");
+            if (File.Exists(namedFile))
+                return File.ReadAllText(namedFile);
+
+            var fallback = Path.Combine(assistantDir, "manifest.json");
+            if (File.Exists(fallback))
+                return File.ReadAllText(fallback);
+
+            return null;
+        }
+
         internal static string? GetInstructions(string assistantName)
         {
-            return GetEmbeddedResource($"{assistantName}.md");
-        }
+            var assistantDir = Path.Combine(AppContext.BaseDirectory, "Assistants", assistantName);
 
-        internal static string? GetManifest(string asistantName)
-        {
-            return GetEmbeddedResource($"{asistantName}.json");
-        }
+            var namedFile = Path.Combine(assistantDir, $"{assistantName}.md");
+            if (File.Exists(namedFile))
+                return File.ReadAllText(namedFile);
 
-        /// <summary>
-        /// Looks for the resource and returns a string or null
-        /// </summary>
-        /// <param name="resourceName"></param>
-        /// <returns>The resource as a string or null</returns>
-        private static string? GetEmbeddedResource(string resourceName)
-        {
-            // Search for the resource in all loaded assemblies
-            string? json = null;
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                if (!assembly.IsDynamic)
-                {
-                    using var resourceStream = assembly.GetManifestResourceStream(resourceName);
-                    if (resourceStream != null)
-                    {
-                        using StreamReader reader = new(resourceStream);
-                        json = reader.ReadToEnd();
-                        Trace.TraceInformation($"JSON data successfully read from resourceName '{resourceName}'.");
-                    }
-                }
-            }
-            if (json == null)
-            {
-                Trace.TraceInformation($"Didn't find resourceName: '{resourceName}' in any assemblies.");
-            }
+            var fallback = Path.Combine(assistantDir, "instructions.md");
+            if (File.Exists(fallback))
+                return File.ReadAllText(fallback);
 
-            return json;
+            return null;
         }
     }
 }
