@@ -27,7 +27,7 @@ namespace AntRunner.Chat
         /// <summary>
         /// Passed in from the starter. The web api gets the Authorization header value if it exists, otherwise null.
         /// </summary>
-        public string? OauthUserAccessToken { get; set; }
+        public string? oAuthUserAccessToken { get; set; }
 
         /// <summary>
         /// The optional name of an assistant to use for evaluation of the run.

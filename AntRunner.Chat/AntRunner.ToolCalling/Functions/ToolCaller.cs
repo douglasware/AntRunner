@@ -1,5 +1,5 @@
 ﻿using AntRunner.ToolCalling.AssistantDefinitions.Storage;
-using Microsoft.Extensions.DependencyInjection;
+using AntRunner.ToolCalling.HttpClient;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -28,8 +28,6 @@ namespace AntRunner.ToolCalling.Functions
     /// </summary>
     public class ToolCaller
     {
-        private static IHttpClientFactory? _httpClientFactory;
-
         /// <summary>
         /// Generates request builders based on the OpenAPI specification.
         /// </summary>
@@ -250,13 +248,6 @@ namespace AntRunner.ToolCalling.Functions
 
             AuthHeaders = authHeaders;
             this.OAuth = oAuth;
-
-            // Initialize the HTTP Client Factory if not already done
-            if (_httpClientFactory == null)
-            {
-                var serviceProvider = new ServiceCollection().AddHttpClient().BuildServiceProvider();
-                _httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-            }
         }
 
         /// <summary>
@@ -264,7 +255,7 @@ namespace AntRunner.ToolCalling.Functions
         /// </summary>
         /// <param name="oAuthUserAccessToken">Optional OAuth user access token for authentication.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<HttpResponseMessage> ExecuteWebApiAsync(string? oAuthUserAccessToken = null)
+        public async Task<HttpResponseMessage> ExecuteWebApiAsync(string? oAuthUserAccessToken = null, System.Net.Http.HttpClient? httpClient = null)
         {
             // Replace path parameters with actual values from Params
             foreach (var param in Params ?? new Dictionary<string, object>())
@@ -285,7 +276,7 @@ namespace AntRunner.ToolCalling.Functions
             }
 
             // Create the HTTP client and request message
-            var client = _httpClientFactory!.CreateClient();
+            var client = httpClient ?? HttpClientUtility.Get();
             var request = new HttpRequestMessage(new HttpMethod(Method), url);
             request.Headers.TryAddWithoutValidation("Content-Type", ContentType);
 
