@@ -331,8 +331,8 @@ namespace AntRunner.ToolCalling.Functions
         /// <returns>The result of the local function execution.</returns>
         public async Task<object?> ExecuteLocalFunctionAsync()
         {
-            // Get the assembly name and method name from the Path
-            var methodName = Path.Split('.').Last();
+            // Get the assembly name and method/property name from the Path
+            var memberName = Path.Split('.').Last();
 
             // Get the containing type name from the Path
             var typeName = Path.Substring(0, Path.LastIndexOf('.'));
@@ -344,10 +344,17 @@ namespace AntRunner.ToolCalling.Functions
 
             if (type == null) throw new InvalidOperationException($"Type {typeName} not found in any loaded assembly");
 
-            // Get all methods with the specified name
-            var methods = type.GetMethods().Where(m => m.Name == methodName).ToArray();
+            // First, try to find a property with the specified name
+            var property = type.GetProperty(memberName, BindingFlags.Static | BindingFlags.Public);
+            if (property != null)
+            {
+                TraceInformation($"{nameof(ExecuteLocalFunctionAsync)}:{memberName} (Property)");
+                return property.GetValue(null);
+            }
 
-            if (methods.Length == 0) throw new InvalidOperationException($"Method {methodName} not found in type {typeName}");
+            // If no property is found, look for a method
+            var methods = type.GetMethods().Where(m => m.Name == memberName).ToArray();
+            if (methods.Length == 0) throw new InvalidOperationException($"Method or property {memberName} not found in type {typeName}");
 
             // Find a method that matches the provided parameters by name and type
             MethodInfo? method = null;
@@ -380,9 +387,9 @@ namespace AntRunner.ToolCalling.Functions
                 }
             }
 
-            if (method == null) throw new InvalidOperationException($"No matching method found for {methodName} with the provided parameters");
+            if (method == null) throw new InvalidOperationException($"No matching method found for {memberName} with the provided parameters");
 
-            TraceInformation($"{nameof(ExecuteLocalFunctionAsync)}:{methodName}");
+            TraceInformation($"{nameof(ExecuteLocalFunctionAsync)}:{memberName} (Method)");
 
             // Get the parameters for the method
             var methodParameters = method.GetParameters();

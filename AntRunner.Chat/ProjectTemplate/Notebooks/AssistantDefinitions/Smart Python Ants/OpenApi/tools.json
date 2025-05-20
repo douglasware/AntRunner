@@ -1,0 +1,138 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "AntRunner Services API",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost"
+    }
+  ],
+  "paths": {
+    "/sandbox/run/python-app/python": {
+      "post": {
+        "tags": [
+          "GenericSandbox"
+        ],
+        "summary": "Execute python in a container",
+        "description": "Executes a specified python script",
+        "operationId": "runPython",
+        "parameters": [ ],
+        "requestBody": {
+          "required": true,
+          "description": "Script execution request payload.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "script": {
+                    "type": "string",
+                    "description": "The script to be executed.",
+                    "nullable": true
+                  }
+                },
+                "required": [ "script" ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "standardOutput": {
+                      "type": "string",
+                      "description": "Standard output of the script execution.",
+                      "nullable": true
+                    },
+                    "standardError": {
+                      "type": "string",
+                      "description": "Standard error of the script execution.",
+                      "nullable": true
+                    }
+                  },
+                  "required": [ "standardOutput", "standardError" ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sandbox/run/python-app/bash": {
+      "post": {
+        "tags": [
+          "GenericSandbox"
+        ],
+        "summary": "Execute bash in a container",
+        "description": "Executes a specified bash shell script",
+        "operationId": "runBash",
+        "parameters": [ ],
+        "requestBody": {
+          "required": true,
+          "description": "Script execution request payload.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "script": {
+                    "type": "string",
+                    "description": "The script to be executed.",
+                    "nullable": true
+                  }
+                },
+                "required": [ "script" ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "standardOutput": {
+                      "type": "string",
+                      "description": "Standard output of the script execution.",
+                      "nullable": true
+                    },
+                    "standardError": {
+                      "type": "string",
+                      "description": "Standard error of the script execution.",
+                      "nullable": true
+                    }
+                  },
+                  "required": [ "standardOutput", "standardError" ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

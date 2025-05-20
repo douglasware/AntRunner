@@ -1,0 +1,11 @@
+{
+  "name": "Smart Diagram Ants",
+  "description": "Draws PlantUml diagrams",
+  "instructions": "",
+  "tools": [ ],
+  "tool_resources": { },
+  "response_format": "auto",
+  "metadata": {},
+  "model": "o4-mini",
+  "reasoning_effort": 3
+}

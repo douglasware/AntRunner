@@ -70,7 +70,7 @@ namespace AntRunner.Chat
                     messages.Add(previousMessage);
                 }
                 messages.Add(new Message(Role.User, chatRunOptions.Instructions));
-                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
+                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().Role.ToString(), messages.Last().GetText()));
             }
             else
             {
@@ -79,8 +79,8 @@ namespace AntRunner.Chat
                     new Message(Role.System, assistantDef.Instructions),
                     new Message(Role.User, chatRunOptions.Instructions),
                 ];
-                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.First().GetText()));
-                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
+                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.First().Role.ToString(), messages.First().GetText()));
+                messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().Role.ToString(), messages.Last().GetText()));
             }
 
             var tools = new List<Tool>();
@@ -111,10 +111,10 @@ namespace AntRunner.Chat
             {
                 while (continueChat)
                 {
-                    var chatRequest = new ChatRequest(messages, tools: tools, model: chatRunOptions.DeploymentId, temperature: assistantDef.Temperature, topP: assistantDef.TopP);
+                    var chatRequest = new ChatRequest(messages, tools: tools, model: chatRunOptions.DeploymentId, temperature: assistantDef.Temperature, topP: assistantDef.TopP, reasoningEffort: assistantDef.ReasoningEffort != null ? (OpenAI.ReasoningEffort)assistantDef.ReasoningEffort : null);
                     var response = await api.ChatEndpoint.GetCompletionAsync(chatRequest);
                     messages.Add(response.FirstChoice.Message);
-                    messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
+                    messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().Role.ToString(), messages.Last().GetText()));
                     choice = response.FirstChoice;
 
                     switch (choice.FinishReason)
@@ -353,7 +353,7 @@ namespace AntRunner.Chat
                     var id = toolCall.Id;
                     var toolOutput = toolOutputs.FirstOrDefault(to => to.ToolCallId == id) ?? throw new Exception("No match");
                     messages.Add(new Message(toolCallId: id, toolFunctionName: toolCall.Function.Name, [new(toolOutput.Output!)]));
-                    messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().GetText()));
+                    messageAdded?.Invoke(null, new MessageAddedEventArgs(messages.Last().Role.ToString(), messages.Last().GetText()));
                 }
             }
         }

@@ -14,7 +14,7 @@ namespace AntRunner.Chat
         {
             foreach (var kvp in environmentVariables)
             {
-                System.Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
+                Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
             }
         }
     }

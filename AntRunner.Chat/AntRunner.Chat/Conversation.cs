@@ -9,11 +9,14 @@ namespace AntRunner.Chat
 
     public class MessageAddedEventArgs : EventArgs
     {
-        public string NewMessage { get; }
+        public string Message { get; }
 
-        public MessageAddedEventArgs(string newMessage)
+        public string Role { get; }
+
+        public MessageAddedEventArgs(string role, string newMessage)
         {
-            NewMessage = newMessage;
+            Message = newMessage;
+            Role = role;
         }
     }
 
@@ -36,7 +39,15 @@ namespace AntRunner.Chat
         /// </summary>
         public List<Turn> Turns { get; set; } = [];
 
+        /// <summary>
+        /// Event stream as messages are added to the conversation
+        /// </summary>
         public event MessageAddedEventHandler? MessageAdded;
+
+        /// <summary>
+        /// The deployment Id of the model, e.g. 03-mini
+        /// </summary>
+        public string? Model { get { return _chatConfiguration?.DeploymentId; } set { if (_chatConfiguration != null) { _chatConfiguration.DeploymentId = value; } } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Conversation"/> class.
@@ -90,7 +101,8 @@ namespace AntRunner.Chat
         /// Changes the assistant being used in the conversation to the specified assistant name.
         /// </summary>
         /// <param name="assistantName">The name of the new assistant to use.</param>
-        public async Task ChangeAssistant(string assistantName)
+        /// <param name="useAssistantDefinitionModel">If true, will set the conversation to use the assistant definitions model, overiding whatever was set when the conversation was created</param>
+        public async Task ChangeAssistant(string assistantName, bool useAssistantDefinitionModel = false)
         {
             if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
             if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
@@ -106,7 +118,10 @@ namespace AntRunner.Chat
             AssistantMessages[assistantName] = newAssistantMessages;
 
             _chatConfiguration.AssistantName = assistantName;
-            _chatConfiguration.DeploymentId = assistantDef.Model;
+            if (useAssistantDefinitionModel)
+            {
+                _chatConfiguration.DeploymentId = assistantDef.Model;
+            }
         }
 
         /// <summary>
@@ -240,6 +255,168 @@ namespace AntRunner.Chat
         {
             var jsonString = JsonSerializer.Serialize(this, WriteIndentedOptions);
             File.WriteAllText(filePath, jsonString);
+        }
+
+        /// <summary>
+        /// Asynchronously adds an image file message to the assistant's messages.
+        /// This method validates the file extension to ensure it is a supported image format (.jpg, .jpeg, .png, .gif, .bmp, .tiff).
+        /// It reads the image file asynchronously, converts its content to a base64 string,
+        /// and constructs a data URL that is added to the assistant's messages.
+        /// </summary>
+        /// <param name="filePath">The path to the image file to be added.</param>
+        /// <exception cref="Exception">Thrown when AssistantDefinition is null, indicating a missing assistant configuration.</exception>
+        /// <exception cref="ArgumentException">Thrown when the file extension is not recognized as a valid image type.</exception>
+        public async Task AddImageFileMessage(string filePath)
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null adding message");
+
+            // Validate imageUrl is an image file
+            var validImageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff" };
+            if (!validImageExtensions.Contains(Path.GetExtension(filePath).ToLower()))
+            {
+                throw new ArgumentException("File is not a valid image type");
+            }
+
+            // Read it asynchronously and create a base64 image url
+            byte[] imageBytes;
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                imageBytes = new byte[fileStream.Length];
+                await fileStream.ReadAsync(imageBytes, 0, (int)fileStream.Length);
+            }
+
+            string base64Image = Convert.ToBase64String(imageBytes);
+            string url = $"data:image/{Path.GetExtension(filePath).TrimStart('.').ToLower()};base64,{base64Image}";
+
+            var imageContent = new Content(new ImageUrl(url));
+            AssistantMessages[AssistantDefinition.Name!].Add(new Message(Role.User, new List<Content> { imageContent }));
+        }
+
+        /// <summary>
+        /// Adds an image url message to the assistant's messages. The Url must be publicly accessible
+        /// </summary>
+        /// <param name="imageUrl">The public url to the image file to be added.</param>
+        /// <exception cref="Exception">Thrown when AssistantDefinition is null, indicating a missing assistant configuration.</exception>
+        /// <exception cref="ArgumentException">Thrown when the file extension is not recognized as a valid image type.</exception>
+        public void AddImageUrlMessage(string imageUrl)
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null adding message");
+            AssistantMessages[AssistantDefinition.Name!].Add(new Message(Role.User, new List<Content> { new Content(new ImageUrl(imageUrl)) }));
+        }
+
+        /// <summary>
+        /// Asynchronously adds an audio file message to the assistant's messages.
+        /// This method validates the file extension to ensure it is a supported audio format (.wav, .mp3).
+        /// It determines the audio format based on the file extension and reads the audio file asynchronously.
+        /// The file's content is converted to a base64 string, and a data URL is constructed to be added to the assistant's messages.
+        /// Note: This method does not work. The current API implementation requires the audio file to be accessible via a public URL.
+        /// </summary>
+        /// <param name="filePath">The path to the audio file to be added.</param>
+        /// <exception cref="Exception">Thrown when AssistantDefinition is null, indicating a missing assistant configuration.</exception>
+        /// <exception cref="ArgumentException">Thrown when the file extension is not recognized as a valid audio type.</exception>
+        public async Task AddAudioFileMessage(string filePath)
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null adding message");
+
+            // Validate imageUrl is an audio file
+            var validAudioExtensions = new[] { ".wav", ".mp3" };
+            var fileExtension = Path.GetExtension(filePath).ToLower();
+
+            if (!validAudioExtensions.Contains(fileExtension))
+            {
+                throw new ArgumentException("File is not a valid audio type");
+            }
+
+            // Determine the format based on the file extension
+            InputAudioFormat format = fileExtension == ".wav" ? InputAudioFormat.Wav : InputAudioFormat.Mp3;
+
+            // Read it asynchronously and create a base64 audio url
+            byte[] audioBytes;
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                audioBytes = new byte[fileStream.Length];
+                await fileStream.ReadAsync(audioBytes, 0, (int)fileStream.Length);
+            }
+
+            string base64Audio = Convert.ToBase64String(audioBytes);
+            string url = $"data:audio/{format.ToString().ToLower()};base64,{base64Audio}";
+
+            var audioContent = new Content(new InputAudio(url, format));
+            AssistantMessages[AssistantDefinition.Name!].Add(new Message(Role.User, new List<Content> { audioContent }));
+        }
+
+        /// <summary>
+        /// Asynchronously adds a text file message to the assistant's messages.
+        /// This method reads the entire content of the specified text file asynchronously.
+        /// It formats the content with a header that includes the file name and its contents.
+        /// The formatted message is then added to the assistant's messages.
+        /// </summary>
+        /// <param name="filePath">The path to the text file to be added.</param>
+        /// <exception cref="Exception">Thrown when AssistantDefinition is null, indicating a missing assistant configuration.</exception>
+        public async Task AddTextFileMessage(string filePath)
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null adding message");
+
+            // Read the file asynchronously
+            string fileContent;
+            using (var reader = new StreamReader(filePath))
+            {
+                fileContent = await reader.ReadToEndAsync();
+            }
+
+            // Format the message
+            string fileName = Path.GetFileName(filePath);
+            string messageContent = $"The {fileName} file contains:\n\n---\n{fileContent}";
+
+            var textContent = new Content(messageContent);
+            AssistantMessages[AssistantDefinition.Name!].Add(new Message(Role.User, new List<Content> { textContent }));
+        }
+
+        /// <summary>
+        /// Adds a sandbox file message to the assistant's messages using environment variable paths.
+        /// This method checks the existence of the file and validates its location within the specified local volume mount path.
+        /// It constructs a container path using the local and container volume paths,
+        /// and adds a message instructing the assistant to use the contents of the specified file.
+        /// </summary>
+        /// <param name="filePath">The path to the sandbox file to be added.</param>
+        /// <exception cref="Exception">Thrown when AssistantDefinition is null, indicating a missing assistant configuration.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown when the localVolumeMountPath or containerVolumePath is null,
+        /// when the specified file does not exist,
+        /// or when the file is not located within the specified local path.
+        /// </exception>
+        public void AddSandboxFileMessage(string filePath)
+        {
+            AddSandboxFileMessage(filePath, Environment.GetEnvironmentVariable("CHATRUNNER_SANDBOX_LOCAL_PATH"), Environment.GetEnvironmentVariable("CHATRUNNER_SANDBOX_CONTAINER_PATH"));
+        }
+
+        /// <summary>
+        /// Adds a sandbox file message to the assistant's messages using specified paths.
+        /// This method checks the existence of the file and validates its location within the specified local volume mount path.
+        /// It constructs a container path using the provided local and container volume paths,
+        /// and adds a message instructing the assistant to use the contents of the specified file.
+        /// </summary>
+        /// <param name="filePath">The path to the sandbox file to be added.</param>
+        /// <param name="localVolumeMountPath">The local path where the file is mounted.</param>
+        /// <param name="containerVolumePath">The container path where the file is to be accessed.</param>
+        /// <exception cref="Exception">Thrown when AssistantDefinition is null, indicating a missing assistant configuration.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown when the localVolumeMountPath or containerVolumePath is null,
+        /// when the specified file does not exist,
+        /// or when the file is not located within the specified local path.
+        /// </exception>
+        public void AddSandboxFileMessage(string filePath, string? localVolumeMountPath, string? containerVolumePath)
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null adding message");
+
+            if (localVolumeMountPath == null) throw new ArgumentException("localVolumeMountPath is null. Provide it or set the CHATRUNNER_SANDBOX_LOCAL_PATH env variable");
+            if (containerVolumePath == null) throw new ArgumentException("containerVolumePath is null. Provide it or set the CHATRUNNER_SANDBOX_CONTAINER_PATH env variable");
+            if (!File.Exists(filePath)) throw new ArgumentException($"{filePath} does not exist");
+            var fullLocalPath = Path.GetFullPath(localVolumeMountPath);
+            var fullFilePath = Path.GetFullPath(filePath);
+            if (!fullFilePath.StartsWith(fullLocalPath)) throw new ArgumentException($"{fullFilePath} is not located in {fullLocalPath}");
+            var containerPath = fullFilePath.Replace(fullLocalPath, containerVolumePath);
+            AssistantMessages[AssistantDefinition.Name!].Add(new Message(Role.User, new List<Content> { new Content($"Use the contents of {containerPath}") }));
         }
     }
 }
