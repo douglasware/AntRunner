@@ -18,21 +18,12 @@ services:
     volumes:
       - ../shared-working:/app/shared
       - ../../Notebooks/shared-content:/app/shared/content
-      - ${USERPROFILE}/.aspnet/https:/root/.aspnet/https/
       - /var/run/docker.sock:/var/run/docker.sock
       - ../../Notebooks/AssistantDefinitions:/app/AssistantDefinitions
 
   python-app:
     image: python-3.11-dotnet-9-torch
-    container_name: python-app
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    container_name: python-app  
     stdin_open: true
     tty: true
     volumes:
