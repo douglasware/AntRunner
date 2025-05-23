@@ -5,6 +5,8 @@ function Copy-And-Rename-Files {
     $sourcePath = "./SetupFiles/*.json.kernel-memory"
     $destinationPath = "./ProjectTemplate/Sandboxes/code-interpreter/kernel-memory/"
 
+    Write-Host "Reading setup files from $sourcePath and copying to $destinationPath."
+    
     Get-ChildItem -Path $sourcePath | ForEach-Object {
         $newFileName = $_.Name -replace "kernel-memory", ""
         $newFilePath = Join-Path -Path $destinationPath -ChildPath $newFileName
@@ -25,6 +27,9 @@ function Copy-DockerComposeFile {
         '2' {
             $sourceFile = "./SetupFiles/docker-compose.yaml.cuda"
         }
+        '3' {
+            $sourceFile = "./SetupFiles/docker-compose.yaml.marm64"
+        }
         default {
             Write-Error "Invalid choice. Exiting."
             exit 1
@@ -41,7 +46,8 @@ Copy-And-Rename-Files
 Write-Host "Select which Python image to build:"
 Write-Host "1) CPU-only"
 Write-Host "2) CUDA-enabled"
-$choice = Read-Host "Enter choice [1 or 2]"
+Write-Host "3) MacOS Arm64 (M-series) CPU-only"
+$choice = Read-Host "Enter choice [1, 2, or 3]"
 
 # Copy the appropriate docker-compose.yaml file based on user choice
 Copy-DockerComposeFile -selection $choice
@@ -58,6 +64,10 @@ switch ($choice) {
     '2' {
         Write-Host "Building python CUDA image: python-3.11-dotnet-9-torch (cuda)"
         docker build -t python-3.11-dotnet-9-torch -f Sandboxes/python311TorchCUDA/dockerfile Sandboxes/python311TorchCUDA
+    }
+     '3' {
+        Write-Host "Building python CPU image: python-3.11-dotnet-9-torch (MacOS Arm64)"
+        docker build -t python-3.11-dotnet-9-torch -f Sandboxes/python311TorchMARM64/dockerfile Sandboxes/python311TorchMARM64
     }
     default {
         Write-Error "Invalid choice. Exiting."

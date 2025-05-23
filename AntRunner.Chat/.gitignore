@@ -405,3 +405,23 @@ FodyWeavers.xsd
 ./AntRunner.Services/appsettings.Development.json
 ./Sandboxes/code-interpreter/content/project_diagrams
 ./Sandboxes/shared-working/
+
+# macOS-specific
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+Pipfile.lock
+venv/
+.venv/

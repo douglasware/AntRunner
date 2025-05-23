@@ -27,3 +27,28 @@ LICENSE
 !.git/config
 !.git/packed-refs
 !.git/refs/heads/**
+#MACOS - Ignore files created by macOS
+
+__pycache__/
+*.py[cod]
+*.log
+.env
+.env.*
+.vscode/
+.DS_Store
+.Thumbs.db
+
+# macOS-specific
+.AppleDouble
+.LSOverride
+**/._*
+
+
+# Python virtual environments (common on Mac)
+venv/
+.venv/
+Pipfile.lock
+
+# Docker leftovers
+docker-compose.override.yml
+docker-compose.dev.yml
