@@ -245,7 +245,7 @@ namespace AntRunner.Chat
             var output = await RunThread(chatRunOptions, config!, httpClient: httpClient);
             if (output != null)
             {
-                return output.Dialog;
+                return output.LastMessage;
             }
 
             return "Unable to process request";

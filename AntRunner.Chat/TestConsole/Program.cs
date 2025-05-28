@@ -50,21 +50,19 @@ namespace TestConsole
         public async Task RunConversationAsync()
         {
             var config = AzureOpenAiConfigFactory.Get();
-            var chatRunOptions = new ChatRunOptions() { AssistantName = "Python Ants", DeploymentId = "gpt-4.1-mini", Instructions = "What version of Python are you using" };
+            var chatRunOptions = new ChatRunOptions() { AssistantName = "LocalCodeTool", DeploymentId = "gpt-4.1-mini" };
 
             var conversation = await Conversation.Create(chatRunOptions, config, _httpClient);
             conversation.MessageAdded += Conversation_MessageAdded;
 
-            Console.WriteLine(DateTime.Now.ToLongTimeString());
-            var result = await conversation.Chat("Extract the audio from https://youtu.be/M0y8vsSgTt8 and save it to ../content\nYou will need to install one or more packages to complete the task. Do not give up if you get an error. Instead, correct yourself and proceed.");
-            Console.WriteLine(DateTime.Now.ToLongTimeString());
+            var result = await conversation.Chat("Use both of your tools to answer these two questions: What is the date and what is eleven plus negative 42?");
             Console.WriteLine(conversation.LastResponse?.LastMessage);
             Console.WriteLine(conversation.Usage.TotalTokens);
         }
 
         private void Conversation_MessageAdded(object? sender, MessageAddedEventArgs e)
         {
-            Console.WriteLine($"{e.NewMessage.ToString()}");
+            Console.WriteLine($"{e.Role}: {e.Message.ToString()}");
             Console.WriteLine();
         }
     }

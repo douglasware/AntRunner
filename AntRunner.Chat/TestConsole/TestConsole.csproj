@@ -8,6 +8,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="AssistantDefinitions\LocalCodeTool\instructions.md" />
+    <None Remove="AssistantDefinitions\LocalCodeTool\manifest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="AssistantDefinitions\LocalCodeTool\instructions.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AssistantDefinitions\LocalCodeTool\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AssistantDefinitions\LocalCodeTool\OpenAPI\tool.localhost.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AntRunner.Chat\AntRunner.Chat.csproj" />
   </ItemGroup>
 
@@ -18,11 +35,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
     <None Update="appsettings.example.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
-    <None Update="appsettings.json">
+    <None Update="appsettings.example.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
