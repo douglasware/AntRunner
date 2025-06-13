@@ -65,13 +65,15 @@ Open PowerShell Core in the root folder of the project and run the following scr
 ./build_local_images.ps1
 ```
 
-### Step 2: Choose between CPU or CUDA image
+### Step 2: Choose between CPU, CUDA, or macOS (ARM64) image
 
 When running the script, you will be prompted to select which Python image to build:
 
 - **1) CPU-only**: This version supports running PyTorch on the CPU. It is smaller in size and suitable if you do not have an NVIDIA GPU or do not need GPU acceleration.
 
 - **2) CUDA-enabled**: This version includes support for NVIDIA GPUs using CUDA. It enables faster computation for compatible hardware but results in a significantly larger Docker image.
+
+- **3) macOS Arm64 (M-series)**: This version includes support for macOS on Apple Silicon (M-Series). It primarily supplements building of python packages in the container itself for certain dependencies that require a Python wheel that macOS does not nativiely have. Additionally, the dockerfile for the Pythion torch image includes configuration to use PyTorch's Metal Performance Shaders (MPS) backend that allows for accelerated computations on Apple Silicon GPUs.
 
 Choose the option that best fits your hardware and use case.
 
@@ -82,7 +84,7 @@ The script will:
 - Copy and rename kernel-memory JSON files needed for the project.
 - Copy the appropriate `docker-compose.yaml` file based on your choice.
 - Build the base image `dotnet-9.0-python-3.11`.
-- Build the selected Python image (CPU or CUDA).
+- Build the selected Python image (CPU, CUDA, or macOS ARM64).
 - Build the PlantUML image.
 - Build the `dotnet-server` image.
 
