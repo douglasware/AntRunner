@@ -425,3 +425,9 @@ build/
 Pipfile.lock
 venv/
 .venv/
+
+# Local appsettings files (ignore generated copies, but keep templates)
+Sandboxes/code-interpreter/kernel-memory/appsettings.*.json
+Sandboxes/code-interpreter/kernel-memory/appsettings.json
+!ProjectTemplate/**/appsettings.*.json
+!ProjectTemplate/**/appsettings.json
