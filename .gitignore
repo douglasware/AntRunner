@@ -417,3 +417,19 @@ FodyWeavers.xsd
 /AntRunner.Chat/Sandboxes/code-interpreter/kernel-memory/appsettings.json
 /AntRunner.Chat/Sandboxes/shared-working/
 /AntRunner.Chat/Sandboxes/code-interpreter/kernel-memory/appsettings.Development.json
+
+# macOS system files
+.DS_Store
+
+# VS Code settings
+.vscode/
+
+# Local environment files
+.env
+
+# Azurite local storage
+__azurite_db_*
+
+# Local appsettings files
+**/appsettings.*.json
+**/appsettings.json

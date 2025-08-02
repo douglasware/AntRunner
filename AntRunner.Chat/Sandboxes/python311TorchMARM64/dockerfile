@@ -18,6 +18,10 @@ RUN apt-get update && \
         python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# Set environment variables for Metal Performance Shaders
+ENV PYTORCH_ENABLE_MPS_FALLBACK=1
+ENV PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
+
 RUN pip install torch==2.3.1 -f https://download.pytorch.org/whl/torch_stable.html && \
     pip install torchaudio==2.3.1 -f https://download.pytorch.org/whl/torch_stable.html
 
