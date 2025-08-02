@@ -1,0 +1,60 @@
+services:
+  dotnet-server:
+    image: dotnet-server
+    container_name: dotnet-server
+    ports:
+      - "80:80"
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - BASH_CONTAINER_NAME=python-app
+      - POWERSHELL_CONTAINER_NAME=python-app
+      - PYTHON_CONTAINER_NAME=python-app
+      - AZURE_OPENAI_RESOURCE=your-azure-resource
+      - AZURE_OPENAI_API_KEY=yourkey
+      - AZURE_OPENAI_DEPLOYMENT=gpt-4.1-mini
+      - AZURE_OPENAI_API_VERSION=2025-01-01-preview
+      - ASSISTANTS_BASE_FOLDER_PATH=/app/AssistantDefinitions
+      - ANTRUNNER_SERVICES_HOST_URL=http://localhost/
+    volumes:
+      - ../shared-working:/app/shared
+      - ../../Notebooks/shared-content:/app/shared/content
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../../Notebooks/AssistantDefinitions:/app/AssistantDefinitions
+
+  python-app:
+    image: python-3.11-dotnet-9-torch
+    container_name: python-app  
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../../Notebooks/shared-content:/app/shared/content
+      - ../shared-working:/app/shared
+
+  plantuml:
+    image: plantuml-1.2025.2
+    container_name: plantuml
+    volumes:
+      - ../../Notebooks/shared-content:/app/shared/content    
+      - ../shared-working:/app/shared
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    environment:
+      - api_key=api123456key 
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+
+  kernel-memory:
+    image: kernelmemory/service
+    container_name: kernel-memory
+    ports:
+      - "9001:9001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ../shared-working:/app/shared
+      - ../../Notebooks/shared-content:/app/shared/content
+      - ./kernel-memory/appsettings.json:/app/appsettings.json
