@@ -14,6 +14,7 @@ public class ParametersDefinition
     /// to an object that describes the type, maybe possible enum values, and so on.
     /// </summary>
     [JsonPropertyName("properties")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, PropertyDefinition>? Properties { get; set; }
 
     /// <summary>

@@ -1,0 +1,114 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "GPT-4o Mini TTS Audio API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://ai-dougwareai685749536435.openai.azure.com"
+    }
+  ],
+  "paths": {
+    "/openai/deployments/gpt-4o-mini-tts/audio/speech": {
+      "post": {
+        "operationId": "TextToSpeech",
+        "summary": "Generate speech audio from text using GPT-4o Mini TTS model",
+        "parameters": [
+          {
+            "name": "api-version",
+            "in": "query",
+            "required": true,
+            "description": "API version to use for the request",
+            "schema": {
+              "type": "string",
+              "example": "2025-03-01-preview"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "type": "string",
+                    "description": "The text input to be converted into speech. Example: 'Ants are our AI Assistants, named after the last four letters of \u2018Assistants.\u2019 Like real ants, they\u2019re small but powerful, working hard to make your life easier.'",
+                    "example": "Ants are our AI Assistants, named after the last four letters of \u2018Assistants.\u2019 Like real ants, they\u2019re small but powerful, working hard to make your life easier. Each Ant is built to do a specific job, like Workflow Automation, Advanced Resource Management, Compliance and Risk Management, Knowledge Management, or Improved Operational Efficiency. Together, they work as a team to help you get more done, faster."
+                  },
+                  "voice": {
+                    "type": "string",
+                    "description": "The voice style to use for speech synthesis. Example: 'alloy'",
+                    "default": "alloy",
+                    "example": "alloy"
+                  },
+                  "speed": {
+                    "type": "number",
+                    "description": "The speed at which the speech is spoken. Typical value is 1.0 for normal speed.",
+                    "example": "1"
+                  },
+                  "response_format": {
+                    "type": "string",
+                    "description": "The audio format of the response. Example: 'mp3'",
+                    "example": "mp3"
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "The model to use for text-to-speech synthesis. Example: 'gpt-4o-mini-tts'",
+                    "example": "gpt-4o-mini-tts"
+                  }
+                },
+                "required": [
+                  "input",
+                  "voice",
+                  "speed",
+                  "response_format",
+                  "model"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Audio file in mp3 format",
+            "content": {
+              "audio/mpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "api_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "api-key"
+      }
+    }
+  }
+}

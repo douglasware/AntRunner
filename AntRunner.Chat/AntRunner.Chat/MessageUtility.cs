@@ -7,33 +7,24 @@ public static class MessageExtensions
     {
         string messageText = "";
 
-        if (message.Role == Role.User)
+        if (message.Role == Role.User || message.Role == Role.System)
         {
-            messageText = message.Content!.ToString();
+            // Content is a string for user messages
+            messageText = message.Content?.ToString() ?? "";
         }
         else if (message.Role == Role.Assistant)
         {
-            if (message.Content?.ValueKind == JsonValueKind.String)
-            {
-                messageText += $"{message.Content.ToString()}";
-            }
-            if (message.ToolCalls != null)
-            {
-                foreach (var toolCall in message.ToolCalls)
-                {
-                    if (toolCall.Function != null)
-                    {
-                        messageText += $"I called the tool named {toolCall.Function.Name} with {toolCall.Function.Arguments}";
-                    }
-                }
-            }
+            // Content is a string for assistant messages
+            // Only return the content - don't format tool calls into text
+            messageText = message.Content?.ToString() ?? "";
         }
         else if (message.Role == Role.Tool)
         {
             try
             {
+                // Return raw tool result without formatting
                 string textContent = message.Content![0].Text.ToString();
-                messageText = $"I got this output: {textContent}";
+                messageText = textContent;
             }
             catch
             {
@@ -49,16 +40,16 @@ public static class MessageExtensions
                     if (root.TryGetProperty("text", out JsonElement textElement))
                     {
                         string textValue = textElement.GetString() ?? jsonString;
-                        messageText = $"I got this output: {textValue}";
+                        messageText = textValue;
                     }
                     else
                     {
-                        messageText = $"I got this output: {jsonString}";
+                        messageText = jsonString;
                     }
                 }
                 catch
                 {
-                    messageText = $"I got this output: {jsonString}";
+                    messageText = jsonString;
                 }
             }
         }

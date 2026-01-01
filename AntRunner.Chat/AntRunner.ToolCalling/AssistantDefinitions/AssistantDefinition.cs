@@ -1,7 +1,17 @@
 ﻿namespace AntRunner.ToolCalling.AssistantDefinitions;
 
+using System.Text.Json.Serialization;
+using System.Text.Json;
+
 public class AssistantDefinition 
 {
+    /// <summary>
+    /// Database ID from dbo.Assistants table. Null for file-based assistants.
+    /// This is NOT serialized to JSON as it's runtime metadata only.
+    /// </summary>
+    [JsonIgnore]
+    public Guid? Id { get; set; }
+
     /// <summary>
     /// The name of the assistant. The maximum length is 256 characters.
     /// </summary>
@@ -19,6 +29,13 @@ public class AssistantDefinition
     /// </summary>
     [JsonPropertyName("instructions")]
     public string? Instructions { get; set; }
+
+    /// <summary>
+    /// Optional evaluator assistant name to use during Agent.Invoke calls.
+    /// </summary>
+    [JsonPropertyName("invocation_evaluator")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? InvocationEvaluator { get; set; }
 
     /// <summary>
     /// A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types
@@ -53,6 +70,7 @@ public class AssistantDefinition
     /// </summary>
     [JsonInclude]
     [JsonPropertyName("reasoning_effort")]
+    [JsonConverter(typeof(CamelCaseStringEnumConverter))]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public ReasoningEffort? ReasoningEffort { get; set; }
 
@@ -75,9 +93,10 @@ public class AssistantDefinition
     public ResponseFormatOneOfType? ResponseFormat { get; set; }
 
     /// <summary>
-    /// Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
-    /// about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of
-    /// 512 characters long.
+    /// Free-form metadata attached to the assistant definition. This property is passed straight through to the
+    /// OpenAI Assistants API <c>metadata</c> field and is NOT used by the Waterfall runtime, except for a few
+    /// internal conventions (e.g. <c>__crew_names__</c>). Keys and values are limited by the OpenAI spec
+    /// (currently 16 pairs, 64-character keys, 512-character values).
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, string>? Metadata { get; set; }
@@ -99,4 +118,14 @@ public class AssistantDefinition
     [JsonPropertyName("temperature")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; set; }
+
+    /// <summary>
+    /// Default context key/value pairs that should be injected into a new conversation when this assistant is used.
+    /// These values come from <c>HostExtensions/*/contextOptions.json</c> files and are merged (at runtime) with any
+    /// per-user overrides stored in the <c>UserContextOptions</c> collection. The resolved set is exposed to the LLM
+    /// as part of the initial system message, enabling personalized and dynamic behaviour.
+    /// </summary>
+    [JsonPropertyName("context_options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string>? ContextOptions { get; set; }
 }

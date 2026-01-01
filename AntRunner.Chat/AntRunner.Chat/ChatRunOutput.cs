@@ -52,6 +52,11 @@ namespace AntRunner.Chat
         /// Gets or sets the usage of the thread run.
         /// </summary>
         public UsageResponse? Usage { get; set; }
+
+        /// <summary>
+        /// Reasoning summaries produced by o-series models (if requested).
+        /// </summary>
+        public List<string> ReasoningSummaries { get; set; } = new();
     }
 
     public record UsageResponse
@@ -103,5 +108,17 @@ namespace AntRunner.Chat
     public class ChatRunOutput : ThreadRunOutput
     {
         public List<Message>? Messages { get; set; }
+        
+        /// <summary>
+        /// CWD-relative paths of files created during this run's tool executions.
+        /// Populated by DoToolCalls when tools return ScriptExecutionResult with NewFiles.
+        /// </summary>
+        public List<string>? NewFiles { get; set; }
+        
+        /// <summary>
+        /// CWD-relative paths of files modified during this run's tool executions.
+        /// Populated by DoToolCalls when tools return ScriptExecutionResult with ModifiedFiles.
+        /// </summary>
+        public List<string>? ModifiedFiles { get; set; }
     }
 }

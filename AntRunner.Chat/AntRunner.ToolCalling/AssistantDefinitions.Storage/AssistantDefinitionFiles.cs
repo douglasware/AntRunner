@@ -1,13 +1,49 @@
-﻿namespace AntRunner.ToolCalling.AssistantDefinitions.Storage
+using System.Threading;
+
+namespace AntRunner.ToolCalling.AssistantDefinitions.Storage
 {
     /// <summary>
     /// Provides methods for reading assistant definition files from the file system or storage.
     /// Files from storage by default must be located under ./Assistants where the "./" represents the execution folder.
     /// Set your files to "Copy Always" to copy them to the correct location(s) at build time.
     /// Set the "ASSISTANTS_BASE_FOLDER_PATH" environment variable to override the default location "./Assistants""
+    ///
+    /// Loading Priority:
+    /// 1. Embedded resources
+    /// 2. File storage
+    /// 3. Blob storage
     /// </summary>
     public class AssistantDefinitionFiles
     {
+        /// <summary>
+        /// Reads the complete assistant definition with all metadata from storage.
+        /// Checks embedded resources first, then file storage, then blob storage.
+        /// </summary>
+        /// <param name="assistantName">The name of the assistant.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the assistant storage metadata.</returns>
+        public static async Task<AssistantStorageMetadata?> GetAssistantComplete(string assistantName)
+        {
+            // Use file-based storage
+            var manifest = EmbeddedResourceStorage.GetManifest(assistantName)
+                ?? await FileStorage.GetManifest(assistantName)
+                ?? await BlobStorage.GetManifest(assistantName);
+
+            if (manifest == null) return null;
+
+            var instructions = EmbeddedResourceStorage.GetInstructions(assistantName)
+                ?? await FileStorage.GetInstructions(assistantName)
+                ?? await BlobStorage.GetInstructions(assistantName);
+
+            var contextOptions = await FileStorage.GetContextOptions(assistantName);
+
+            return new AssistantStorageMetadata(
+                ManifestJson: manifest,
+                Instructions: instructions,
+                ContextOptionsJson: contextOptions,
+                Updated: null  // File-based assistants don't have timestamps
+            );
+        }
+
         /// <summary>
         /// Reads the assistant definition JSON from the file system or storage.
         /// </summary>
@@ -15,7 +51,8 @@
         /// <returns>A task that represents the asynchronous operation. The task result contains the assistant definition JSON.</returns>
         public static async Task<string?> GetManifest(string assistantName)
         {
-            return EmbeddedResourceStorage.GetManifest(assistantName) ?? await FileStorage.GetManifest(assistantName) ?? await BlobStorage.GetManifest(assistantName);
+            var complete = await GetAssistantComplete(assistantName);
+            return complete?.ManifestJson;
         }
 
         /// <summary>
@@ -25,7 +62,8 @@
         /// <returns>A task that represents the asynchronous operation. The task result contains the assistant instructions.</returns>
         public static async Task<string?> GetInstructions(string assistantName)
         {
-            return EmbeddedResourceStorage.GetInstructions(assistantName) ?? await FileStorage.GetInstructions(assistantName) ?? await BlobStorage.GetInstructions(assistantName);
+            var complete = await GetAssistantComplete(assistantName);
+            return complete?.Instructions;
         }
 
         /// <summary>
@@ -78,5 +116,29 @@
         {
             return FileStorage.GetFilesInCodeInterpreterFolder(assistantName) ?? await BlobStorage.GetFilesInCodeInterpreterFolder(assistantName);
         }
+
+        /// <summary>
+        /// Retrieves context options for the specified assistant from file storage.
+        /// </summary>
+        /// <param name="assistantName">The name of the assistant.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the context options JSON.</returns>
+        public static async Task<string?> GetContextOptions(string assistantName)
+        {
+            return await FileStorage.GetContextOptions(assistantName);
+        }
     }
+
+    /// <summary>
+    /// Represents assistant metadata loaded from storage.
+    /// </summary>
+    public record AssistantStorageMetadata(
+        string ManifestJson,
+        string? Instructions,
+        string? ContextOptionsJson,
+        DateTime? Updated,
+        Dictionary<string, string>? AdditionalMetadata = null,
+        Dictionary<string, string>? OpenApiSchemas = null,
+        Dictionary<string, byte[]>? VectorStoreFiles = null,
+        Guid? Id = null
+    );
 }

@@ -147,6 +147,7 @@ namespace AntRunner.ToolCalling.Functions
                         {
                             if (schema.TryGetProperty("properties", out var propertiesElement))
                             {
+                                                                var hiddenParameters = new HashSet<string>();
                                 foreach (var property in propertiesElement.EnumerateObject())
                                 {
                                     var propertyDefinition = new PropertyDefinition
@@ -170,16 +171,82 @@ namespace AntRunner.ToolCalling.Functions
                                             : null)!,
                                     };
 
+                                    // If this requestBody property is an array, preserve its items schema
+                                    if (string.Equals(propertyDefinition.Type, "array", StringComparison.OrdinalIgnoreCase)
+                                        && property.Value.TryGetProperty("items", out var itemsElementForProp))
+                                    {
+                                        var itemsDef = new ParametersDefinition();
+
+                                        // Set the items type if present; default remains "object"
+                                        if (itemsElementForProp.TryGetProperty("type", out var itemTypeEl))
+                                        {
+                                            itemsDef.Type = itemTypeEl.GetString() ?? itemsDef.Type;
+                                        }
+
+                                        // Map nested item properties, if any
+                                        if (itemsElementForProp.TryGetProperty("properties", out var itemPropsEl))
+                                        {
+                                            itemsDef.Properties = new Dictionary<string, PropertyDefinition>();
+                                            foreach (var itemProp in itemPropsEl.EnumerateObject())
+                                            {
+                                                var itemPropDef = new PropertyDefinition
+                                                {
+                                                    Type = itemProp.Value.GetProperty("type").GetString() ?? "string",
+                                                    Description = itemProp.Value.TryGetProperty("description", out var itemDescEl)
+                                                        ? itemDescEl.GetString()
+                                                        : null,
+                                                    Default = itemProp.Value.TryGetProperty("default", out var itemDefaultEl)
+                                                        ? (itemDefaultEl.ValueKind == JsonValueKind.String
+                                                            ? itemDefaultEl.GetString()
+                                                            : itemDefaultEl.ValueKind == JsonValueKind.Null
+                                                                ? null
+                                                                : itemDefaultEl.GetRawText())
+                                                        : null,
+                                                    Example = itemProp.Value.TryGetProperty("example", out var itemExampleEl)
+                                                        ? itemExampleEl.GetString()
+                                                        : null,
+                                                    Enum = (itemProp.Value.TryGetProperty("enum", out var itemEnumEl)
+                                                        ? itemEnumEl.EnumerateArray().Select(e => e.GetString()).ToList()
+                                                        : null)!,
+                                                };
+
+                                                itemsDef.Properties[itemProp.Name] = itemPropDef;
+                                            }
+                                        }
+
+                                        // Map required fields for items, if any
+                                        if (itemsElementForProp.TryGetProperty("required", out var itemReqEl))
+                                        {
+                                            itemsDef.Required = new List<string>();
+                                            foreach (var req in itemReqEl.EnumerateArray())
+                                            {
+                                                var reqVal = req.GetString();
+                                                if (reqVal != null) itemsDef.Required.Add(reqVal);
+                                            }
+                                        }
+
+                                        propertyDefinition.Items = itemsDef;
+                                    }
+
+                                    // If this parameter has a default value OR a single enum value, we will auto-inject it at runtime,
+                                    // so we hide it from the schema the LLM sees.
+                                    bool shouldHide = propertyDefinition.Default != null || (propertyDefinition.Enum != null && propertyDefinition.Enum.Count == 1);
+                                    if (shouldHide)
+                                    {
+                                        hiddenParameters.Add(property.Name);
+                                        continue; // do not expose to LLM
+                                    }
 
                                     properties[property.Name] = propertyDefinition;
                                 }
 
+
                                 if (schema.TryGetProperty("required", out var requiredElement))
                                 {
-                                    foreach (var requiredField in requiredElement.EnumerateArray())
+                                                                        foreach (var requiredField in requiredElement.EnumerateArray())
                                     {
                                         var requiredFieldVal = requiredField.GetString();
-                                        if (requiredFieldVal != null)
+                                        if (requiredFieldVal != null && !hiddenParameters.Contains(requiredFieldVal))
                                         {
                                             required.Add(requiredFieldVal);
                                         }

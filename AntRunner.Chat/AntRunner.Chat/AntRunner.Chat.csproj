@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.8.4</Version>
+    <Version>0.9.0</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Title>AntRunner Chat-based Agents</Title>
     <Description>Toolbased AI Agents via Chat Completions compatible with AntRunner assistant definitions</Description>
@@ -16,16 +16,15 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/douglasware/AntRunner</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Attach files and file references as messages. Updated tool calling reference</PackageReleaseNotes>
+    <PackageReleaseNotes>Streaming support, intelligent model parameters to support thinking models and non with the same definition, lots of tests added.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="readme.md" />
   </ItemGroup>
 
-
   <ItemGroup>
-    <PackageReference Include="OpenAI-DotNet" Version="8.6.4" />
+    <PackageReference Include="OpenAI-DotNet" Version="8.8.7" />
   </ItemGroup>
 
   <ItemGroup>

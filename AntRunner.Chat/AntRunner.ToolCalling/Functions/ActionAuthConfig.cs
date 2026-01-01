@@ -10,6 +10,7 @@
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         none,
         service_http,
+        service_query,
         oauth,
         azure_oauth
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
@@ -54,6 +55,14 @@
         [JsonPropertyName("header_value_env_var")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? HeaderValueEnvironmentVariable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the literal value for the header. Used for team-owned secrets.
+        /// Ignored when null during JSON serialization.
+        /// </summary>
+        [JsonPropertyName("header_value_literal")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? HeaderValueLiteral { get; set; }
 
         /// <summary>
         /// Gets or sets the OAuth client ID.

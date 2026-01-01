@@ -36,10 +36,6 @@ namespace AntRunner.ToolCalling.AssistantDefinitions.Storage
                     }
                 }
             }
-            if (json == null)
-            {
-                Trace.TraceInformation($"Didn't find resourceName: '{resourceName}' in any assemblies.");
-            }
 
             return json;
         }

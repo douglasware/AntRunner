@@ -20,14 +20,15 @@ namespace AntRunner.Chat
         public string Instructions { get; set; } = string.Empty;
 
         /// <summary>
-        /// Files to upload to the assistant and attach to the message.
-        /// </summary>
-        public List<ResourceFile>? Files { get; set; }
-
-        /// <summary>
         /// Passed in from the starter. The web api gets the Authorization header value if it exists, otherwise null.
         /// </summary>
         public string? oAuthUserAccessToken { get; set; }
+
+        /// <summary>
+        /// Optional external OAuth tokens for accessing external APIs (e.g., Microsoft Graph, GitHub).
+        /// Key is the provider ID (e.g., "graph.microsoft.com"), value is the formatted token (e.g., "Bearer token").
+        /// </summary>
+        public Dictionary<string, string>? ExternalAuthTokens { get; set; }
 
         /// <summary>
         /// The optional name of an assistant to use for evaluation of the run.
