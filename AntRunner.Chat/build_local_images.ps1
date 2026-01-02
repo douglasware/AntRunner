@@ -75,7 +75,7 @@ switch ($choice) {
     }
 }
 
-docker build -t plantuml-1.2025.2 -f Sandboxes/PlantUml/dockerfile Sandboxes/PlantUml
+docker build -t plantuml-1.2025.10 -f Sandboxes/PlantUml/dockerfile Sandboxes/PlantUml
 
 if (-Not (Test-Path -Path "./AntRunner.Chat.sln")) {
     Write-Error "AntRunner.Chat.sln not found in current directory. Please run this script from the root folder."
