@@ -1,5 +1,5 @@
 # Use an official OpenJDK runtime as a parent image
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:11-jre AS base
 
 # Set the working directory
 WORKDIR /app
@@ -13,7 +13,7 @@ RUN apt-get update && \
 RUN mkdir -p /usr/local/lib/plantuml
 
 # Download the PlantUML jar file to /usr/local/lib/plantuml
-RUN wget https://github.com/plantuml/plantuml/releases/download/v1.2025.2/plantuml-1.2025.2.jar -O /usr/local/lib/plantuml/plantuml.jar --no-check-certificate
+RUN wget https://github.com/plantuml/plantuml/releases/download/v1.2025.10/plantuml-1.2025.10.jar -O /usr/local/lib/plantuml/plantuml.jar --no-check-certificate
 
 # Verify the jar file
 RUN ls -l /usr/local/lib/plantuml/plantuml.jar

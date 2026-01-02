@@ -1,9 +1,12 @@
 ﻿using AntRunner.ToolCalling.AssistantDefinitions.Storage;
 using AntRunner.ToolCalling.HttpClient;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
 
 namespace AntRunner.ToolCalling.Functions
 {
@@ -20,7 +23,18 @@ namespace AntRunner.ToolCalling.Functions
         /// <summary>
         /// Represents a local function action.
         /// </summary>
-        LocalFunction
+        LocalFunction,
+
+        /// <summary>
+        /// Represents a client-handled action (executed by client via external tool bridge).
+        /// </summary>
+        ClientHandled,
+
+        /// <summary>
+        /// Represents a sandbox-handled action (Python script executed in sandboxed Docker environment).
+        /// The initialization script filename is specified in the OpenAPI server URL (e.g., sandbox://init.py).
+        /// </summary>
+        SandboxHandled
     }
 
     /// <summary>
@@ -39,7 +53,7 @@ namespace AntRunner.ToolCalling.Functions
             var baseUrl = openApiSpecRootJsonElement.GetProperty("servers")[0].GetProperty("url").GetString()
                           ?? throw new InvalidOperationException("Base URL not found");
 
-            return GetToolCallers(openApiSpec, baseUrl, new(), false);
+            return GetToolCallers(openApiSpec, baseUrl, new(), new(), false);
         }
 
 
@@ -59,20 +73,49 @@ namespace AntRunner.ToolCalling.Functions
             var oAuth = false;
 
             Dictionary<string, string> authHeaders = new();
+            Dictionary<string, string> authQueryParams = new();
 
             if (domainAuth != null && domainAuth.HostAuthorizationConfigurations.TryGetValue(host, out var actionAuthConfig))
             {
-                if (actionAuthConfig.AuthType == AuthType.service_http && actionAuthConfig is { HeaderKey: not null, HeaderValueEnvironmentVariable: not null } && Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable) != null)
+                if (actionAuthConfig.AuthType == AuthType.service_http && actionAuthConfig.HeaderKey != null)
                 {
-                    authHeaders[actionAuthConfig.HeaderKey] = Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable)!;
+                    // Prefer literal value when present and not masked
+                    if (!string.IsNullOrWhiteSpace(actionAuthConfig.HeaderValueLiteral) && actionAuthConfig.HeaderValueLiteral != "••••••••")
+                    {
+                        authHeaders[actionAuthConfig.HeaderKey] = actionAuthConfig.HeaderValueLiteral!;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(actionAuthConfig.HeaderValueEnvironmentVariable))
+                    {
+                        var envValue = Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable);
+                        if (!string.IsNullOrEmpty(envValue))
+                        {
+                            authHeaders[actionAuthConfig.HeaderKey] = envValue;
+                        }
+                    }
                 }
-                else if (actionAuthConfig.AuthType == AuthType.azure_oauth)
+                else if (actionAuthConfig.AuthType == AuthType.service_query && actionAuthConfig.HeaderKey != null)
+                {
+                    // Reuse header fields to carry key/value semantics for query auth
+                    if (!string.IsNullOrWhiteSpace(actionAuthConfig.HeaderValueLiteral) && actionAuthConfig.HeaderValueLiteral != "••••••••")
+                    {
+                        authQueryParams[actionAuthConfig.HeaderKey] = actionAuthConfig.HeaderValueLiteral!;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(actionAuthConfig.HeaderValueEnvironmentVariable))
+                    {
+                        var envValue = Environment.GetEnvironmentVariable(actionAuthConfig.HeaderValueEnvironmentVariable);
+                        if (!string.IsNullOrEmpty(envValue))
+                        {
+                            authQueryParams[actionAuthConfig.HeaderKey] = envValue;
+                        }
+                    }
+                }
+                else if (actionAuthConfig.AuthType == AuthType.azure_oauth || actionAuthConfig.AuthType == AuthType.oauth)
                 {
                     oAuth = true;
                 }
             }
 
-            return GetToolCallers(openApiSpec, baseUrl, authHeaders, oAuth);
+            return GetToolCallers(openApiSpec, baseUrl, authHeaders, authQueryParams, oAuth);
         }
 
         /// <summary>
@@ -103,11 +146,11 @@ namespace AntRunner.ToolCalling.Functions
                 }
             }
 
-            return GetToolCallers(openApiSpec, baseUrl, new(), false);
+            return GetToolCallers(openApiSpec, baseUrl, new(), new(), false);
         }
 
 
-        private static Dictionary<string, ToolCaller> GetToolCallers(JsonDocument openApiSpec, string baseUrl, Dictionary<string, string> authHeaders, bool oAuth)
+        private static Dictionary<string, ToolCaller> GetToolCallers(JsonDocument openApiSpec, string baseUrl, Dictionary<string, string> authHeaders, Dictionary<string, string> authQueryParams, bool oAuth)
         {
             var toolCallers = new Dictionary<string, ToolCaller>();
             foreach (var pathProperty in openApiSpec.RootElement.GetProperty("paths").EnumerateObject())
@@ -129,6 +172,7 @@ namespace AntRunner.ToolCalling.Functions
                         operationObj, 
                         toolDefinition?.Function?.AsObject?.ContentType ?? "application/json",
                         authHeaders,
+                        authQueryParams,
                         oAuth
                     );
 
@@ -141,7 +185,17 @@ namespace AntRunner.ToolCalling.Functions
         /// <summary>
         /// Gets the type of action to perform.
         /// </summary>
-        public ActionType ActionType => (new Uri(BaseUrl)).Scheme.Contains("tool", StringComparison.InvariantCultureIgnoreCase) ? ActionType.LocalFunction : ActionType.WebApi;
+        public ActionType ActionType
+        {
+            get
+            {
+                var scheme = (new Uri(BaseUrl)).Scheme;
+                if (string.Equals(scheme, "client", StringComparison.InvariantCultureIgnoreCase)) return ActionType.ClientHandled;
+                if (string.Equals(scheme, "tool", StringComparison.InvariantCultureIgnoreCase)) return ActionType.LocalFunction;
+                if (string.Equals(scheme, "sandbox", StringComparison.InvariantCultureIgnoreCase)) return ActionType.SandboxHandled;
+                return ActionType.WebApi;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the baseUrl of the request.
@@ -178,6 +232,11 @@ namespace AntRunner.ToolCalling.Functions
         /// Gets the authentication headers for the request.
         /// </summary>
         public Dictionary<string, string> AuthHeaders { get; set; } = new();
+
+        /// <summary>
+        /// Authentication query parameters to be appended to the request URL.
+        /// </summary>
+        public Dictionary<string, string> AuthQueryParams { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the additional parameters for the request.
@@ -236,6 +295,7 @@ namespace AntRunner.ToolCalling.Functions
             JsonElement methodSchema,
             string contentType,
             Dictionary<string, string> authHeaders,
+            Dictionary<string, string> authQueryParams,
             bool oAuth = false)
         {
             // Initialize properties
@@ -247,6 +307,7 @@ namespace AntRunner.ToolCalling.Functions
             ContentType = contentType ?? throw new ArgumentNullException(nameof(contentType));
 
             AuthHeaders = authHeaders;
+            AuthQueryParams = authQueryParams;
             this.OAuth = oAuth;
         }
 
@@ -269,16 +330,18 @@ namespace AntRunner.ToolCalling.Functions
             // Construct the complete URL
             string url = CreateUrl(BaseUrl, Path);
 
-            // Append query parameters to the URL if it's a GET request
-            if (Method.Equals(HttpMethod.Get.Method, StringComparison.OrdinalIgnoreCase) && Params != null)
+            // Append declared query parameters (from OpenAPI schema) for any HTTP method
+            url = AppendQueryParamsFromSchema(url);
+
+            // Append or replace auth query parameters
+            if (AuthQueryParams.Count > 0)
             {
-                url += "?" + string.Join("&", Params.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value.ToString()!)}"));
+                url = AppendOrReplaceQueryParams(url, AuthQueryParams);
             }
 
             // Create the HTTP client and request message
             var client = httpClient ?? HttpClientUtility.Get();
             var request = new HttpRequestMessage(new HttpMethod(Method), url);
-            request.Headers.TryAddWithoutValidation("Content-Type", ContentType);
 
             // Add authentication headers to the request
             foreach (var header in AuthHeaders)
@@ -293,11 +356,15 @@ namespace AntRunner.ToolCalling.Functions
                 request.Headers.TryAddWithoutValidation("Authorization", oAuthUserAccessToken);
             }
 
-            // Add request body content for methods other than GET
-            if (!Method.Equals(HttpMethod.Get.Method, StringComparison.OrdinalIgnoreCase) && Params != null)
+
+            // Build request body content based on schema and selected ContentType
+            if (!Method.Equals(HttpMethod.Get.Method, StringComparison.OrdinalIgnoreCase))
             {
-                var json = JsonSerializer.Serialize(Params);
-                request.Content = new StringContent(json, Encoding.UTF8, ContentType);
+                var content = BuildHttpContentFromSchema();
+                if (content != null)
+                {
+                    request.Content = content;
+                }
             }
 
             TraceInformation($"{nameof(ExecuteWebApiAsync)}:{request.RequestUri!.Host}");
@@ -326,11 +393,210 @@ namespace AntRunner.ToolCalling.Functions
         }
 
         /// <summary>
+        /// Builds the HttpContent for the current operation using the OpenAPI requestBody schema
+        /// and the configured ContentType. Supports JSON bodies (object/primitive/array) and
+        /// textual bodies such as application/xhtml+xml, text/html, and text/plain.
+        /// </summary>
+        /// <returns>HttpContent or null when no body should be sent.</returns>
+        private HttpContent? BuildHttpContentFromSchema()
+        {
+            // No body for GET
+            if (Method.Equals(HttpMethod.Get.Method, StringComparison.OrdinalIgnoreCase)) return null;
+
+            // No params → no body
+            if (Params == null) return null;
+
+            // No requestBody in schema → no body
+            if (!MethodSchema.TryGetProperty("requestBody", out var requestBodyEl)) return null;
+            if (!requestBodyEl.TryGetProperty("content", out var contentEl)) return null;
+
+            // Choose the media type matching ContentType or fall back to the first defined
+            JsonProperty chosenMedia = default;
+            foreach (var media in contentEl.EnumerateObject())
+            {
+                if (string.Equals(media.Name, ContentType, StringComparison.OrdinalIgnoreCase))
+                {
+                    chosenMedia = media;
+                    break;
+                }
+                if (chosenMedia.Equals(default(JsonProperty)))
+                {
+                    chosenMedia = media;
+                }
+            }
+
+            // If still nothing chosen, there is no content definition
+            if (chosenMedia.Equals(default(JsonProperty))) return null;
+
+            // Determine if the chosen media type is JSON
+            bool isJson = chosenMedia.Name.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) ||
+                          ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase);
+
+            // Try to obtain the schema for body shape (object vs primitive/array)
+            JsonElement schema = default;
+            bool hasSchema = chosenMedia.Value.TryGetProperty("schema", out schema);
+            string? schemaType = null;
+            if (hasSchema && schema.TryGetProperty("type", out var typeEl))
+            {
+                schemaType = typeEl.GetString();
+            }
+
+            if (isJson)
+            {
+                // JSON handling
+                if (string.Equals(schemaType, "object", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Build an object containing only defined properties
+                    var body = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                    if (schema.TryGetProperty("properties", out var props))
+                    {
+                        foreach (var prop in props.EnumerateObject())
+                        {
+                            if (Params.TryGetValue(prop.Name, out var value))
+                            {
+                                if (value is JsonElement je)
+                                {
+                                    body[prop.Name] = JsonSerializer.Deserialize<object>(je.GetRawText());
+                                }
+                                else
+                                {
+                                    body[prop.Name] = value;
+                                }
+                            }
+                        }
+                    }
+                    var json = JsonSerializer.Serialize(body);
+                    return new StringContent(json, Encoding.UTF8, "application/json");
+                }
+                else
+                {
+                    // Array or primitive: use a single "requestBody" param
+                    object? bodyParam = null;
+                    if (Params.TryGetValue("requestBody", out var any)) bodyParam = any;
+                    string payload = bodyParam is string s ? s : JsonSerializer.Serialize(bodyParam);
+                    return new StringContent(payload ?? "null", Encoding.UTF8, "application/json");
+                }
+            }
+
+            // Textual payloads (e.g., application/xhtml+xml)
+            if (string.Equals(ContentType, "application/xhtml+xml", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ContentType, "text/html", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ContentType, "text/plain", StringComparison.OrdinalIgnoreCase))
+            {
+                string text = Params.TryGetValue("requestBody", out var v)
+                    ? ConvertToBodyString(v)
+                    : string.Empty;
+                return new StringContent(text, Encoding.UTF8, ContentType);
+            }
+
+            // Unsupported content types can be added here (e.g., multipart/form-data)
+            return null;
+        }
+
+        private static string ConvertToBodyString(object? value)
+        {
+            if (value == null) return string.Empty;
+            if (value is string s) return s;
+            if (value is JsonElement je)
+            {
+                if (je.ValueKind == JsonValueKind.String) return je.GetString() ?? string.Empty;
+                return je.GetRawText();
+            }
+            return value.ToString() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Appends query parameters defined in the OpenAPI schema (parameters[] with in:"query")
+        /// using values found in Params. Applies to any HTTP method.
+        /// </summary>
+        private string AppendQueryParamsFromSchema(string url)
+        {
+            if (Params == null) return url;
+            if (!MethodSchema.TryGetProperty("parameters", out var parametersEl)) return url;
+
+            var pairs = new List<string>();
+            foreach (var param in parametersEl.EnumerateArray())
+            {
+                if (param.TryGetProperty("in", out var loc) &&
+                    string.Equals(loc.GetString(), "query", StringComparison.OrdinalIgnoreCase) &&
+                    param.TryGetProperty("name", out var nameEl))
+                {
+                    var name = nameEl.GetString();
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    if (Params.TryGetValue(name!, out var val) && val != null)
+                    {
+                        pairs.Add($"{Uri.EscapeDataString(name!)}={Uri.EscapeDataString(val.ToString()!)}");
+                    }
+                }
+            }
+
+            if (pairs.Count > 0)
+            {
+                url += (url.Contains('?') ? "&" : "?") + string.Join("&", pairs);
+            }
+
+            return url;
+        }
+
+        /// <summary>
+        /// Append or replace specified query parameters on the given URL. Preserves fragments.
+        /// </summary>
+        private static string AppendOrReplaceQueryParams(string url, Dictionary<string, string> parameters)
+        {
+            if (parameters == null || parameters.Count == 0) return url;
+
+            // Separate fragment
+            string fragment = string.Empty;
+            int hashIndex = url.IndexOf('#');
+            if (hashIndex >= 0)
+            {
+                fragment = url.Substring(hashIndex);
+                url = url.Substring(0, hashIndex);
+            }
+
+            string basePart = url;
+            string query = string.Empty;
+            int qIndex = url.IndexOf('?');
+            if (qIndex >= 0)
+            {
+                basePart = url.Substring(0, qIndex);
+                query = url[(qIndex + 1)..];
+            }
+
+            var existing = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (!string.IsNullOrEmpty(query))
+            {
+                foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var kv = pair.Split('=', 2);
+                    var k = Uri.UnescapeDataString(kv[0]);
+                    var v = kv.Length > 1 ? Uri.UnescapeDataString(kv[1]) : string.Empty;
+                    existing[k] = v;
+                }
+            }
+
+            foreach (var kvp in parameters)
+            {
+                existing[kvp.Key] = kvp.Value ?? string.Empty;
+            }
+
+            var newQuery = string.Join("&", existing.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+            return basePart + (newQuery.Length > 0 ? "?" + newQuery : string.Empty) + fragment;
+        }
+
+        /// <summary>
         /// Executes the local function asynchronously.
         /// </summary>
         /// <returns>The result of the local function execution.</returns>
         public async Task<object?> ExecuteLocalFunctionAsync()
         {
+            // Validate parameters against the OpenAPI schema before attempting any reflection
+            var validation = ValidateParamsAgainstSchema();
+            if (!validation.IsValid)
+            {
+                throw new InvalidOperationException(validation.ErrorMessage!);
+            }
+
             // Get the assembly name and method/property name from the Path
             var memberName = Path.Split('.').Last();
 
@@ -342,6 +608,23 @@ namespace AntRunner.ToolCalling.Functions
                 .SelectMany(a => a.GetTypes())
                 .FirstOrDefault(t => t.FullName == typeName);
 
+            if (type == null)
+            {
+                string binPath = AppDomain.CurrentDomain.BaseDirectory;
+                foreach (string dll in Directory.GetFiles(binPath, "*.dll"))
+                {
+                    try
+                    {
+                        var assembly = Assembly.LoadFrom(dll);
+                        type = assembly.GetTypes().FirstOrDefault(t => t.FullName == typeName);
+                        if (type != null)
+                        {
+                            break;
+                        }
+                    }
+                    catch { }
+                }
+            }
             if (type == null) throw new InvalidOperationException($"Type {typeName} not found in any loaded assembly");
 
             // First, try to find a property with the specified name
@@ -370,12 +653,29 @@ namespace AntRunner.ToolCalling.Functions
                 if (Params != null)
                 {
                     bool match = true;
+
+                    // Ensure every required parameter is present
                     foreach (var param in parameters)
                     {
                         if (!param.IsOptional && !Params.ContainsKey(param.Name!))
                         {
                             match = false;
                             break;
+                        }
+                    }
+
+                    // Ensure NO extra parameters are supplied
+                    if (match)
+                    {
+                        var declaredParamNames = parameters.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                        foreach (var suppliedKey in Params.Keys)
+                        {
+                            if (!declaredParamNames.Contains(suppliedKey))
+                            {
+                                match = false;
+                                break;
+                            }
                         }
                     }
 
@@ -406,8 +706,31 @@ namespace AntRunner.ToolCalling.Functions
                     }
                     else
                     {
-                        // Convert the parameter value to the appropriate type
-                        paramValues[i] = Convert.ChangeType(paramValue, param.ParameterType);
+                        // Handle enums explicitly when paramValue is not JsonElement
+                        if (param.ParameterType.IsEnum)
+                        {
+                            try
+                            {
+                                paramValues[i] = paramValue switch
+                                {
+                                    string s => Enum.Parse(param.ParameterType, s, ignoreCase: true),
+                                    int i32 => Enum.ToObject(param.ParameterType, i32),
+                                    long i64 => Enum.ToObject(param.ParameterType, (int)i64),
+                                    double d => Enum.ToObject(param.ParameterType, (int)d),
+                                    _ => Enum.ToObject(param.ParameterType, paramValue)
+                                };
+                            }
+                            catch (Exception)
+                            {
+                                // Fallback: attempt standard change type which will throw if invalid
+                                paramValues[i] = Convert.ChangeType(paramValue, Enum.GetUnderlyingType(param.ParameterType));
+                            }
+                        }
+                        else
+                        {
+                            // Convert the parameter value to the appropriate type
+                            paramValues[i] = Convert.ChangeType(paramValue, param.ParameterType);
+                        }
                     }
                 }
                 else
@@ -438,6 +761,165 @@ namespace AntRunner.ToolCalling.Functions
             return result;
         }
 
+        /// <summary>
+        /// Validates supplied Params against the OpenAPI method schema. Ensures that:
+        /// - No extra parameters are supplied that are not defined in the schema
+        /// - All required parameters (after any default injection) are present
+        /// </summary>
+        /// <remarks>
+        /// This validation occurs prior to attempting to resolve and invoke a local function,
+        /// allowing us to return a clear error when the tool call is invalid by definition.
+        /// </remarks>
+        /// <returns>A tuple indicating validity and an error message when invalid.</returns>
+        public (bool IsValid, string? ErrorMessage) ValidateParamsAgainstSchema()
+        {
+            try
+            {
+                // Collect declared parameter names and required names from the OpenAPI operation
+                var declaredNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var requiredNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                // parameters[] (path/query/header/cookie)
+                if (MethodSchema.TryGetProperty("parameters", out var parametersEl))
+                {
+                    foreach (var param in parametersEl.EnumerateArray())
+                    {
+                        if (param.TryGetProperty("name", out var nameEl))
+                        {
+                            var name = nameEl.GetString();
+                            if (!string.IsNullOrWhiteSpace(name))
+                            {
+                                declaredNames.Add(name!);
+                                if (param.TryGetProperty("required", out var reqEl) && reqEl.ValueKind == JsonValueKind.True)
+                                {
+                                    requiredNames.Add(name!);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // requestBody
+                if (MethodSchema.TryGetProperty("requestBody", out var requestBodyEl))
+                {
+                    if (requestBodyEl.TryGetProperty("content", out var contentEl))
+                    {
+                        var firstMedia = contentEl.EnumerateObject().FirstOrDefault();
+                        if (!firstMedia.Equals(default(JsonProperty)) && firstMedia.Value.TryGetProperty("schema", out var schemaEl))
+                        {
+                            var isObjectBody = schemaEl.TryGetProperty("type", out var typeEl) && string.Equals(typeEl.GetString(), "object", StringComparison.OrdinalIgnoreCase);
+
+                            if (isObjectBody)
+                            {
+                                // Object body: expose object properties as parameters and use its required list
+                                if (schemaEl.TryGetProperty("properties", out var propsEl))
+                                {
+                                    foreach (var prop in propsEl.EnumerateObject())
+                                    {
+                                        declaredNames.Add(prop.Name);
+                                    }
+                                }
+                                if (schemaEl.TryGetProperty("required", out var reqArray) && reqArray.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (var req in reqArray.EnumerateArray())
+                                    {
+                                        var name = req.GetString();
+                                        if (!string.IsNullOrWhiteSpace(name)) requiredNames.Add(name!);
+                                    }
+                                }
+                                // Note: do NOT add top-level requestBody.required for object schemas
+                            }
+                            else
+                            {
+                                // Non-object body → allow/require a single "requestBody" parameter as appropriate
+                                declaredNames.Add("requestBody");
+                                if (requestBodyEl.TryGetProperty("required", out var rbReq) && rbReq.ValueKind == JsonValueKind.True)
+                                {
+                                    requiredNames.Add("requestBody");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // If no params were supplied, validation passes (method defaults or optional params may apply)
+                var supplied = Params ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+                // Allow all hidden parameters from the contract (annotation-driven)
+                var contract = ToolContractRegistry.GetContract(Path);
+                foreach (var paramMetadata in contract.ParameterMetadata.Values)
+                {
+                    if (paramMetadata.Hidden)
+                    {
+                        // Hidden parameters are injected at runtime and shouldn't be in the LLM-facing schema
+                        // But they ARE valid parameters for validation purposes
+                        var paramName = contract.ParameterMetadata.FirstOrDefault(kvp => kvp.Value == paramMetadata).Key;
+                        if (!string.IsNullOrEmpty(paramName))
+                        {
+                            declaredNames.Add(paramName);
+                        }
+                    }
+                }
+
+                // Unknown parameters (extras not defined by the schema)
+                var unknown = supplied.Keys.Where(k => !declaredNames.Contains(k)).OrderBy(k => k, StringComparer.OrdinalIgnoreCase).ToArray();
+
+                // Missing required parameters
+                var missing = requiredNames.Where(r => !supplied.ContainsKey(r)).OrderBy(r => r, StringComparer.OrdinalIgnoreCase).ToArray();
+
+                if (unknown.Length == 0 && missing.Length == 0)
+                {
+                    return (true, null);
+                }
+
+                // Build a user-friendly, natural-language error message
+                var msg = new StringBuilder();
+                msg.Append("Your tool call is not valid. ");
+
+                if (unknown.Length > 0)
+                {
+                    if (unknown.Length == 1)
+                    {
+                        msg.Append($"`{unknown[0]}` is not a valid parameter. ");
+                    }
+                    else
+                    {
+                        msg.Append($"These parameters are not valid: {FormatParamList(unknown)}. ");
+                    }
+                }
+
+                if (missing.Length > 0)
+                {
+                    var plural = missing.Length > 1 ? "parameters" : "parameter";
+                    msg.Append($"It is missing required {plural}: {FormatParamList(missing)}. ");
+                }
+
+                msg.Append($"Please refer to the `{Operation}` tool definition and try again.");
+
+                return (false, msg.ToString().Trim());
+            }
+            catch
+            {
+                // If anything goes wrong during validation, do not block execution here; allow downstream handling
+                return (true, null);
+            }
+        }
+
+        private static string FormatParamList(IEnumerable<string> names)
+        {
+            var list = names.Select(n => $"`{n}`").ToArray();
+            if (list.Length <= 1) return string.Join("", list);
+            if (list.Length == 2) return string.Join(" and ", list);
+            return string.Join(", ", list[..^1]) + ", and " + list[^1];
+        }
+
+        private static bool RequiresNotebookContext(string path, string? operationId)
+        {
+            // Check ToolContractRegistry for RequiresNotebookContext attribute
+            var contract = ToolContractRegistry.GetContract(path);
+            return contract.RequiresNotebookContext;
+        }
+
         private object? ConvertJsonElement(JsonElement jsonElement, Type targetType)
         {
             return targetType switch
@@ -446,6 +928,14 @@ namespace AntRunner.ToolCalling.Functions
                 Type t when t == typeof(double) => jsonElement.GetDouble(),
                 Type t when t == typeof(bool) => jsonElement.GetBoolean(),
                 Type t when t == typeof(string) => jsonElement.GetString(),
+                Type t when t.IsEnum => jsonElement.ValueKind switch
+                {
+                    JsonValueKind.Number => Enum.ToObject(targetType, jsonElement.GetInt32()),
+                    JsonValueKind.String => Enum.Parse(targetType, jsonElement.GetString() ?? string.Empty, ignoreCase: true),
+                    _ => throw new InvalidOperationException($"Cannot convert {jsonElement.ValueKind} to enum {targetType}")
+                },
+                Type t when t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>) => 
+                    JsonSerializer.Deserialize(jsonElement.GetRawText(), targetType),
                 _ => throw new InvalidOperationException($"Unsupported target type: {targetType}")
             };
         }
@@ -461,14 +951,21 @@ namespace AntRunner.ToolCalling.Functions
 
         /// <summary>
         /// Creates the complete URL by combining the baseUrl and path.
+        /// Properly handles base URLs with path segments (e.g., "https://api.example.com/v1")
+        /// and appends the operation path according to OpenAPI specification.
         /// </summary>
         /// <param name="domain">The baseUrl of the request.</param>
         /// <param name="path">The path of the request.</param>
         /// <returns>The complete URL as a string.</returns>
         private string CreateUrl(string domain, string path)
         {
-            var uri = new Uri(new Uri(domain), path);
-            return uri.ToString();
+            // Ensure base URL ends with a slash for proper path appending
+            var baseUrl = domain.TrimEnd('/') + "/";
+            // Remove leading slash from path since we're appending to a trailing slash
+            var relativePath = path.TrimStart('/');
+            // Combine and remove any trailing slash from the final URL
+            var uri = new Uri(new Uri(baseUrl), relativePath);
+            return uri.ToString().TrimEnd('/');
         }
 
         /// <summary>
@@ -486,10 +983,78 @@ namespace AntRunner.ToolCalling.Functions
                 methodSchema: this.MethodSchema,
                 contentType: this.ContentType,
                 authHeaders: new Dictionary<string, string>(this.AuthHeaders),
+                authQueryParams: new Dictionary<string, string>(this.AuthQueryParams),
                 oAuth: this.OAuth)
             {
                 // Copy the Params dictionary if it is not null
                 Params = this.Params != null ? new Dictionary<string, object>(this.Params) : null
+            };
+        }
+
+        /// <summary>
+        /// Ensures all required parameters are present in <see cref="Params"/>. If a required
+        /// parameter is missing and the OpenAPI schema provides a default/enum/description value,
+        /// that value is injected so the LLM doesn’t have to repeat boiler-plate fields.
+        /// </summary>
+        /// <remarks>
+        /// This follows the rules:
+        /// 1. Look at requestBody → content → first media type → schema → required[]
+        /// 2. For each required name missing from Params, attempt to obtain:
+        ///    a. "default" property
+        ///    b. single-value "enum" property
+        ///    c. fall back to the "description" text when it looks like a literal
+        /// </remarks>
+        public void AddMissingRequiredParamsFromSchema()
+        {
+            // Params must be mutable
+            Params ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+            // Navigate to the schema inside the OpenAPI operation
+            if (!MethodSchema.TryGetProperty("requestBody", out var requestBody)) return;
+            if (!requestBody.TryGetProperty("content", out var content)) return;
+
+            // Use the first media type in the content object (usually application/json)
+            var firstMediaType = content.EnumerateObject().FirstOrDefault();
+            if (firstMediaType.Equals(default(JsonProperty))) return;
+            if (!firstMediaType.Value.TryGetProperty("schema", out var bodySchema)) return;
+
+            // Required array
+            if (!bodySchema.TryGetProperty("required", out var requiredArray)) return;
+            if (!bodySchema.TryGetProperty("properties", out var properties)) return;
+
+            foreach (var req in requiredArray.EnumerateArray())
+            {
+                var name = req.GetString();
+                if (string.IsNullOrEmpty(name)) continue;
+                if (Params.ContainsKey(name)) continue;
+
+                if (!properties.TryGetProperty(name, out var propSchema)) continue;
+
+                // Try default
+                if (propSchema.TryGetProperty("default", out var def))
+                {
+                    Params[name] = ExtractJsonElementValue(def) ?? "";
+                    continue;
+                }
+
+                // Try single-value enum
+                if (propSchema.TryGetProperty("enum", out var enumArray) && enumArray.GetArrayLength() == 1)
+                {
+                    Params[name] = ExtractJsonElementValue(enumArray[0]) ?? "";
+                    continue;
+                }
+            }
+        }
+
+        private static object? ExtractJsonElementValue(JsonElement element)
+        {
+            return element.ValueKind switch
+            {
+                JsonValueKind.String => element.GetString(),
+                JsonValueKind.Number => element.TryGetInt64(out var l) ? l : element.GetDouble(),
+                JsonValueKind.True => true,
+                JsonValueKind.False => false,
+                _ => null
             };
         }
     }

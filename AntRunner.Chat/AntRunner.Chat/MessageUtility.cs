@@ -23,6 +23,7 @@ public static class MessageExtensions
                 {
                     if (toolCall.Function != null)
                     {
+                        if (messageText.Length > 0) messageText += "\n";
                         messageText += $"I called the tool named {toolCall.Function.Name} with {toolCall.Function.Arguments}";
                     }
                 }

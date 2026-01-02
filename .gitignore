@@ -433,3 +433,4 @@ __azurite_db_*
 # Local appsettings files
 **/appsettings.*.json
 **/appsettings.json
+/AntRunner.Chat/.claude

@@ -73,6 +73,17 @@ namespace AntRunner.ToolCalling.AssistantDefinitions.Storage
             return ReadFileAsync(filePath);
         }
 
+        public static async Task<string?> GetContextOptions(string assistantName)
+        {
+            // Look for any contextOptions.json under HostExtensions subfolders
+            var hostExtensionsRoot = GetFolderPath(assistantName, "HostExtensions");
+            if (!Directory.Exists(hostExtensionsRoot)) return null;
+
+            var filePath = Directory.EnumerateFiles(hostExtensionsRoot, "contextOptions.json", SearchOption.AllDirectories)
+                                      .FirstOrDefault();
+            return filePath == null ? null : await ReadFileAsync(filePath);
+        }
+
         public static async Task<byte[]?> GetFile(string filePath)
         {
             if (File.Exists(filePath))

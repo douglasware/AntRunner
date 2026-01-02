@@ -1,4 +1,4 @@
-﻿using AntRunner.Chat;
+using AntRunner.Chat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,19 +50,30 @@ namespace TestConsole
         public async Task RunConversationAsync()
         {
             var config = AzureOpenAiConfigFactory.Get();
-            var chatRunOptions = new ChatRunOptions() { AssistantName = "LocalCodeTool", DeploymentId = "gpt-4.1-mini" };
+            var chatRunOptions = new ChatRunOptions
+            {
+                AssistantName = "LocalCodeTool",
+                DeploymentId = "gpt-4.1-mini",
+                Instructions = "Use both of your tools to answer these two questions: What is the date and what is eleven plus negative 42?"
+            };
 
-            var conversation = await Conversation.Create(chatRunOptions, config, _httpClient);
-            conversation.MessageAdded += Conversation_MessageAdded;
+            var result = await ChatRunner.RunThread(
+                chatRunOptions,
+                config,
+                previousMessages: null,
+                httpClient: _httpClient,
+                messageAdded: Conversation_MessageAdded);
 
-            var result = await conversation.Chat("Use both of your tools to answer these two questions: What is the date and what is eleven plus negative 42?");
-            Console.WriteLine(conversation.LastResponse?.LastMessage);
-            Console.WriteLine(conversation.Usage.TotalTokens);
+            if (result != null)
+            {
+                Console.WriteLine($"Last Message: {result.LastMessage}");
+                Console.WriteLine($"Total Tokens: {result.Usage?.TotalTokens}");
+            }
         }
 
         private void Conversation_MessageAdded(object? sender, MessageAddedEventArgs e)
         {
-            Console.WriteLine($"{e.Role}: {e.Message.ToString()}");
+            Console.WriteLine($"{e.Role}: {e.Message}");
             Console.WriteLine();
         }
     }

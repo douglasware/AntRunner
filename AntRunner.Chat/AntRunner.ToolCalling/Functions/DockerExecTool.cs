@@ -16,6 +16,18 @@ namespace AntRunner.ToolCalling.Functions
     {
         public string StandardOutput { get; set; } = string.Empty;
         public string StandardError { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// CWD-relative paths of files created by this tool execution.
+        /// Used by ThreadRun to inject a system message so the assistant is aware of new files.
+        /// </summary>
+        public List<string>? NewFiles { get; set; }
+        
+        /// <summary>
+        /// CWD-relative paths of files modified by this tool execution.
+        /// Used by ThreadRun to inject a system message so the assistant is aware of modified files.
+        /// </summary>
+        public List<string>? ModifiedFiles { get; set; }
     }
 
     public class DockerScriptService
