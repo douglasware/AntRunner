@@ -67,7 +67,12 @@ namespace AntRunner.Chat
         /// Gets or sets the list of turns in the conversation.
         /// </summary>
         public List<Turn> Turns { get; set; } = [];
- 
+
+        /// <summary>
+        /// Event stream as messages are added to the conversation
+        /// </summary>
+        public event MessageAddedEventHandler? MessageAdded;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Conversation"/> class.
         /// </summary>
@@ -124,6 +129,40 @@ namespace AntRunner.Chat
             {
                 _chatConfiguration.DeploymentId = assistantDef.Model;
             }
+        }
+
+        /// <summary>
+        /// Initiates a chat with the assistant using the specified instructions.
+        /// </summary>
+        /// <param name="instructions">The instructions for the chat session.</param>
+        /// <returns>A task representing the output of the chat run.</returns>
+        public async Task<ChatRunOutput> Chat(string instructions)
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_serviceConfiguration == null) throw new Exception("_serviceConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+
+            _chatConfiguration.Instructions = instructions;
+
+            Turn turn = new() { AssistantName = _chatConfiguration.AssistantName, Instructions = instructions };
+            Turns.Add(turn);
+
+            var oldMessages = AssistantMessages[AssistantDefinition.Name!];
+
+            var runnerOutput = await ChatRunner.RunThread(_chatConfiguration, _serviceConfiguration, oldMessages, _httpClient, MessageAdded);
+
+            if (runnerOutput != null && runnerOutput.Messages != null)
+            {
+                AssistantMessages[AssistantDefinition.Name!] = runnerOutput.Messages;
+                turn.ChatRunOutput = runnerOutput;
+                return runnerOutput;
+            }
+            else if (runnerOutput != null)
+            {
+                runnerOutput.Messages = [(new Message(Role.System, "Unknown error"))];
+                return runnerOutput;
+            }
+            return new() { Messages = [(new Message(Role.System, "Unknown error"))] };
         }
 
         /// <summary>
