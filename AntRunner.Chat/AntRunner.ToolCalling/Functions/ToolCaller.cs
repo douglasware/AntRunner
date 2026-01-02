@@ -356,16 +356,6 @@ namespace AntRunner.ToolCalling.Functions
                 request.Headers.TryAddWithoutValidation("Authorization", oAuthUserAccessToken);
             }
 
-            // If service auth was required but no header/query was supplied, fail fast with a clear error
-            if (!OAuth && (MethodSchema.ValueKind != JsonValueKind.Undefined))
-            {
-                // Consider both header and query auth
-                bool hasAuth = (AuthHeaders.Count > 0) || (AuthQueryParams.Count > 0);
-                if (!hasAuth)
-                {
-                    throw new MissingAssistantAuthException(BaseUrl);
-                }
-            }
 
             // Build request body content based on schema and selected ContentType
             if (!Method.Equals(HttpMethod.Get.Method, StringComparison.OrdinalIgnoreCase))
@@ -399,15 +389,6 @@ namespace AntRunner.ToolCalling.Functions
                 default:
                     // Throw an exception if the HTTP method is not supported
                     throw new NotSupportedException($"Unsupported HTTP method: {Method}");
-            }
-        }
-
-        public class MissingAssistantAuthException : Exception
-        {
-            public string BaseUrlValue { get; }
-            public MissingAssistantAuthException(string baseUrl) : base("Assistant tool requires an API key that is not set.")
-            {
-                BaseUrlValue = baseUrl;
             }
         }
 

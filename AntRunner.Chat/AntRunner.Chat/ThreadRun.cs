@@ -200,10 +200,6 @@ namespace AntRunner.Chat
                     messages.Add(new Message(Role.System, contextMessage));
                 }
 
-                if (messages.Count > 0)
-                {
-                    onMessage?.Invoke(null, new MessageAddedEventArgs(messages.Last().Role.ToString(), messages.Last().GetText()));
-                }
 
                 if (previous != null && previous.Count > 0)
                 {
@@ -240,7 +236,6 @@ namespace AntRunner.Chat
                 }
                 messages.Add(new Message(Role.User, options.Instructions));
 
-                onMessage?.Invoke(null, new MessageAddedEventArgs(messages.First().Role.ToString(), messages.First().GetText()));
                 onMessage?.Invoke(null, new MessageAddedEventArgs(messages.Last().Role.ToString(), messages.Last().GetText()));
             }
 
@@ -587,20 +582,8 @@ namespace AntRunner.Chat
                         string output;
                         if (builder.ActionType == ActionType.WebApi)
                         {
-                            string responseContent;
-                            try
-                            {
-                                var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken, httpClient ?? _httpClient);
-                                responseContent = await response.Content.ReadAsStringAsync();
-                            }
-                            catch (AntRunner.ToolCalling.Functions.ToolCaller.MissingAssistantAuthException)
-                            {
-                                return new ToolOutput
-                                {
-                                    Output = "This tool requires an API key for this host, but it isn't set. Open Guide Builder → Auth and provide the required value. Until then this API cannot be used.",
-                                    ToolCallId = requiredOutput.Id
-                                };
-                            }
+                            var response = await builder.ExecuteWebApiAsync(oAuthUserAccessToken, httpClient ?? _httpClient);
+                            var responseContent = await response.Content.ReadAsStringAsync();
 
                             if (builder.ResponseSchemas.TryGetValue("200", out var schemaJson))
                             {

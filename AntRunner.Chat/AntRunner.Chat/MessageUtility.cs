@@ -7,24 +7,34 @@ public static class MessageExtensions
     {
         string messageText = "";
 
-        if (message.Role == Role.User || message.Role == Role.System)
+        if (message.Role == Role.User)
         {
-            // Content is a string for user messages
-            messageText = message.Content?.ToString() ?? "";
+            messageText = message.Content!.ToString();
         }
         else if (message.Role == Role.Assistant)
         {
-            // Content is a string for assistant messages
-            // Only return the content - don't format tool calls into text
-            messageText = message.Content?.ToString() ?? "";
+            if (message.Content?.ValueKind == JsonValueKind.String)
+            {
+                messageText += $"{message.Content.ToString()}";
+            }
+            if (message.ToolCalls != null)
+            {
+                foreach (var toolCall in message.ToolCalls)
+                {
+                    if (toolCall.Function != null)
+                    {
+                        if (messageText.Length > 0) messageText += "\n";
+                        messageText += $"I called the tool named {toolCall.Function.Name} with {toolCall.Function.Arguments}";
+                    }
+                }
+            }
         }
         else if (message.Role == Role.Tool)
         {
             try
             {
-                // Return raw tool result without formatting
                 string textContent = message.Content![0].Text.ToString();
-                messageText = textContent;
+                messageText = $"I got this output: {textContent}";
             }
             catch
             {
@@ -40,16 +50,16 @@ public static class MessageExtensions
                     if (root.TryGetProperty("text", out JsonElement textElement))
                     {
                         string textValue = textElement.GetString() ?? jsonString;
-                        messageText = textValue;
+                        messageText = $"I got this output: {textValue}";
                     }
                     else
                     {
-                        messageText = jsonString;
+                        messageText = $"I got this output: {jsonString}";
                     }
                 }
                 catch
                 {
-                    messageText = jsonString;
+                    messageText = $"I got this output: {jsonString}";
                 }
             }
         }
