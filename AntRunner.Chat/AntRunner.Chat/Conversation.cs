@@ -95,6 +95,33 @@ namespace AntRunner.Chat
         public AssistantDefinition? AssistantDefinition { get; set; }
 
         /// <summary>
+        /// Gets the usage statistics of the conversation.
+        /// </summary>
+        public UsageResponse Usage
+        {
+            get
+            {
+                UsageResponse totalUsage = new() { CachedPromptTokens = 0, CompletionTokens = 0, PromptTokens = 0, TotalTokens = 0 };
+                foreach (var turn in Turns)
+                {
+                    if (turn.ChatRunOutput != null)
+                    {
+                        totalUsage.PromptTokens += turn.ChatRunOutput.Usage?.PromptTokens ?? 0;
+                        totalUsage.CompletionTokens += turn.ChatRunOutput.Usage?.CompletionTokens ?? 0;
+                        totalUsage.CachedPromptTokens += turn.ChatRunOutput.Usage?.CachedPromptTokens ?? 0;
+                        totalUsage.TotalTokens += turn.ChatRunOutput.Usage?.TotalTokens ?? 0;
+                    }
+                }
+                return totalUsage;
+            }
+        }
+
+        /// <summary>
+        /// Gets the last response from the assistant.
+        /// </summary>
+        public ChatRunOutput? LastResponse { get { return Turns.LastOrDefault()?.ChatRunOutput; } }
+
+        /// <summary>
         /// Changes the assistant being used in the conversation to the specified assistant name.
         /// </summary>
         /// <param name="assistantName">The name of the new assistant to use.</param>
@@ -166,6 +193,49 @@ namespace AntRunner.Chat
         }
 
         /// <summary>
+        /// Undoes the last user message in the conversation.
+        /// </summary>
+        public void Undo()
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_serviceConfiguration == null) throw new Exception("_serviceConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+
+            var lastIndex = AssistantMessages[AssistantDefinition.Name!].FindLastIndex(m => m.Role == Role.User);
+            if (lastIndex != -1)
+            {
+                if (Turns.Count > 0)
+                {
+                    Turns.RemoveAt(Turns.Count - 1);
+                }
+                else
+                {
+                    TraceWarning("Something is wrong. There are no turns to undo.");
+                }
+                AssistantMessages[AssistantDefinition.Name!].RemoveRange(lastIndex, AssistantMessages[AssistantDefinition.Name!].Count - lastIndex);
+            }
+        }
+
+        /// <summary>
+        /// Undoes the last user message in the conversation that matches the specified text.
+        /// </summary>
+        /// <param name="messageText">The text of the user message to undo.</param>
+        public void Undo(string messageText)
+        {
+            if (AssistantDefinition == null) throw new Exception("AssistantDefinition is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_chatConfiguration == null) throw new Exception("_chatConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+            if (_serviceConfiguration == null) throw new Exception("_serviceConfiguration is null. Use the default public constructor exists to allow serialization, but you should nt use it directly.");
+
+            var lastIndex = AssistantMessages[AssistantDefinition.Name!].FindLastIndex(m => m.Role == Role.User && m.Content == (dynamic)messageText);
+            if (lastIndex != -1)
+            {
+                AssistantMessages[AssistantDefinition.Name!].RemoveRange(lastIndex, AssistantMessages[AssistantDefinition.Name!].Count - lastIndex);
+            }
+            var lastTurn = Turns.LastOrDefault(t => t.Instructions == messageText);
+            if (lastTurn != null) Turns.Remove(lastTurn);
+        }
+
+        /// <summary>
         /// Creates a new conversation asynchronously using the specified chat configuration.
         /// </summary>
         /// <param name="chatConfiguration">The configuration options for the chat.</param>
@@ -188,6 +258,36 @@ namespace AntRunner.Chat
             var conversation = new Conversation(chatConfiguration, serviceConfiguration, assistantDef);
             conversation._httpClient = httpClient ?? conversation._httpClient;
             return conversation;
+        }
+
+        /// <summary>
+        /// Overloaded method to create a conversation from a JSON file using the specified chat and service configurations.
+        /// </summary>
+        /// <param name="filePath">The path to the file from which the instance will be loaded.</param>
+        /// <param name="serviceConfiguration">The configuration options for the service.</param>
+        /// <param name="httpClient">Optional HTTP client to use.</param>
+        /// <returns>The loaded conversation.</returns>
+        public static Conversation Create(string filePath, AzureOpenAiConfig serviceConfiguration, HttpClient? httpClient = null)
+        {
+            var jsonString = File.ReadAllText(filePath);
+            var conversation = JsonSerializer.Deserialize<Conversation>(jsonString) ?? throw new Exception("Failed to deserialize the conversation.");
+
+            conversation._chatConfiguration = new ChatRunOptions { AssistantName = conversation.AssistantDefinition!.Name!, DeploymentId = conversation.AssistantDefinition.Model };
+            conversation._serviceConfiguration = serviceConfiguration;
+            conversation._httpClient = httpClient ?? conversation._httpClient;
+            return conversation;
+        }
+
+        static readonly JsonSerializerOptions WriteIndentedOptions = new() { WriteIndented = true };
+
+        /// <summary>
+        /// Serializes the current instance to a JSON file.
+        /// </summary>
+        /// <param name="filePath">The path to the file where the instance will be saved.</param>
+        public void Save(string filePath)
+        {
+            var jsonString = JsonSerializer.Serialize(this, WriteIndentedOptions);
+            File.WriteAllText(filePath, jsonString);
         }
     }
 }
