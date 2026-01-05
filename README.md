@@ -239,7 +239,7 @@ A major feature of AntRunner.Chat is the use of container sandboxes to provide i
 
 ### Setup Guide and Build Scripts
 
-To help you get started with these containers, we provide a comprehensive [Setup Guide](./setup_guide.md) that covers all prerequisites and detailed instructions for building the local Docker images.
+To help you get started with these containers, we provide a comprehensive [Setup Guide](./AntRunner.Chat/setup_guide.md) that covers all prerequisites and detailed instructions for building the local Docker images.
 
 You can use the provided build scripts:
 
@@ -250,12 +250,8 @@ These scripts will prompt you to select whether to build the CPU-only or CUDA-en
 
 Make sure to follow the setup guide to prepare your environment and build the containers before running the solution.
 
----
+### Sample Notebooks
 
-## Summary
-
-AntRunner.Chat makes it simple to build powerful AI chat experiences in your .NET applications. Whether you want to create helpful assistants, automate tasks, or build interactive tools, AntRunner.Chat provides an easy-to-use interface to OpenAI-powered conversations.
-
----
+After setup, you run [new-chat-project](AntRunner.Chat/new-chat-project.ps1) to create a new project with starter assistant definitions and [Project Template Sample Notebooks](AntRunner.Chat/ProjectTemplate/Notebooks/1-Template.ipynb)
 
 If you have questions or want to contribute, feel free to open an issue or pull request!
